@@ -1,11 +1,12 @@
 import { describe, expect, test } from 'bun:test';
 
 import { createApp } from '../app.ts';
+import { TestClient, createTestContext } from '../testing/test-context.ts';
 
 describe('app', () => {
   test('health answers ok', async () => {
-    const response = await createApp().handle(new Request('http://localhost/api/health'));
+    const client = new TestClient(createApp(createTestContext()));
 
-    expect(await response.json()).toEqual({ status: 'ok' });
+    expect(await client.request('GET', '/health')).toEqual({ status: 200, body: { status: 'ok' } });
   });
 });

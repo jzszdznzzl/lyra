@@ -27,3 +27,6 @@ minimumReleaseAgeExclude:
   - motion-dom@14.7.1
   - motion-utils@14.7.0
   - motion@14.7.1
+allowBuilds:
+  # drizzle-kit loads its config through esbuild, which installs its native binary in a script.
+  esbuild: true
