@@ -30,6 +30,10 @@ export function RemoteBrowser({ onLinked, onCancel }: RemoteBrowserProps) {
   const { t } = useTranslation();
   const errorText = useErrorText();
   const socket = useRef<WebSocket | null>(null);
+  // Dead keys (^ ´ ¨), IMEs, mobile keyboards and paste all deliver text to a real text field,
+  // so a hidden one collects it instead of guessing characters from key codes.
+  const keyboard = useRef<HTMLTextAreaElement>(null);
+  const isComposing = useRef(false);
   const [frame, setFrame] = useState<string | null>(null);
   const [error, setError] = useState<ApiError | null>(null);
   const [text, setText] = useState('');
@@ -91,32 +95,64 @@ export function RemoteBrowser({ onLinked, onCancel }: RemoteBrowserProps) {
       x: ((event.clientX - box.left) / box.width) * BrowserViewport.Width,
       y: ((event.clientY - box.top) / box.height) * BrowserViewport.Height,
     });
+    keyboard.current?.focus({ preventScroll: true });
   }
 
   function wheel(event: WheelEvent<HTMLImageElement>) {
     send({ type: 'scroll', deltaY: event.deltaY });
   }
 
-  // On desktop, typing while the screen has focus goes straight to the remote page.
-  function keyDown(event: KeyboardEvent<HTMLDivElement>) {
-    if (SPECIAL_KEYS.has(event.key)) {
-      event.preventDefault();
-      send({ type: 'key', key: event.key });
-    } else if (event.key.length === 1 && !event.ctrlKey && !event.metaKey) {
-      event.preventDefault();
-      send({ type: 'text', text: event.key });
+  /** Sends whatever the hidden field collected, then empties it for the next keystrokes. */
+  function flushTyped() {
+    const field = keyboard.current;
+
+    if (field && field.value !== '') {
+      send({ type: 'text', text: field.value });
+      field.value = '';
     }
+  }
+
+  // Keys that edit or submit go as key presses; everything else arrives through `input`.
+  function keyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
+    if (event.nativeEvent.isComposing || !SPECIAL_KEYS.has(event.key)) {
+      return;
+    }
+
+    event.preventDefault();
+    flushTyped();
+    send({ type: 'key', key: event.key });
   }
 
   return (
     <div className="flex flex-col gap-3">
       {error ? <Notice tone={NoticeTone.Error}>{errorText(error)}</Notice> : null}
       <div
-        tabIndex={0}
-        onKeyDown={keyDown}
-        className="relative mx-auto w-full max-w-[340px] overflow-hidden rounded-2xl border border-line bg-white outline-none focus:ring-2 focus:ring-accent"
+        onClick={() => keyboard.current?.focus({ preventScroll: true })}
+        className="relative mx-auto w-full max-w-[340px] overflow-hidden rounded-2xl border border-line bg-white outline-none focus-within:ring-2 focus-within:ring-accent"
         style={{ aspectRatio: `${BrowserViewport.Width} / ${BrowserViewport.Height}` }}
       >
+        <textarea
+          ref={keyboard}
+          aria-label={t('google.browser.typeHere')}
+          autoCapitalize="off"
+          autoComplete="off"
+          autoCorrect="off"
+          spellCheck={false}
+          onKeyDown={keyDown}
+          onInput={() => {
+            if (!isComposing.current) {
+              flushTyped();
+            }
+          }}
+          onCompositionStart={() => {
+            isComposing.current = true;
+          }}
+          onCompositionEnd={() => {
+            isComposing.current = false;
+            flushTyped();
+          }}
+          className="pointer-events-none absolute top-0 left-0 size-px resize-none opacity-0"
+        />
         {frame ? (
           <img
             src={frame}
