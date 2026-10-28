@@ -38,6 +38,7 @@ describe('RemoteLogin', () => {
     const cookie = Promise.withResolvers<string>();
 
     const session = await RemoteLogin.start(
+      'ana',
       { startUrl: `${origin}/login`, doneUrl: /\/done$/, cookieUrl: origin },
       {
         onFrame: () => {
@@ -52,6 +53,7 @@ describe('RemoteLogin', () => {
     expect(RemoteLogin.isBusy).toBe(true);
     expect(
       await RemoteLogin.start(
+        'bea',
         { startUrl: origin, doneUrl: /x/, cookieUrl: origin },
         { onFrame: () => undefined, onCookie: () => undefined, onClosed: () => undefined },
       ),
@@ -63,6 +65,30 @@ describe('RemoteLogin', () => {
 
     expect(await cookie.promise).toBe('SAPISID=abc123');
     expect(frames).toBeGreaterThan(0);
+    expect(RemoteLogin.isBusy).toBe(false);
+  }, 30_000);
+
+  test('replaces an abandoned sign-in of the same user instead of reporting busy', async () => {
+    const origin = `http://localhost:${server.port}`;
+    const target = { startUrl: `${origin}/login`, doneUrl: /\/done$/, cookieUrl: origin };
+    let closedCount = 0;
+    const handlers = {
+      onFrame: () => undefined,
+      onCookie: () => undefined,
+      onClosed: () => {
+        closedCount += 1;
+      },
+    };
+
+    const abandoned = await RemoteLogin.start('ana', target, handlers);
+    const fresh = await RemoteLogin.start('ana', target, handlers);
+
+    expect(abandoned).not.toBeNull();
+    expect(fresh).not.toBeNull();
+    expect(closedCount).toBe(1);
+    expect(RemoteLogin.isBusy).toBe(true);
+
+    await fresh?.close();
     expect(RemoteLogin.isBusy).toBe(false);
   }, 30_000);
 });

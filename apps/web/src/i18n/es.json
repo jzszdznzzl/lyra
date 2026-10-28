@@ -204,7 +204,9 @@
       "start": "Iniciar sesión con Google",
       "connecting": "Arrancando el navegador…",
       "typeHere": "Escribe aquí y pulsa Enter",
-      "cancel": "Cancelar"
+      "cancel": "Cancelar",
+      "disconnected": "Se perdió la conexión con el navegador de inicio de sesión.",
+      "reconnect": "Volver a conectar"
     },
     "cookies": {
       "title": "Pegar cookies",

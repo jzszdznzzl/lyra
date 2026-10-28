@@ -27,6 +27,9 @@ export const GOOGLE_LOGIN_TARGET: RemoteLoginTarget = {
 };
 
 const SESSION_TIMEOUT_MS = 10 * 60 * 1000;
+// The page pings every few seconds. A phone that kills the browser may never close the socket,
+// so silence is the only sign the user is gone, and the single browser slot must be freed.
+const IDLE_TIMEOUT_MS = 45 * 1000;
 const FRAME_QUALITY = 70;
 const SCALE = 2;
 // Only keys needed to fill a sign-in form; anything else is ignored.
@@ -52,24 +55,34 @@ export class RemoteLogin {
   #page: Page;
   #handlers: RemoteLoginHandlers;
   #target: RemoteLoginTarget;
+  #ownerId: string;
   #timeout: ReturnType<typeof setTimeout>;
+  #idleTimeout: ReturnType<typeof setTimeout>;
   #isClosed = false;
 
   static #active: RemoteLogin | null = null;
 
   constructor(
+    ownerId: string,
     browser: Browser,
     context: BrowserContext,
     page: Page,
     target: RemoteLoginTarget,
     handlers: RemoteLoginHandlers,
   ) {
+    this.#ownerId = ownerId;
     this.#browser = browser;
     this.#context = context;
     this.#page = page;
     this.#target = target;
     this.#handlers = handlers;
     this.#timeout = setTimeout(() => void this.close(), SESSION_TIMEOUT_MS);
+    this.#idleTimeout = setTimeout(() => void this.close(), IDLE_TIMEOUT_MS);
+  }
+
+  #markAlive() {
+    clearTimeout(this.#idleTimeout);
+    this.#idleTimeout = setTimeout(() => void this.close(), IDLE_TIMEOUT_MS);
   }
 
   async #checkSignedIn(url: string) {
@@ -95,6 +108,8 @@ export class RemoteLogin {
       return;
     }
 
+    this.#markAlive();
+
     switch (message.type) {
       case 'click': {
         await this.#page.mouse.click(message.x, message.y);
@@ -119,6 +134,9 @@ export class RemoteLogin {
         await this.close();
         break;
       }
+      case 'ping': {
+        break;
+      }
       default: {
         break;
       }
@@ -132,6 +150,7 @@ export class RemoteLogin {
 
     this.#isClosed = true;
     clearTimeout(this.#timeout);
+    clearTimeout(this.#idleTimeout);
 
     if (RemoteLogin.#active === this) {
       RemoteLogin.#active = null;
@@ -141,15 +160,23 @@ export class RemoteLogin {
     this.#handlers.onClosed();
   }
 
-  /** Returns null when another sign-in is already running. */
+  /**
+   * Returns null when another user's sign-in is already running. The same user's earlier one is
+   * replaced: it belongs to a page they left, e.g. after the phone killed the browser.
+   */
   static async start(
+    ownerId: string,
     target: RemoteLoginTarget,
     handlers: RemoteLoginHandlers,
     executablePath?: string,
   ) {
-    if (RemoteLogin.#active) {
+    const previous = RemoteLogin.#active;
+
+    if (previous && previous.#ownerId !== ownerId) {
       return null;
     }
+
+    await previous?.close();
 
     const browser = await chromium.launch({
       headless: true,
@@ -165,7 +192,7 @@ export class RemoteLogin {
     });
     const page = await context.newPage();
     const cdp = await context.newCDPSession(page);
-    const session = new RemoteLogin(browser, context, page, target, handlers);
+    const session = new RemoteLogin(ownerId, browser, context, page, target, handlers);
 
     RemoteLogin.#active = session;
 
@@ -179,12 +206,19 @@ export class RemoteLogin {
       }
     });
 
-    await cdp.send('Page.startScreencast', {
-      format: 'jpeg',
-      quality: FRAME_QUALITY,
-      maxWidth: BrowserViewport.Width * SCALE,
-      maxHeight: BrowserViewport.Height * SCALE,
-    });
+    try {
+      await cdp.send('Page.startScreencast', {
+        format: 'jpeg',
+        quality: FRAME_QUALITY,
+        maxWidth: BrowserViewport.Width * SCALE,
+        maxHeight: BrowserViewport.Height * SCALE,
+      });
+    } catch (error) {
+      // Otherwise the slot would stay taken until the session timeout.
+      await session.close();
+      throw error;
+    }
+
     await page.goto(target.startUrl).catch(() => undefined);
 
     return session;

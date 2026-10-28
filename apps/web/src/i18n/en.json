@@ -204,7 +204,9 @@
       "start": "Sign in with Google",
       "connecting": "Starting the browser…",
       "typeHere": "Type here and press Enter",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "disconnected": "The connection to the sign-in browser was lost.",
+      "reconnect": "Reconnect"
     },
     "cookies": {
       "title": "Paste cookies",

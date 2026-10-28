@@ -31,6 +31,8 @@ export function googleRoutes(
   { pool, images, loginTarget = GOOGLE_LOGIN_TARGET }: GoogleRoutesOptions,
 ) {
   const sessions = new Map<string, RemoteLogin>();
+  // Sockets whose browser is still starting; one that closes meanwhile is removed from here.
+  const starting = new Set<string>();
 
   return new Elysia({ prefix: '/google' })
     .use(authPlugin(ctx))
@@ -80,7 +82,9 @@ export function googleRoutes(
           ws.send(message);
         };
 
+        starting.add(ws.id);
         const session = await RemoteLogin.start(
+          user.id,
           loginTarget,
           {
             onFrame: (data) => send({ type: 'frame', data }),
@@ -118,6 +122,13 @@ export function googleRoutes(
 
           return undefined;
         });
+        const isStillOpen = starting.delete(ws.id);
+
+        if (session && !isStillOpen) {
+          await session.close();
+
+          return;
+        }
 
         if (session === null) {
           send({ type: 'error', error: GoogleError.BrowserBusy });
@@ -146,7 +157,9 @@ export function googleRoutes(
         }
       },
       async close(ws) {
-        await sessions.get(ws.id)?.close();
+        if (!starting.delete(ws.id)) {
+          await sessions.get(ws.id)?.close();
+        }
       },
     });
 }

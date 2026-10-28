@@ -47,6 +47,8 @@ export const BrowserClientMessage = z.discriminatedUnion('type', [
   z.object({ type: z.literal('text'), text: z.string().max(1000) }),
   z.object({ type: z.literal('key'), key: z.string().max(40) }),
   z.object({ type: z.literal('cancel') }),
+  // Keeps the session alive; silence means the page is gone.
+  z.object({ type: z.literal('ping') }),
 ]);
 
 export type BrowserClientMessage = z.infer<typeof BrowserClientMessage>;
