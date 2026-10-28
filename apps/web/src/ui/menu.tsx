@@ -64,7 +64,7 @@ export function Menu({ anchor, items, onClose }: MenuProps) {
       ref={menu}
       role="menu"
       style={{ top: position.top, left: position.left, width: MENU_WIDTH }}
-      className="fixed z-[55] overflow-hidden rounded-2xl border border-line bg-bg/95 py-1.5 shadow-2xl backdrop-blur-xl"
+      className="fixed z-[55] animate-pop overflow-hidden rounded-2xl border border-line bg-bg/95 py-1.5 shadow-2xl backdrop-blur-xl"
     >
       {items.map((item) => (
         <button

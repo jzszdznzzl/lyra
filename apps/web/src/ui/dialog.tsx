@@ -31,7 +31,7 @@ export function Dialog({ title, onClose, children }: DialogProps) {
   // Portaled to <body>: blurred ancestors (backdrop-filter) would otherwise trap `fixed`.
   return createPortal(
     <div
-      className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-3 backdrop-blur-sm"
+      className="fixed inset-0 z-50 grid animate-fade-in place-items-center bg-black/60 p-3 backdrop-blur-sm"
       role="presentation"
       onClick={onClose}
     >
@@ -39,7 +39,7 @@ export function Dialog({ title, onClose, children }: DialogProps) {
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className="flex max-h-[96dvh] w-full max-w-md flex-col gap-4 overflow-y-auto rounded-3xl border border-line bg-bg p-5 shadow-2xl"
+        className="flex max-h-[96dvh] w-full max-w-md animate-pop flex-col gap-4 overflow-y-auto rounded-3xl border border-line bg-bg p-5 shadow-2xl"
         onClick={(event) => event.stopPropagation()}
       >
         <header className="flex items-center justify-between">

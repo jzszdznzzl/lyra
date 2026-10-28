@@ -102,7 +102,7 @@ export function ImmersiveView() {
       data-theme="dark"
       onPointerMove={wake}
       onPointerDown={wake}
-      className={`fixed inset-0 z-[70] flex flex-col bg-black text-text ${isHidden ? 'cursor-none' : ''}`}
+      className={`fixed inset-0 z-[70] flex animate-fade-in flex-col bg-black text-text ${isHidden ? 'cursor-none' : ''}`}
     >
       {mode !== ImmersiveMode.Video && background ? (
         <div

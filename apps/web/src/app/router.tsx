@@ -231,6 +231,8 @@ export function createAppRouter(queryClient: QueryClient) {
     routeTree,
     context: { queryClient },
     defaultPreload: 'intent',
+    // Page changes fade the content in (styles.css); turned off along with other animations.
+    defaultViewTransition: true,
     // Going back returns to the same scroll position; the app scrolls inside <main>.
     scrollRestoration: true,
     defaultNotFoundComponent: NotFoundPage,

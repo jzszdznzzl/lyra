@@ -16,7 +16,7 @@ export function UpdateBanner() {
     <div className="pointer-events-none fixed inset-x-0 top-3 z-40 flex justify-center px-4">
       <div
         role="status"
-        className="pointer-events-auto flex items-center gap-3 rounded-full border border-line bg-bg/90 py-1.5 pr-1.5 pl-4 text-sm shadow-2xl backdrop-blur"
+        className="pointer-events-auto flex animate-slide-down items-center gap-3 rounded-full border border-line bg-bg/90 py-1.5 pr-1.5 pl-4 text-sm shadow-2xl backdrop-blur"
       >
         <Sparkles className="size-4 text-accent" />
         {t('app.update.ready')}

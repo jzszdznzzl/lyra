@@ -19,6 +19,56 @@
   --color-warning: var(--warning);
 }
 
+/* Entrances. All of them stop when motion is reduced (see [data-motion] below). */
+@theme {
+  --animate-fade-up: fade-up 320ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-pop: pop 160ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-slide-down: slide-down 260ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-slide-up: slide-up 220ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-fade-in: fade-in 200ms ease-out both;
+  --animate-sheet-up: sheet-up 320ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+  }
+
+  @keyframes pop {
+    from {
+      opacity: 0;
+      transform: scale(0.96);
+    }
+  }
+
+  @keyframes slide-down {
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+  }
+
+  @keyframes slide-up {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @keyframes sheet-up {
+    from {
+      transform: translateY(100%);
+    }
+  }
+}
+
 :root,
 [data-theme='dark'] {
   --accent: #e0457b;
@@ -90,4 +140,49 @@ html:has([data-app-frame]) body {
   height: 100%;
   min-height: 0;
   overflow: hidden;
+}
+
+/* Page changes: only the page content moves; the frame, player and tab bar stay put. */
+::view-transition-group(root) {
+  animation: none;
+}
+
+::view-transition-old(page) {
+  animation: 120ms ease-in both page-out;
+}
+
+::view-transition-new(page) {
+  animation: 240ms cubic-bezier(0.2, 0.8, 0.2, 1) both page-in;
+}
+
+@keyframes page-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+/*
+ * Animations off (the user's choice, or the OS asking for less motion): everything appears at
+ * once. Spinners keep turning, since they say that something is still happening.
+ */
+[data-motion='reduced'] *:not(.animate-spin),
+[data-motion='reduced'] *::before,
+[data-motion='reduced'] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+[data-motion='reduced']::view-transition-group(*),
+[data-motion='reduced']::view-transition-old(*),
+[data-motion='reduced']::view-transition-new(*) {
+  animation: none !important;
 }

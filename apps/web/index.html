@@ -15,9 +15,45 @@
       href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
+    <!-- Shown until the app renders (first visit, slow network, installing an update). Plain CSS:
+         scripts cannot run before the bundle, and the page policy forbids inline ones. -->
+    <style>
+      .splash {
+        position: fixed;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        background: #0b0a0f;
+      }
+      .splash img {
+        width: 72px;
+        height: 72px;
+        animation: splash-pulse 1.4s ease-in-out infinite;
+      }
+      @keyframes splash-pulse {
+        50% {
+          transform: scale(0.88);
+          opacity: 0.6;
+        }
+      }
+      @media (prefers-color-scheme: light) {
+        .splash {
+          background: #f7f3f5;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .splash img {
+          animation: none;
+        }
+      }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div class="splash" aria-hidden="true">
+        <img src="/icons/favicon.svg" alt="" />
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

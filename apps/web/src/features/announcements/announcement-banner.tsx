@@ -48,7 +48,7 @@ export function AnnouncementBanner() {
           <div
             key={item.id}
             role="status"
-            className={`flex items-start gap-3 rounded-xl border px-3 py-2.5 text-sm ${LEVEL_CLASSES[item.level]}`}
+            className={`flex animate-slide-down items-start gap-3 rounded-xl border px-3 py-2.5 text-sm ${LEVEL_CLASSES[item.level]}`}
           >
             <Icon className="mt-0.5 size-4 shrink-0" />
             <p className="min-w-0 flex-1 break-words whitespace-pre-line">{item.message}</p>

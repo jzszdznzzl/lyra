@@ -107,7 +107,7 @@ export function MobilePlayer() {
       </div>
       {isOpen ? (
         <div
-          className="fixed inset-0 z-40 flex flex-col overflow-y-auto bg-bg px-6 pt-[max(env(safe-area-inset-top),1.5rem)] pb-[max(env(safe-area-inset-bottom),1.5rem)] md:hidden"
+          className="fixed inset-0 z-40 flex animate-sheet-up flex-col overflow-y-auto bg-bg px-6 pt-[max(env(safe-area-inset-top),1.5rem)] pb-[max(env(safe-area-inset-bottom),1.5rem)] md:hidden"
           style={
             accent
               ? {

@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { LyricsResponse, activeLineIndex } from '@lyra/shared';
 import type { Track } from '@lyra/shared';
 
+import { isMotionReduced } from '../../app/motion.ts';
 import { ApiError, api, unwrap } from '../../lib/api.ts';
 import { offlineLyrics } from '../offline/downloads.ts';
 import { LoadingState } from '../music/query-state.tsx';
@@ -57,7 +58,7 @@ export function LyricsView({ track, size = 'md' }: { track: Track; size?: 'md' |
     if (line && box) {
       box.scrollTo({
         top: line.offsetTop - box.clientHeight / 2 + line.clientHeight / 2,
-        behavior: 'smooth',
+        behavior: isMotionReduced() ? 'auto' : 'smooth',
       });
     }
   }, [active]);

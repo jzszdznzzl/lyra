@@ -5,6 +5,7 @@ import { createRoot } from 'react-dom/client';
 
 import { createAppRouter } from './app/router.tsx';
 import { startUpdates } from './app/updates.ts';
+import { applyMotion, followSystemMotion, readStoredMotion } from './app/motion.ts';
 import { applyTheme, followSystemTheme, readStoredTheme } from './app/theme.ts';
 import { initI18n } from './i18n/index.ts';
 
@@ -19,6 +20,8 @@ async function start() {
   startUpdates();
   applyTheme(readStoredTheme());
   followSystemTheme();
+  applyMotion(readStoredMotion());
+  followSystemMotion();
   await initI18n();
 
   const container = document.getElementById('root');

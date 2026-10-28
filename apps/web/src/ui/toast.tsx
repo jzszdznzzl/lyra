@@ -36,7 +36,7 @@ export function Toaster() {
 
   return createPortal(
     <div role="status" className="fixed inset-x-0 bottom-28 z-[60] flex justify-center px-4">
-      <p className="rounded-full bg-text px-5 py-2.5 text-sm font-semibold text-bg shadow-2xl">
+      <p className="animate-slide-up rounded-full bg-text px-5 py-2.5 text-sm font-semibold text-bg shadow-2xl">
         {message}
       </p>
     </div>,

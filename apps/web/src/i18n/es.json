@@ -182,7 +182,14 @@
       "whatsNew": "Novedades"
     },
     "admin": "Administrador",
-    "adminPanel": "Administración"
+    "adminPanel": "Administración",
+    "motion": {
+      "title": "Animaciones",
+      "hint": "Transiciones entre páginas y al abrir ventanas. «Sistema» sigue la opción de reducir movimiento de tu dispositivo.",
+      "system": "Sistema",
+      "on": "Activadas",
+      "off": "Desactivadas"
+    }
   },
   "errors": {
     "invalid_credentials": "Correo, usuario o contraseña incorrectos.",

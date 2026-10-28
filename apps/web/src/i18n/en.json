@@ -182,7 +182,14 @@
       "whatsNew": "What's new"
     },
     "admin": "Admin",
-    "adminPanel": "Admin panel"
+    "adminPanel": "Admin panel",
+    "motion": {
+      "title": "Animations",
+      "hint": "Transitions between pages and when windows open. “System” follows your device's reduce-motion setting.",
+      "system": "System",
+      "on": "On",
+      "off": "Off"
+    }
   },
   "errors": {
     "invalid_credentials": "Wrong email, username or password.",
