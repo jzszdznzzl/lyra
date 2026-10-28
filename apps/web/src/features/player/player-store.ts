@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-import { MAX_SHARED_QUEUE, UpNext, currentPositionMs } from '@lyra/shared';
+import { MAX_SHARED_QUEUE, MediaKind, UpNext, VideoMatch, currentPositionMs } from '@lyra/shared';
 import type { Command, PlaybackState, Track } from '@lyra/shared';
 
 import { AudioEngine } from '../../audio/engine.ts';
@@ -44,6 +44,9 @@ interface PlayerState {
   duration: number;
   settings: PlayerSettings;
   remote: RemoteControl | null;
+  // Shows the music video instead of the cover; the audio engine keeps playing either way.
+  isVideoMode: boolean;
+  isFindingVideo: boolean;
   playTracks: (tracks: Track[], startIndex: number) => void;
   togglePlay: () => void;
   next: () => void;
@@ -65,6 +68,9 @@ interface PlayerState {
   release: () => void;
   mirror: (state: PlaybackState | null, remote: RemoteControl, serverNow: number) => void;
   setLocal: () => void;
+  /** Shows the video, swapping a song for its music video; false when none exists. */
+  showVideo: () => Promise<boolean>;
+  hideVideo: () => void;
 }
 
 // Restarting the song is friendlier than going back once a few seconds have played.
@@ -311,6 +317,23 @@ export const usePlayerStore = create<PlayerState>()((set, get) => {
         set(moveItem(get(), command.from, command.to));
         break;
       }
+      case 'replace': {
+        const { queue, index } = get();
+
+        if (command.index >= 0 && command.index < queue.length) {
+          set({
+            queue: queue.map((track, position) =>
+              position === command.index ? command.track : track,
+            ),
+          });
+
+          if (command.index === index) {
+            start(index, engine.position, get().status !== PlaybackStatus.Paused);
+          }
+        }
+
+        break;
+      }
       case 'shuffle': {
         local.toggleShuffle();
         break;
@@ -347,6 +370,8 @@ export const usePlayerStore = create<PlayerState>()((set, get) => {
     duration: 0,
     settings: initial,
     remote: null,
+    isVideoMode: false,
+    isFindingVideo: false,
     playTracks: (tracks, index) =>
       act({ type: 'playTracks', tracks: tracks.slice(0, MAX_SHARED_QUEUE), index }),
     togglePlay: () => act({ type: get().status === PlaybackStatus.Playing ? 'pause' : 'play' }),
@@ -433,6 +458,45 @@ export const usePlayerStore = create<PlayerState>()((set, get) => {
       if (get().remote) {
         set({ remote: null, status: PlaybackStatus.Idle });
       }
+    },
+    hideVideo: () => set({ isVideoMode: false }),
+    showVideo: async () => {
+      const { queue, index } = get();
+      const track = queue[index];
+
+      if (!track) {
+        return false;
+      }
+
+      if (track.kind === MediaKind.Video) {
+        set({ isVideoMode: true });
+
+        return true;
+      }
+
+      set({ isFindingVideo: true });
+      const params = new URLSearchParams({
+        title: track.title,
+        artist: track.artists.map((artist) => artist.name).join(', '),
+      });
+      const result = await api('GET', `/music/video-for?${params.toString()}`, VideoMatch);
+      set({ isFindingVideo: false });
+
+      const video = result.data?.track;
+
+      // The queue may have moved on while searching; only swap the song that asked.
+      if (!video || get().queue[get().index]?.id !== track.id) {
+        return false;
+      }
+
+      set({ isVideoMode: true });
+      act({
+        type: 'replace',
+        index: get().index,
+        track: { ...video, album: video.album ?? track.album },
+      });
+
+      return true;
     },
   };
 });

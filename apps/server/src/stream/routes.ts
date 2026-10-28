@@ -1,13 +1,14 @@
 import { Elysia } from 'elysia';
 import { z } from 'zod';
 
-import { LOUDNESS_HEADER, MusicError, StreamQuery } from '@lyra/shared';
+import { LOUDNESS_HEADER, MusicError, StreamQuery, StreamType } from '@lyra/shared';
 
 import { authPlugin } from '../auth/plugin.ts';
 import { INVALID_QUERY, parseQuery } from '../query.ts';
 import { musicClient } from '../ytmusic/clients.ts';
 import { chunkedBody, parseRange } from './ranges.ts';
 import { StreamResolver } from './resolver.ts';
+import type { StreamSelection } from './resolver.ts';
 import type { AppContext } from '../context.ts';
 import type { InnertubePool } from '../ytmusic/innertube.ts';
 
@@ -30,10 +31,14 @@ export function streamRoutes(ctx: AppContext, pool: InnertubePool) {
         return status(422, INVALID_QUERY);
       }
 
+      const selection: StreamSelection =
+        query.type === StreamType.Audio
+          ? { type: StreamType.Audio, quality: query.quality }
+          : { type: StreamType.Video, height: query.height };
       const yt = await musicClient(ctx, pool, user);
       // One retry: a cached URL can be revoked early, which googlevideo answers with 403.
       for (let attempt = 0; attempt < 2; attempt += 1) {
-        const resolved = await resolver.resolve(yt, user.id, params.id, query.quality);
+        const resolved = await resolver.resolve(yt, user.id, params.id, selection);
 
         if (resolved.error) {
           return status(resolved.error === MusicError.Unavailable ? 404 : 502, {
@@ -58,7 +63,7 @@ export function streamRoutes(ctx: AppContext, pool: InnertubePool) {
         }).catch(() => null);
 
         if (probe?.status === HTTP_FORBIDDEN) {
-          resolver.forget(user.id, params.id, query.quality);
+          resolver.forget(user.id, params.id, selection);
           continue;
         }
 

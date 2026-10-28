@@ -195,3 +195,82 @@ export function getUpNext(yt: Innertube, videoId: string): Promise<Result<UpNext
     return { tracks };
   });
 }
+
+const OFFICIAL_VIDEO = /\b(official (music )?video|video oficial|videoclip oficial)\b/;
+const NOT_A_MUSIC_VIDEO =
+  /\b(audio|lyrics?|letra|visualizer|live|en vivo|karaoke|cover|traducid[ao]|subtitulos?|subtitulado)\b/;
+
+const ARTIST_CHANNEL_SCORE = 3;
+const OFFICIAL_TITLE_SCORE = 2;
+const SAME_START_SCORE = 1;
+const NOT_A_VIDEO_PENALTY = 2;
+
+/** The artist's own upload labelled as a video ranks highest; fan uploads and audio lowest. */
+export function videoScore(video: Track, wantedTitle: string, wantedArtist: string) {
+  const title = normalize(video.title);
+  let score = 0;
+
+  if (wantedArtist !== '' && video.artists.some((ref) => normalize(ref.name) === wantedArtist)) {
+    score += ARTIST_CHANNEL_SCORE;
+  }
+
+  if (OFFICIAL_VIDEO.test(title)) {
+    score += OFFICIAL_TITLE_SCORE;
+  }
+
+  if (title.startsWith(wantedTitle)) {
+    score += SAME_START_SCORE;
+  }
+
+  if (NOT_A_MUSIC_VIDEO.test(title)) {
+    score -= NOT_A_VIDEO_PENALTY;
+  }
+
+  return score;
+}
+
+function normalize(text: string) {
+  return text
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+}
+
+/**
+ * YT Music does not expose a song's music video to this client, so it is found by search: the
+ * first video whose title contains the song title and whose artists include the main artist.
+ */
+export function findMusicVideo(
+  yt: Innertube,
+  title: string,
+  artist: string,
+): Promise<Result<Track | null, MusicError>> {
+  return attempt(async () => {
+    const results = await yt.music.search(`${title} ${artist}`.trim(), { type: 'video' });
+    const wantedTitle = normalize(title);
+    const wantedArtist = normalize(artist);
+    const videos = toTracks(
+      (results.contents ?? []).flatMap((section) => section.contents ?? []),
+    ).filter((track) => track.kind === MediaKind.Video);
+
+    const matches = videos.filter(
+      (video) =>
+        normalize(video.title).includes(wantedTitle) &&
+        (wantedArtist === '' ||
+          video.artists.some((ref) => normalize(ref.name).includes(wantedArtist)) ||
+          normalize(video.title).includes(wantedArtist)),
+    );
+
+    // Search order breaks ties, so the best-ranked result wins among equals.
+    const scored = matches.map((video, order) => ({
+      video,
+      order,
+      score: videoScore(video, wantedTitle, wantedArtist),
+    }));
+    scored.sort((a, b) => b.score - a.score || a.order - b.order);
+
+    return scored[0]?.video ?? null;
+  });
+}

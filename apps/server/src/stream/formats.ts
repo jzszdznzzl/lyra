@@ -30,3 +30,30 @@ export function pickAudioFormat<T extends AudioFormatInfo>(
 
   return sorted.find((format) => format.bitrate <= target * 1.1) ?? sorted.at(-1) ?? null;
 }
+
+export interface VideoFormatInfo {
+  itag: number;
+  height: number;
+  codec: string;
+  isDrc: boolean;
+}
+
+// H.264 decodes in hardware on every phone; VP9 and AV1 only on some, and drain batteries.
+const CODEC_PREFERENCE = ['avc1', 'vp9', 'av01'];
+
+/** Tallest video at or under `maxHeight`, preferring H.264, then VP9, then AV1. */
+export function pickVideoFormat<T extends VideoFormatInfo>(
+  formats: readonly T[],
+  maxHeight: number,
+) {
+  const rank = (codec: string) => {
+    const index = CODEC_PREFERENCE.findIndex((prefix) => codec.startsWith(prefix));
+
+    return index === -1 ? CODEC_PREFERENCE.length : index;
+  };
+  const fitting = formats.filter((format) => format.height <= maxHeight);
+  const pool =
+    fitting.length > 0 ? fitting : [...formats].sort((a, b) => a.height - b.height).slice(0, 1);
+
+  return [...pool].sort((a, b) => b.height - a.height || rank(a.codec) - rank(b.codec))[0] ?? null;
+}

@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { MediaKind } from '@lyra/shared';
+
 import { Cover } from '../../ui/cover.tsx';
 import { LikeButton } from '../library/like-button.tsx';
 import { TrackMenu } from '../library/track-menu.tsx';
@@ -8,6 +10,8 @@ import { ArtistLinks } from '../music/artist-links.tsx';
 import { currentTrack, usePlayerStore } from './player-store.ts';
 import { LyricsView } from './lyrics-view.tsx';
 import { QueuePanel } from './queue-panel.tsx';
+import { VideoToggle } from './video-toggle.tsx';
+import { VideoView } from './video-view.tsx';
 
 const Tab = Object.freeze({ NowPlaying: 'now', Lyrics: 'lyrics', Queue: 'queue' } as const);
 
@@ -17,6 +21,7 @@ type Tab = (typeof Tab)[keyof typeof Tab];
 export function NowPlayingPanel() {
   const { t } = useTranslation();
   const track = usePlayerStore(currentTrack);
+  const isVideoMode = usePlayerStore((state) => state.isVideoMode);
   const [tab, setTab] = useState<Tab>(Tab.NowPlaying);
   const TAB_LABELS: Record<Tab, string> = {
     [Tab.NowPlaying]: t('player.nowPlaying'),
@@ -42,11 +47,20 @@ export function NowPlayingPanel() {
       {track ? (
         tab === Tab.NowPlaying ? (
           <>
-            <Cover
-              src={track.thumbnail}
-              alt={track.title}
-              className="aspect-square w-full shadow-2xl shadow-accent/30"
-            />
+            <div className="relative">
+              {isVideoMode && track.kind === MediaKind.Video ? (
+                <VideoView track={track} className="aspect-video w-full" />
+              ) : (
+                <Cover
+                  src={track.thumbnail}
+                  alt={track.title}
+                  className="aspect-square w-full shadow-2xl shadow-accent/30"
+                />
+              )}
+              <div className="absolute top-3 left-3">
+                <VideoToggle track={track} />
+              </div>
+            </div>
             <div className="flex items-start gap-2">
               <div className="min-w-0 flex-1">
                 <p className="text-xl font-extrabold tracking-tight">{track.title}</p>

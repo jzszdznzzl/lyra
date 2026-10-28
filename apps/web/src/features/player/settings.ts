@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { AudioQuality } from '@lyra/shared';
+import { AudioQuality, DEFAULT_VIDEO_HEIGHT, VIDEO_HEIGHTS } from '@lyra/shared';
 
 import { EQ_FREQUENCIES, EqPreset } from '../../audio/equalizer.ts';
 
@@ -21,6 +21,10 @@ export const PlayerSettings = z.object({
     .catch(EQ_FREQUENCIES.map(() => 0)),
   volume: z.number().min(0).max(1).catch(0.8),
   isAutoplayEnabled: z.boolean().catch(true),
+  videoHeight: z
+    .number()
+    .refine((height) => VIDEO_HEIGHTS.some((allowed) => allowed === height))
+    .catch(DEFAULT_VIDEO_HEIGHT),
 });
 
 export type PlayerSettings = z.infer<typeof PlayerSettings>;

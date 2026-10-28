@@ -3,6 +3,8 @@ import { useRouterState } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { MediaKind } from '@lyra/shared';
+
 import { imageUrl } from '../../lib/image.ts';
 import { useBackToClose } from '../../lib/use-back-to-close.ts';
 import { toCss } from '../../lib/palette.ts';
@@ -19,11 +21,14 @@ import { ProgressBar } from './progress-bar.tsx';
 import { LyricsView } from './lyrics-view.tsx';
 import { QueuePanel } from './queue-panel.tsx';
 import { TransportControls } from './transport-controls.tsx';
+import { VideoToggle } from './video-toggle.tsx';
+import { VideoView } from './video-view.tsx';
 
 /** Mini player above the tab bar; tapping it opens the full-screen player from the mockup. */
 export function MobilePlayer() {
   const { t } = useTranslation();
   const track = usePlayerStore(currentTrack);
+  const isVideoMode = usePlayerStore((state) => state.isVideoMode);
   const status = usePlayerStore((state) => state.status);
   const position = usePlayerStore((state) => state.position);
   const duration = usePlayerStore((state) => state.duration);
@@ -130,11 +135,20 @@ export function MobilePlayer() {
               <LyricsView track={track} />
             </div>
           ) : (
-            <Cover
-              src={track.thumbnail}
-              alt={track.title}
-              className="mx-auto mt-8 mb-8 aspect-square w-full max-w-sm shadow-2xl shadow-accent/40"
-            />
+            <div className="relative mx-auto mt-8 mb-8 w-full max-w-sm">
+              {isVideoMode && track.kind === MediaKind.Video ? (
+                <VideoView track={track} className="aspect-video w-full" />
+              ) : (
+                <Cover
+                  src={track.thumbnail}
+                  alt={track.title}
+                  className="aspect-square w-full shadow-2xl shadow-accent/40"
+                />
+              )}
+              <div className="absolute top-3 left-3">
+                <VideoToggle track={track} />
+              </div>
+            </div>
           )}
           <div className="mt-auto">
             <div className="flex items-center gap-3">

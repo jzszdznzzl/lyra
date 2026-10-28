@@ -1,8 +1,12 @@
-import { MusicError, err, ok } from '@lyra/shared';
+import { MusicError, StreamType, err, ok } from '@lyra/shared';
 import type { AudioQuality, Result } from '@lyra/shared';
 import type { Innertube } from 'youtubei.js';
 
-import { pickAudioFormat } from './formats.ts';
+import { pickAudioFormat, pickVideoFormat } from './formats.ts';
+
+export type StreamSelection =
+  | { type: typeof StreamType.Audio; quality: AudioQuality }
+  | { type: typeof StreamType.Video; height: number };
 
 export interface ResolvedStream {
   url: string;
@@ -33,6 +37,10 @@ async function fetchPlayableInfo(yt: Innertube, videoId: string) {
   return null;
 }
 
+function selectionKey(selection: StreamSelection) {
+  return selection.type === StreamType.Audio ? `a${selection.quality}` : `v${selection.height}`;
+}
+
 function expiryOf(url: string, now: number) {
   const expire = Number(new URL(url).searchParams.get('expire'));
 
@@ -53,7 +61,7 @@ export class StreamResolver {
   async #resolve(
     yt: Innertube,
     videoId: string,
-    quality: AudioQuality,
+    selection: StreamSelection,
   ): Promise<Result<ResolvedStream, MusicError>> {
     try {
       const info = await fetchPlayableInfo(yt, videoId);
@@ -62,16 +70,36 @@ export class StreamResolver {
         return err(MusicError.Unavailable);
       }
 
-      const formats = (info.streaming_data?.adaptive_formats ?? [])
-        .filter((format) => format.has_audio && !format.has_video)
-        .map((format) => ({
-          format,
-          itag: format.itag,
-          bitrate: format.bitrate,
-          mimeType: format.mime_type,
-          isDrc: format.is_drc ?? false,
-        }));
-      const picked = pickAudioFormat(formats, quality);
+      const adaptive = info.streaming_data?.adaptive_formats ?? [];
+      const picked =
+        selection.type === StreamType.Audio
+          ? pickAudioFormat(
+              adaptive
+                .filter((format) => format.has_audio && !format.has_video)
+                .map((format) => ({
+                  format,
+                  itag: format.itag,
+                  bitrate: format.bitrate,
+                  mimeType: format.mime_type,
+                  isDrc: format.is_drc ?? false,
+                })),
+              selection.quality,
+            )
+          : pickVideoFormat(
+              // Video plays muted next to the audio engine, so only video-only streams matter.
+              adaptive
+                .filter((format) => format.has_video && !format.has_audio && format.height)
+                .map((format) => ({
+                  format,
+                  itag: format.itag,
+                  bitrate: format.bitrate,
+                  mimeType: format.mime_type,
+                  isDrc: false,
+                  height: format.height ?? 0,
+                  codec: /codecs="([^"]+)"/.exec(format.mime_type)?.[1] ?? '',
+                })),
+              selection.height,
+            );
 
       if (!picked?.format.content_length) {
         return err(MusicError.Unavailable);
@@ -97,15 +125,15 @@ export class StreamResolver {
     }
   }
 
-  async resolve(yt: Innertube, cacheKey: string, videoId: string, quality: AudioQuality) {
-    const key = `${cacheKey}:${videoId}:${quality}`;
+  async resolve(yt: Innertube, cacheKey: string, videoId: string, selection: StreamSelection) {
+    const key = `${cacheKey}:${videoId}:${selectionKey(selection)}`;
     const cached = this.#cache.get(key);
 
     if (cached && cached.expiresAt > this.#now()) {
       return ok(cached);
     }
 
-    const resolved = await this.#resolve(yt, videoId, quality);
+    const resolved = await this.#resolve(yt, videoId, selection);
 
     if (resolved.data) {
       this.#cache.set(key, resolved.data);
@@ -114,7 +142,7 @@ export class StreamResolver {
     return resolved;
   }
 
-  forget(cacheKey: string, videoId: string, quality: AudioQuality) {
-    this.#cache.delete(`${cacheKey}:${videoId}:${quality}`);
+  forget(cacheKey: string, videoId: string, selection: StreamSelection) {
+    this.#cache.delete(`${cacheKey}:${videoId}:${selectionKey(selection)}`);
   }
 }

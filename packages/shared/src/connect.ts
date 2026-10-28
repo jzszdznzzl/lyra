@@ -55,6 +55,8 @@ export const Command = z.discriminatedUnion('type', [
   }),
   z.object({ type: z.literal('remove'), index: z.number().int().min(0) }),
   z.object({ type: z.literal('move'), from: z.number().int().min(0), to: z.number().int().min(0) }),
+  // Swaps the entry at `index` (a song for its music video) and keeps playing from the same point.
+  z.object({ type: z.literal('replace'), index: z.number().int().min(0), track: Track }),
   z.object({ type: z.literal('shuffle') }),
   z.object({ type: z.literal('repeat') }),
 ]);

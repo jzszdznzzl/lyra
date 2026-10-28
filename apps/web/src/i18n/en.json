@@ -307,5 +307,12 @@
     "none": "No lyrics for this song.",
     "unsynced": "These lyrics are not synced.",
     "source": "Lyrics from {{source}}"
+  },
+  "video": {
+    "song": "Song",
+    "video": "Video",
+    "notFound": "No music video found for this song.",
+    "fullscreen": "Full screen",
+    "quality": "Video quality"
   }
 }

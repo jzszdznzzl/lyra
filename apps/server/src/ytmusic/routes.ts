@@ -8,11 +8,13 @@ import {
   PlaylistTracksInput,
   RenamePlaylistInput,
   SearchQuery,
+  VideoForQuery,
   err,
 } from '@lyra/shared';
 import type { Result } from '@lyra/shared';
 
 import { authPlugin } from '../auth/plugin.ts';
+import { cleanTitle } from '../lyrics/lyrics.ts';
 import { INVALID_QUERY, parseQuery } from '../query.ts';
 import {
   getAlbum,
@@ -23,6 +25,7 @@ import {
   getPlaylist,
   getSuggestions,
   search,
+  findMusicVideo,
   getUpNext,
 } from './catalog.ts';
 import { accountClient, musicClient } from './clients.ts';
@@ -126,6 +129,25 @@ export function musicRoutes(ctx: AppContext, pool: InnertubePool) {
       .get(
         '/library/playlists',
         async ({ user, status }) => respond(await withAccount(user, getLibraryPlaylists), status),
+        { isSignedIn: true },
+      )
+      .get(
+        '/video-for',
+        async ({ user, query: raw, status }) => {
+          const query = parseQuery(VideoForQuery, raw);
+
+          if (!query) {
+            return status(422, INVALID_QUERY);
+          }
+
+          const found = await findMusicVideo(
+            await clientFor(user),
+            cleanTitle(query.title),
+            query.artist.split(',')[0]?.trim() ?? '',
+          );
+
+          return found.error ? respond(found, status) : { track: found.data };
+        },
         { isSignedIn: true },
       )
       .get(

@@ -307,5 +307,12 @@
     "none": "No hay letra para esta canción.",
     "unsynced": "Esta letra no está sincronizada.",
     "source": "Letra de {{source}}"
+  },
+  "video": {
+    "song": "Canción",
+    "video": "Vídeo",
+    "notFound": "No hay videoclip para esta canción.",
+    "fullscreen": "Pantalla completa",
+    "quality": "Calidad de vídeo"
   }
 }

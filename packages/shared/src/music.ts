@@ -151,7 +151,24 @@ export const AudioQuality = Object.freeze({
 
 export type AudioQuality = (typeof AudioQuality)[keyof typeof AudioQuality];
 
-export const StreamQuery = z.object({ quality: z.enum(AudioQuality).default(AudioQuality.High) });
+export const StreamType = Object.freeze({ Audio: 'audio', Video: 'video' } as const);
+
+export type StreamType = (typeof StreamType)[keyof typeof StreamType];
+
+export const VIDEO_HEIGHTS = [360, 480, 720, 1080] as const;
+
+export type VideoHeight = (typeof VIDEO_HEIGHTS)[number];
+
+export const DEFAULT_VIDEO_HEIGHT: VideoHeight = 720;
+
+export const StreamQuery = z.object({
+  type: z.enum(StreamType).default(StreamType.Audio),
+  quality: z.enum(AudioQuality).default(AudioQuality.High),
+  height: z.coerce
+    .number()
+    .pipe(z.union(VIDEO_HEIGHTS.map((height) => z.literal(height))))
+    .default(DEFAULT_VIDEO_HEIGHT),
+});
 
 export type StreamQuery = z.infer<typeof StreamQuery>;
 
@@ -196,3 +213,14 @@ export type PlaylistTracksInput = z.infer<typeof PlaylistTracksInput>;
 export const PlaylistCreated = z.object({ id: z.string() });
 
 export type PlaylistCreated = z.infer<typeof PlaylistCreated>;
+
+export const VideoForQuery = z.object({
+  title: z.string().trim().min(1).max(300),
+  artist: z.string().trim().max(300).default(''),
+});
+
+export type VideoForQuery = z.infer<typeof VideoForQuery>;
+
+export const VideoMatch = z.object({ track: Track.nullable() });
+
+export type VideoMatch = z.infer<typeof VideoMatch>;

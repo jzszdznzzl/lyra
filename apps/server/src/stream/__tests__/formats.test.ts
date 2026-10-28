@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 
-import { pickAudioFormat } from '../formats.ts';
+import { pickAudioFormat, pickVideoFormat } from '../formats.ts';
 
 const FORMATS = [
   { itag: 249, bitrate: 54_852, mimeType: 'audio/webm', isDrc: false },
@@ -27,5 +27,26 @@ describe('pickAudioFormat', () => {
 
   test('returns null without formats', () => {
     expect(pickAudioFormat([], 'max')).toBeNull();
+  });
+});
+
+describe('pickVideoFormat', () => {
+  const VIDEO = [
+    { itag: 137, height: 1080, codec: 'avc1.640028', isDrc: false },
+    { itag: 248, height: 1080, codec: 'vp9', isDrc: false },
+    { itag: 136, height: 720, codec: 'avc1.4d401f', isDrc: false },
+    { itag: 398, height: 720, codec: 'av01.0.05M.08', isDrc: false },
+    { itag: 247, height: 720, codec: 'vp9', isDrc: false },
+    { itag: 134, height: 360, codec: 'avc1.4d401e', isDrc: false },
+  ];
+
+  test('prefers H.264 at the tallest allowed height', () => {
+    expect(pickVideoFormat(VIDEO, 720)?.itag).toBe(136);
+    expect(pickVideoFormat(VIDEO, 1080)?.itag).toBe(137);
+    expect(pickVideoFormat(VIDEO, 480)?.itag).toBe(134);
+  });
+
+  test('falls back to the smallest when nothing fits', () => {
+    expect(pickVideoFormat(VIDEO, 144)?.itag).toBe(134);
   });
 });

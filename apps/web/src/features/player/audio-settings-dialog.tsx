@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 
-import { AudioQuality } from '@lyra/shared';
+import { AudioQuality, VIDEO_HEIGHTS } from '@lyra/shared';
 
 import {
   EQ_FREQUENCIES,
@@ -111,6 +111,22 @@ export function AudioSettingsDialog({ onClose }: { onClose: () => void }) {
           onChange={(event) => updateSettings({ fadeMs: Number(event.target.value) })}
           className="accent-[var(--accent)]"
         />
+        <div className="flex flex-col gap-1.5">
+          <span className="text-sm font-bold">{t('video.quality')}</span>
+          <div className="flex gap-1.5">
+            {VIDEO_HEIGHTS.map((height) => (
+              <button
+                key={height}
+                type="button"
+                aria-pressed={settings.videoHeight === height}
+                onClick={() => updateSettings({ videoHeight: height })}
+                className="rounded-full border border-line px-3 py-1.5 text-xs font-semibold text-muted aria-pressed:border-transparent aria-pressed:bg-text aria-pressed:text-bg"
+              >
+                {height}p
+              </button>
+            ))}
+          </div>
+        </div>
         <Toggle
           label={t('player.settings.autoplay')}
           isOn={settings.isAutoplayEnabled}
