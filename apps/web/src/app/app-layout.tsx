@@ -1,10 +1,11 @@
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { Link, Outlet } from '@tanstack/react-router';
-import { Compass, Download, Home, Search } from 'lucide-react';
-import { useEffect } from 'react';
+import { Compass, Download, Home, Plus, Search } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { meQuery } from '../features/auth/api.ts';
+import { CreatePlaylistDialog } from '../features/library/playlist-dialogs.tsx';
 import { MobilePlayer } from '../features/player/mobile-player.tsx';
 import { NowPlayingPanel } from '../features/player/now-playing-panel.tsx';
 import { PlayerBar } from '../features/player/player-bar.tsx';
@@ -13,6 +14,7 @@ import { useMediaSession } from '../features/player/use-media-session.ts';
 import { changeLanguage } from '../i18n/index.ts';
 import { Avatar } from '../ui/avatar.tsx';
 import { Brand } from '../ui/brand.tsx';
+import { Toaster } from '../ui/toast.tsx';
 import { LibrarySidebar } from './library-sidebar.tsx';
 
 const NAV_ITEMS = [
@@ -25,6 +27,8 @@ const NAV_ITEMS = [
 export function AppLayout() {
   const { t, i18n } = useTranslation();
   const { data: me } = useSuspenseQuery(meQuery);
+
+  const [isCreating, setIsCreating] = useState(false);
 
   useMediaSession();
   useCoverTheme();
@@ -56,9 +60,21 @@ export function AppLayout() {
             {t(label)}
           </Link>
         ))}
-        <p className="px-3 pt-6 pb-2 text-[11px] font-semibold tracking-[0.12em] text-muted uppercase">
-          {t('nav.library')}
-        </p>
+        <div className="flex items-center justify-between px-3 pt-6 pb-2">
+          <p className="text-[11px] font-semibold tracking-[0.12em] text-muted uppercase">
+            {t('nav.library')}
+          </p>
+          {me.isGoogleLinked ? (
+            <button
+              type="button"
+              aria-label={t('library.createTitle')}
+              onClick={() => setIsCreating(true)}
+              className="rounded-full p-1 text-muted hover:bg-surface hover:text-text"
+            >
+              <Plus className="size-4" />
+            </button>
+          ) : null}
+        </div>
         <LibrarySidebar isGoogleLinked={me.isGoogleLinked} />
       </aside>
       <main className="flex min-h-0 flex-col overflow-y-auto rounded-2xl border border-line bg-panel backdrop-blur-2xl">
@@ -75,6 +91,8 @@ export function AppLayout() {
       <NowPlayingPanel />
       <PlayerBar />
       <MobilePlayer />
+      <Toaster />
+      {isCreating ? <CreatePlaylistDialog onClose={() => setIsCreating(false)} /> : null}
       <nav className="flex justify-around rounded-2xl border border-line bg-panel py-2 backdrop-blur-2xl md:hidden">
         {NAV_ITEMS.map(({ to, icon: Icon, label }) => (
           <Link

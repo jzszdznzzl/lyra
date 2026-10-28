@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { Cover } from '../../ui/cover.tsx';
+import { LikeButton } from '../library/like-button.tsx';
+import { TrackMenu } from '../library/track-menu.tsx';
 import { ArtistLinks } from '../music/artist-links.tsx';
 import { currentTrack, usePlayerStore } from './player-store.ts';
 import { QueuePanel } from './queue-panel.tsx';
@@ -39,12 +41,16 @@ export function NowPlayingPanel() {
               alt={track.title}
               className="aspect-square w-full shadow-2xl shadow-accent/30"
             />
-            <div>
-              <p className="text-xl font-extrabold tracking-tight">{track.title}</p>
-              <p className="text-[13.5px] text-muted">
-                <ArtistLinks artists={track.artists} />
-                {track.album ? ` · ${track.album.name}` : ''}
-              </p>
+            <div className="flex items-start gap-2">
+              <div className="min-w-0 flex-1">
+                <p className="text-xl font-extrabold tracking-tight">{track.title}</p>
+                <p className="text-[13.5px] text-muted">
+                  <ArtistLinks artists={track.artists} />
+                  {track.album ? ` · ${track.album.name}` : ''}
+                </p>
+              </div>
+              <LikeButton track={track} />
+              <TrackMenu track={track} />
             </div>
             <QueuePanel />
           </>

@@ -14,10 +14,10 @@ test('plays a song, skips, and crossfades into the next one', async ({ page }, i
   await signIn(page, info);
 
   await page.goto('/search?q=daft%20punk%20get%20lucky&filter=songs');
-  const firstRow = page.locator('ol li [role=button]').first();
+  const firstRow = page.locator('main ol li').first();
   await expect(firstRow).toBeVisible({ timeout: 30_000 });
   const firstTitle = (await firstRow.locator('p').first().textContent()) ?? '';
-  await firstRow.click();
+  await firstRow.getByRole('button', { name: /^Play / }).click();
 
   const footer = page.locator('footer');
   await expect(footer.getByRole('button', { name: 'Pause' })).toBeVisible({ timeout: 30_000 });
@@ -53,9 +53,39 @@ test('mobile mini player opens the full-screen player', async ({ page }, info) =
   await signIn(page, info);
 
   await page.goto('/search?q=daft%20punk%20get%20lucky&filter=songs');
-  await page.locator('ol li [role=button]').first().click({ timeout: 30_000 });
+  await page
+    .locator('main ol li')
+    .first()
+    .getByRole('button', { name: /^Play / })
+    .click({ timeout: 30_000 });
   await page.getByRole('button', { name: 'Open player' }).click();
   await expect(page.getByRole('button', { name: 'Pause' }).last()).toBeVisible({ timeout: 30_000 });
   await page.waitForTimeout(1500);
   await page.screenshot({ path: 'test-results/screens/mobile-now-playing.png' });
+});
+
+test('track menu queues songs next and last', async ({ page }, info) => {
+  test.skip(info.project.name === 'mobile', 'The queue panel is a desktop column.');
+  test.setTimeout(120_000);
+  await signIn(page, info);
+
+  await page.goto('/search?q=daft%20punk&filter=songs');
+  const rows = page.locator('main ol li');
+  await expect(rows.nth(3)).toBeVisible({ timeout: 30_000 });
+  await rows
+    .first()
+    .getByRole('button', { name: /^Play / })
+    .click();
+
+  const queued = (await rows.nth(3).locator('p').first().textContent()) ?? '';
+  await rows.nth(3).getByRole('button', { name: 'More options' }).click();
+  await page.getByRole('menuitem', { name: 'Play next' }).click();
+
+  const nextUp = page
+    .locator('aside')
+    .filter({ hasText: 'Next in queue' })
+    .locator('ol li')
+    .first();
+  await expect(nextUp).toContainText(queued);
+  await page.screenshot({ path: 'test-results/screens/desktop-queue.png' });
 });

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 
 import type { PlaylistPage as PlaylistData } from '@lyra/shared';
 
+import { PlaylistActions } from '../library/playlist-actions.tsx';
 import { likedQuery, playlistQuery } from './api.ts';
 import { CollectionHeader } from './collection-header.tsx';
 import { ErrorState, LoadingState } from './query-state.tsx';
@@ -29,8 +30,16 @@ function PlaylistView({ query, title }: { query: UseQueryResult<PlaylistData>; t
         subtitle={query.data.subtitle || t('music.songs', { count: query.data.tracks.length })}
         thumbnail={query.data.thumbnail}
         tracks={query.data.tracks}
+        actions={
+          query.data.isEditable ? (
+            <PlaylistActions id={query.data.id} title={query.data.title} />
+          ) : null
+        }
       />
-      <TrackList tracks={query.data.tracks} />
+      <TrackList
+        tracks={query.data.tracks}
+        playlist={{ id: query.data.id, isEditable: query.data.isEditable }}
+      />
     </>
   );
 }

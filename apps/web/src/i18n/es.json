@@ -258,5 +258,34 @@
       "acoustic": "Acústica",
       "custom": "Personalizado"
     }
+  },
+  "library": {
+    "like": "Me gusta",
+    "unlike": "Quitar de Me gusta",
+    "more": "Más opciones",
+    "playNext": "Reproducir a continuación",
+    "addToQueue": "Añadir a la cola",
+    "addToPlaylist": "Añadir a playlist",
+    "newPlaylist": "Nueva playlist",
+    "removeFromPlaylist": "Quitar de esta playlist",
+    "goToAlbum": "Ir al álbum",
+    "goToArtist": "Ir al artista",
+    "createTitle": "Crear playlist",
+    "name": "Nombre",
+    "description": "Descripción",
+    "privacy": "Privacidad",
+    "private": "Privada",
+    "unlisted": "Oculta",
+    "public": "Pública",
+    "create": "Crear",
+    "rename": "Renombrar",
+    "renameTitle": "Renombrar playlist",
+    "save": "Guardar",
+    "delete": "Eliminar playlist",
+    "deleteConfirm": "¿Eliminar «{{title}}»? También se elimina en YT Music.",
+    "added": "Añadida a {{title}}",
+    "pickPlaylist": "Elige una playlist",
+    "noPlaylists": "Aún no tienes playlists.",
+    "needsGoogle": "Vincula Google en tu perfil para usar tu biblioteca."
   }
 }

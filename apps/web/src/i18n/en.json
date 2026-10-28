@@ -258,5 +258,34 @@
       "acoustic": "Acoustic",
       "custom": "Custom"
     }
+  },
+  "library": {
+    "like": "Like",
+    "unlike": "Remove from liked songs",
+    "more": "More options",
+    "playNext": "Play next",
+    "addToQueue": "Add to queue",
+    "addToPlaylist": "Add to playlist",
+    "newPlaylist": "New playlist",
+    "removeFromPlaylist": "Remove from this playlist",
+    "goToAlbum": "Go to album",
+    "goToArtist": "Go to artist",
+    "createTitle": "Create playlist",
+    "name": "Name",
+    "description": "Description",
+    "privacy": "Privacy",
+    "private": "Private",
+    "unlisted": "Unlisted",
+    "public": "Public",
+    "create": "Create",
+    "rename": "Rename",
+    "renameTitle": "Rename playlist",
+    "save": "Save",
+    "delete": "Delete playlist",
+    "deleteConfirm": "Delete “{{title}}”? This also deletes it on YT Music.",
+    "added": "Added to {{title}}",
+    "pickPlaylist": "Choose a playlist",
+    "noPlaylists": "You have no playlists yet.",
+    "needsGoogle": "Link Google in your profile to use your library."
   }
 }

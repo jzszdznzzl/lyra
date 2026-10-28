@@ -6,6 +6,8 @@ import { imageUrl } from '../../lib/image.ts';
 import { toCss } from '../../lib/palette.ts';
 import { useAccent } from '../../lib/use-accent.ts';
 import { Cover } from '../../ui/cover.tsx';
+import { LikeButton } from '../library/like-button.tsx';
+import { TrackMenu } from '../library/track-menu.tsx';
 import { ArtistLinks } from '../music/artist-links.tsx';
 import { AudioSettingsDialog } from './audio-settings-dialog.tsx';
 import { PlaybackStatus, currentTrack, usePlayerStore } from './player-store.ts';
@@ -114,10 +116,16 @@ export function MobilePlayer() {
             />
           )}
           <div className="mt-auto">
-            <h2 className="truncate text-2xl font-extrabold tracking-tight">{track.title}</h2>
-            <p className="truncate text-[15px] text-muted">
-              <ArtistLinks artists={track.artists} />
-            </p>
+            <div className="flex items-center gap-3">
+              <div className="min-w-0 flex-1">
+                <h2 className="truncate text-2xl font-extrabold tracking-tight">{track.title}</h2>
+                <p className="truncate text-[15px] text-muted">
+                  <ArtistLinks artists={track.artists} />
+                </p>
+              </div>
+              <LikeButton track={track} size="lg" />
+              <TrackMenu track={track} />
+            </div>
             <div className="mt-6">
               <ProgressBar />
             </div>

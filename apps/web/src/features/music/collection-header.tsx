@@ -1,4 +1,5 @@
 import { Play, Shuffle } from 'lucide-react';
+import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import type { Track } from '@lyra/shared';
@@ -17,6 +18,7 @@ interface CollectionHeaderProps {
   thumbnail: string | null;
   tracks: Track[];
   isRound?: boolean;
+  actions?: ReactNode;
 }
 
 export function CollectionHeader({
@@ -26,6 +28,7 @@ export function CollectionHeader({
   thumbnail,
   tracks,
   isRound = false,
+  actions,
 }: CollectionHeaderProps) {
   const { t } = useTranslation();
   const playTracks = usePlayerStore((state) => state.playTracks);
@@ -67,16 +70,21 @@ export function CollectionHeader({
         <span className="text-xs font-bold tracking-[0.12em] text-muted uppercase">{kind}</span>
         <h1 className="text-3xl font-extrabold tracking-tight sm:text-5xl">{title}</h1>
         <p className="text-sm text-muted">{subtitle}</p>
-        {tracks.length > 0 ? (
-          <div className="mt-3 flex gap-3">
-            <Button onClick={() => playTracks(tracks, 0)}>
-              <Play className="size-4 fill-current" />
-              {t('music.play')}
-            </Button>
-            <Button variant={ButtonVariant.Secondary} onClick={shuffle}>
-              <Shuffle className="size-4" />
-              {t('music.shuffle')}
-            </Button>
+        {tracks.length > 0 || actions ? (
+          <div className="mt-3 flex items-center gap-3">
+            {tracks.length > 0 ? (
+              <>
+                <Button onClick={() => playTracks(tracks, 0)}>
+                  <Play className="size-4 fill-current" />
+                  {t('music.play')}
+                </Button>
+                <Button variant={ButtonVariant.Secondary} onClick={shuffle}>
+                  <Shuffle className="size-4" />
+                  {t('music.shuffle')}
+                </Button>
+              </>
+            ) : null}
+            {actions}
           </div>
         ) : null}
       </div>

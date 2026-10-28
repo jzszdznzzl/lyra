@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { Cover } from '../../ui/cover.tsx';
+import { LikeButton } from '../library/like-button.tsx';
 import { ArtistLinks } from '../music/artist-links.tsx';
 import { AudioSettingsDialog } from './audio-settings-dialog.tsx';
 import { currentTrack, usePlayerStore } from './player-store.ts';
@@ -29,6 +30,7 @@ export function PlayerBar() {
                 <ArtistLinks artists={track.artists} />
               </p>
             </div>
+            <LikeButton track={track} />
           </>
         ) : (
           <p className="text-sm text-muted">{t('player.nothingPlaying')}</p>
