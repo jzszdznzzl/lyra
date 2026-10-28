@@ -77,7 +77,10 @@ export function AppLayout() {
   }
 
   return (
-    <div className="fixed inset-0 grid grid-rows-[minmax(0,1fr)_auto_auto] gap-2 p-2 pb-[max(env(safe-area-inset-bottom),0.5rem)] md:grid-cols-[260px_minmax(0,1fr)] md:grid-rows-[minmax(0,1fr)_auto] xl:grid-cols-[260px_minmax(0,1fr)_320px]">
+    <div
+      data-app-frame
+      className="fixed inset-0 grid grid-rows-[minmax(0,1fr)_auto_auto] gap-2 p-2 pb-[max(env(safe-area-inset-bottom),0.5rem)] md:grid-cols-[260px_minmax(0,1fr)] md:grid-rows-[minmax(0,1fr)_auto] xl:grid-cols-[260px_minmax(0,1fr)_320px]"
+    >
       <aside className="hidden flex-col gap-1.5 rounded-2xl border border-line bg-panel p-4 backdrop-blur-2xl md:flex">
         <div className="px-2 pb-5">
           <Brand />

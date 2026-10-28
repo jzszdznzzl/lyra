@@ -72,3 +72,15 @@ body {
     var(--bg);
   background-attachment: fixed;
 }
+
+/*
+ * Inside the app only <main> scrolls. Locking the page as well means mobile browsers never see
+ * a page scroll, which is what makes them hide the address bar and shift the bottom bar.
+ * Sign-in pages scroll normally.
+ */
+html:has([data-app-frame]),
+html:has([data-app-frame]) body {
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
