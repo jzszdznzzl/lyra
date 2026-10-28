@@ -32,21 +32,18 @@ The host machine has many ports in use, so lyra uses random high ports: the serv
 | `pnpm dev`       | Starts the server and the web app                 |
 | `pnpm build`     | Builds the server (tsdown) and the web app (Vite) |
 
-## Deployment
+## Running in production
 
-Lyra runs on the host PC and is published at `https://lyra.jzszdznzzl.dev` through the existing `penguin` Cloudflare tunnel. That tunnel is managed from the Cloudflare dashboard; its public hostname `lyra.jzszdznzzl.dev` points to `http://localhost:47149`.
-
-The server runs under pm2 as `lyra` (pm2 itself starts at boot through its user service). pm2 launches Bun directly, because its Bun wrapper uses `require()` and cannot load the server's top-level `await`:
-
-| File                            | Purpose                                     |
-| ------------------------------- | ------------------------------------------- |
-| `~/.config/lyra/ecosystem.json` | pm2 app definition                          |
-| `~/.config/lyra/lyra.env`       | Production settings (not in the repo)       |
-| `~/.local/share/lyra/`          | Database, avatars, YouTube cache and outbox |
-
-`TRUST_PROXY=true` is set because every request arrives through the tunnel; never set it when the port is reachable directly.
-
-After changing code, run `pnpm deploy:local` to rebuild and restart the server.
+1. `pnpm install && pnpm build`. This produces `apps/server/dist/main.mjs` and `apps/web/dist`.
+2. Write a production env file outside the repository, based on `.env.example`:
+   - `PUBLIC_URL`: the public HTTPS address (passkeys and email links depend on it).
+   - `WEB_DIST`: absolute path to `apps/web/dist`, so one process serves the API and the app.
+   - `TRUST_PROXY=true` only when every request comes through a reverse proxy or tunnel that sets `CF-Connecting-IP`; never when the port is reachable directly.
+   - `SECRET_KEY`: keep it safe; losing it unlinks every Google account.
+3. Start the server with Bun from a directory without a `.env` (Bun would load it):
+   `bun --env-file=/path/to/lyra.env /path/to/lyra/apps/server/dist/main.mjs`.
+   Database migrations run on start.
+4. Keep it running with a process manager. With pm2, launch `bun` itself (`"interpreter": "none"`): pm2's Bun wrapper uses `require()` and cannot load the server's top-level `await`.
 
 ---
 
