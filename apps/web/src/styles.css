@@ -143,7 +143,9 @@ html:has([data-app-frame]) body {
 }
 
 /* Page changes: only the page content moves; the frame, player and tab bar stay put. */
-::view-transition-group(root) {
+::view-transition-group(root),
+::view-transition-old(root),
+::view-transition-new(root) {
   animation: none;
 }
 

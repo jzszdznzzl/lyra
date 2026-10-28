@@ -141,7 +141,9 @@ export function AppLayout() {
       <main
         data-scroll-restoration-id="main"
         onScroll={(event) => setIsScrolled(event.currentTarget.scrollTop > SCROLLED_PX)}
-        className="flex min-h-0 flex-col overflow-y-auto overscroll-contain rounded-2xl border border-line bg-panel backdrop-blur-2xl"
+        // The whole panel is the animated part: it clips its own scroll, so the snapshot can never
+        // spill over the tab bar or the player the way a long page inside it would.
+        className="flex min-h-0 flex-col overflow-y-auto overscroll-contain rounded-2xl border border-line bg-panel backdrop-blur-2xl [view-transition-name:page]"
       >
         {/* Transparent at the top; once the page scrolls under it, it gets its own backdrop so
             the logo and avatar never sit on top of the content. */}
@@ -174,9 +176,7 @@ export function AppLayout() {
           </p>
         )}
         <AnnouncementBanner />
-        <div className="flex min-h-0 flex-1 flex-col [view-transition-name:page]">
-          <Outlet />
-        </div>
+        <Outlet />
       </main>
       <NowPlayingPanel />
       <PlayerBar />

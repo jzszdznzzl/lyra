@@ -30,6 +30,7 @@ import { TrackPage } from '../features/music/track-page.tsx';
 import { DownloadsPage } from '../features/offline/downloads-page.tsx';
 import { ProfilePage } from '../features/profile/profile-page.tsx';
 import { AppLayout } from './app-layout.tsx';
+import { pageTransition } from './page-transitions.ts';
 import { CrashPage, NotFoundPage } from './route-states.tsx';
 
 interface RouterContext {
@@ -231,8 +232,8 @@ export function createAppRouter(queryClient: QueryClient) {
     routeTree,
     context: { queryClient },
     defaultPreload: 'intent',
-    // Page changes fade the content in (styles.css); turned off along with other animations.
-    defaultViewTransition: true,
+    // Page changes fade the content in (styles.css); see pageTransition for when they do not.
+    defaultViewTransition: { types: pageTransition },
     // Going back returns to the same scroll position; the app scrolls inside <main>.
     scrollRestoration: true,
     defaultNotFoundComponent: NotFoundPage,
