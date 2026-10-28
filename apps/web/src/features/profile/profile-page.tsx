@@ -1,6 +1,6 @@
 import { useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
-import { useNavigate } from '@tanstack/react-router';
-import { LogOut } from 'lucide-react';
+import { Link, useNavigate } from '@tanstack/react-router';
+import { Crown, LogOut } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { useDocumentTitle } from '../../lib/use-document-title.ts';
@@ -39,10 +39,21 @@ export function ProfilePage() {
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-5 p-4 sm:p-7">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-extrabold tracking-tight">{t('profile.title')}</h1>
-        <Button variant={ButtonVariant.Ghost} onClick={() => void signOut()}>
-          <LogOut className="size-4" />
-          {t('profile.signOut')}
-        </Button>
+        <div className="flex items-center gap-1">
+          {me.isAdmin ? (
+            <Link
+              to="/admin"
+              className="inline-flex h-11 items-center gap-2 rounded-full px-4 text-sm font-bold text-muted transition hover:bg-surface hover:text-text"
+            >
+              <Crown className="size-4 text-amber-500" />
+              {t('profile.adminPanel')}
+            </Link>
+          ) : null}
+          <Button variant={ButtonVariant.Ghost} onClick={() => void signOut()}>
+            <LogOut className="size-4" />
+            {t('profile.signOut')}
+          </Button>
+        </div>
       </div>
       <DetailsSection me={me} />
       <GoogleSection me={me} />

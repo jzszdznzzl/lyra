@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { Camera, Trash2 } from 'lucide-react';
+import { Camera, Crown, Trash2 } from 'lucide-react';
 import { useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -111,7 +111,15 @@ export function DetailsSection({ me }: { me: UserProfile }) {
             }}
           />
           <div className="flex flex-col gap-1">
-            <span className="text-lg font-bold">{me.name}</span>
+            <span className="flex items-center gap-1.5 text-lg font-bold">
+              {me.name}
+              {me.isAdmin ? (
+                <Crown
+                  aria-label={t('profile.admin')}
+                  className="size-5 fill-amber-400 text-amber-500"
+                />
+              ) : null}
+            </span>
             <span className="text-sm text-muted">
               @{me.username} · {me.email}
             </span>

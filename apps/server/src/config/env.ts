@@ -29,6 +29,17 @@ export const Env = z.object({
   // A Lyra user whose linked Google account fetches audio for users without one. Only playback
   // uses it, never likes, playlists or the library.
   STREAM_FALLBACK_USERNAME: z.string().min(1).optional(),
+  // Comma-separated emails of the people who run this server. They get the /admin panel once
+  // their email is verified; for everyone else it does not exist (404).
+  ADMIN_EMAILS: z
+    .string()
+    .default('')
+    .transform((value) =>
+      value
+        .split(',')
+        .map((email) => email.trim().toLowerCase())
+        .filter(Boolean),
+    ),
   MAIL_TRANSPORT: z.enum(MailTransport).default(MailTransport.Smtp),
   MAIL_FROM: z.string().min(1),
   SMTP_HOST: z.string().default(''),

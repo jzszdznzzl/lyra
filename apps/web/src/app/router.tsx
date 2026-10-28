@@ -3,6 +3,8 @@ import {
   createRootRouteWithContext,
   createRoute,
   createRouter,
+  lazyRouteComponent,
+  notFound,
   redirect,
 } from '@tanstack/react-router';
 import { z } from 'zod';
@@ -187,6 +189,19 @@ const profileRoute = createRoute({
   component: ProfilePage,
 });
 
+// For anyone who is not an admin this is just a page that does not exist. The panel's code is a
+// separate chunk, downloaded only by admins.
+const adminRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/admin',
+  beforeLoad: async ({ context }) => {
+    if (!(await context.queryClient.ensureQueryData(meQuery))?.isAdmin) {
+      throw notFound();
+    }
+  },
+  component: lazyRouteComponent(() => import('../features/admin/admin-page.tsx'), 'AdminPage'),
+});
+
 const routeTree = rootRoute.addChildren([
   authRoute.addChildren([
     registerRoute,
@@ -207,6 +222,7 @@ const routeTree = rootRoute.addChildren([
     exploreRoute,
     downloadsRoute,
     profileRoute,
+    adminRoute,
   ]),
 ]);
 

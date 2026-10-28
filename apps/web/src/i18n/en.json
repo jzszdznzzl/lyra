@@ -180,7 +180,9 @@
       "update": "Update now",
       "upToDate": "You have the latest version.",
       "whatsNew": "What's new"
-    }
+    },
+    "admin": "Admin",
+    "adminPanel": "Admin panel"
   },
   "errors": {
     "invalid_credentials": "Wrong email, username or password.",
@@ -424,5 +426,8 @@
     "action": "Share",
     "copied": "Link copied",
     "failed": "Could not share the link"
+  },
+  "admin": {
+    "title": "Admin panel"
   }
 }

@@ -180,7 +180,9 @@
       "update": "Actualizar ahora",
       "upToDate": "Tienes la última versión.",
       "whatsNew": "Novedades"
-    }
+    },
+    "admin": "Administrador",
+    "adminPanel": "Administración"
   },
   "errors": {
     "invalid_credentials": "Correo, usuario o contraseña incorrectos.",
@@ -424,5 +426,8 @@
     "action": "Compartir",
     "copied": "Enlace copiado",
     "failed": "No se pudo compartir el enlace"
+  },
+  "admin": {
+    "title": "Administración"
   }
 }

@@ -1,9 +1,11 @@
 import { DEFAULT_LANGUAGE, Language } from '@lyra/shared';
 import type { UserProfile } from '@lyra/shared';
 
+import { isAdmin } from '../admin/admins.ts';
 import type { User } from '../auth/sessions.ts';
+import type { AppContext } from '../context.ts';
 
-export function toUserProfile(user: User, isGoogleLinked: boolean): UserProfile {
+export function toUserProfile(ctx: AppContext, user: User, isGoogleLinked: boolean): UserProfile {
   return {
     id: user.id,
     email: user.email,
@@ -16,5 +18,6 @@ export function toUserProfile(user: User, isGoogleLinked: boolean): UserProfile 
     isGoogleLinked,
     isYoutubeHistoryEnabled: user.isYoutubeHistoryEnabled,
     isNowPlayingPublic: user.isNowPlayingPublic,
+    ...(isAdmin(ctx, user) ? { isAdmin: true as const } : {}),
   };
 }

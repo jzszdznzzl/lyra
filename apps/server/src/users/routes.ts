@@ -49,7 +49,7 @@ export function userRoutes(ctx: AppContext, options: UserRoutesOptions) {
   return (
     new Elysia()
       .use(authPlugin(ctx))
-      .get('/me', async ({ user }) => toUserProfile(user, await isGoogleLinked(user.id)), {
+      .get('/me', async ({ user }) => toUserProfile(ctx, user, await isGoogleLinked(user.id)), {
         isSignedIn: true,
       })
       .patch(
@@ -61,7 +61,7 @@ export function userRoutes(ctx: AppContext, options: UserRoutesOptions) {
             .where(eq(schema.users.id, user.id))
             .returning();
 
-          return toUserProfile(updated ?? user, await isGoogleLinked(user.id));
+          return toUserProfile(ctx, updated ?? user, await isGoogleLinked(user.id));
         },
         { isSignedIn: true, body: UpdateProfileInput },
       )
@@ -80,7 +80,7 @@ export function userRoutes(ctx: AppContext, options: UserRoutesOptions) {
             .where(eq(schema.users.id, user.id))
             .returning();
 
-          return toUserProfile(updated ?? user, await isGoogleLinked(user.id));
+          return toUserProfile(ctx, updated ?? user, await isGoogleLinked(user.id));
         },
         { isSignedIn: true, body: AvatarUpload },
       )
@@ -94,7 +94,7 @@ export function userRoutes(ctx: AppContext, options: UserRoutesOptions) {
             .where(eq(schema.users.id, user.id))
             .returning();
 
-          return toUserProfile(updated ?? user, await isGoogleLinked(user.id));
+          return toUserProfile(ctx, updated ?? user, await isGoogleLinked(user.id));
         },
         { isSignedIn: true },
       )

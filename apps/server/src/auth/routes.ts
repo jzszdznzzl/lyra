@@ -83,7 +83,7 @@ export function authRoutes(ctx: AppContext, options: AuthRoutesOptions) {
         );
         setSessionCookie(ctx, cookie, token);
 
-        return toUserProfile(result.data, await isGoogleLinked(result.data.id));
+        return toUserProfile(ctx, result.data, await isGoogleLinked(result.data.id));
       },
       { body: TokenInput },
     )
@@ -120,7 +120,7 @@ export function authRoutes(ctx: AppContext, options: AuthRoutesOptions) {
         const { token } = await createSession(ctx, result.data.id, client);
         setSessionCookie(ctx, cookie, token);
 
-        return toUserProfile(result.data, await isGoogleLinked(result.data.id));
+        return toUserProfile(ctx, result.data, await isGoogleLinked(result.data.id));
       },
       { body: LoginInput },
     )
@@ -183,7 +183,7 @@ export function authRoutes(ctx: AppContext, options: AuthRoutesOptions) {
         const { token } = await createSession(ctx, result.data.id, client);
         setSessionCookie(ctx, cookie, token);
 
-        return toUserProfile(result.data, await isGoogleLinked(result.data.id));
+        return toUserProfile(ctx, result.data, await isGoogleLinked(result.data.id));
       },
       { body: PasskeyLoginInput },
     );

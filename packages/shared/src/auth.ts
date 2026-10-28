@@ -111,6 +111,8 @@ export const UserProfile = z.object({
   isYoutubeHistoryEnabled: z.boolean(),
   // Anyone can see the current or last song through the public widget.
   isNowPlayingPublic: z.boolean(),
+  // Only present for admins, so other accounts never see the field.
+  isAdmin: z.literal(true).exactOptional(),
 });
 
 export type UserProfile = z.infer<typeof UserProfile>;
