@@ -28,6 +28,19 @@ describe('pickAudioFormat', () => {
   test('returns null without formats', () => {
     expect(pickAudioFormat([], 'max')).toBeNull();
   });
+
+  test.each([
+    ['high', 140],
+    ['max', 141],
+  ] as const)('%s in mp4 picks itag %i', (quality, itag) => {
+    expect(pickAudioFormat(FORMATS, quality, 'mp4')?.itag).toBe(itag);
+  });
+
+  test('falls back to any container when the song has none in the asked one', () => {
+    const webmOnly = FORMATS.filter((format) => format.mimeType === 'audio/webm');
+
+    expect(pickAudioFormat(webmOnly, 'high', 'mp4')?.itag).toBe(251);
+  });
 });
 
 describe('pickVideoFormat', () => {

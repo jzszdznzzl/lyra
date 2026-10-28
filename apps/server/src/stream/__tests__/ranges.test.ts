@@ -51,4 +51,37 @@ describe('chunks', () => {
     ]);
     expect(result).toEqual(data.slice(5, CHUNK_BYTES + 10));
   });
+
+  test('swaps in a fresh URL once when the old one is revoked partway', async () => {
+    const data = new Uint8Array(CHUNK_BYTES + 10).map((_, index) => index % 251);
+    const seen: string[] = [];
+    const fakeFetch = (async (input: string | URL | Request, init?: RequestInit) => {
+      const url = input instanceof Request ? input.url : input.toString();
+      const range = new Headers(init?.headers).get('range') ?? '';
+      seen.push(`${url} ${range}`);
+      const [, from, to] = /bytes=(\d+)-(\d+)/.exec(range) ?? [];
+
+      if (url === 'https://old' && Number(from) > 0) {
+        return new Response(null, { status: 403 });
+      }
+
+      return new Response(data.slice(Number(from), Number(to) + 1), { status: 206 });
+    }) as typeof fetch;
+
+    const body = chunkedBody(
+      'https://old',
+      { start: 0, end: CHUNK_BYTES + 9 },
+      new AbortController().signal,
+      fakeFetch,
+      async () => 'https://new',
+    );
+    const result = new Uint8Array(await new Response(body).arrayBuffer());
+
+    expect(seen).toEqual([
+      `https://old bytes=0-${CHUNK_BYTES - 1}`,
+      `https://old bytes=${CHUNK_BYTES}-${CHUNK_BYTES + 9}`,
+      `https://new bytes=${CHUNK_BYTES}-${CHUNK_BYTES + 9}`,
+    ]);
+    expect(result).toEqual(data);
+  });
 });

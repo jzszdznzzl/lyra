@@ -13,6 +13,7 @@ import {
   removeAt,
   shuffleQueue,
 } from '../../audio/queue.ts';
+import { audioStreamUrl } from '../../audio/stream-url.ts';
 import { api } from '../../lib/api.ts';
 import { effectiveQuality, loadSettings, saveSettings } from './settings.ts';
 import type { PlayerSettings } from './settings.ts';
@@ -78,14 +79,22 @@ const RESTART_THRESHOLD_SECONDS = 3;
 const REPEAT_ORDER = [RepeatMode.Off, RepeatMode.All, RepeatMode.One] as const;
 // Context kept before the current track when the queue is too long to share whole.
 const SHARED_HISTORY = 100;
+// Songs failing in a row before playback stops, so a broken connection or format does not race
+// through the whole queue.
+const MAX_FAILURES_IN_A_ROW = 3;
+// Playing this long proves the stream works, so earlier failures stop counting.
+const HEALTHY_PLAYBACK_SECONDS = 5;
 
 export function streamUrl(track: Track, settings: PlayerSettings) {
-  return `/api/stream/${encodeURIComponent(track.id)}?quality=${effectiveQuality(settings).quality}`;
+  return audioStreamUrl(track.id, effectiveQuality(settings).quality);
 }
 
 export const usePlayerStore = create<PlayerState>()((set, get) => {
   let isCrossfading = false;
   let isFetchingRadio = false;
+  let failuresInARow = 0;
+  // The song already retried from where it broke, so a second failure skips it.
+  let retriedTrackId: string | null = null;
 
   const engine = new AudioEngine({
     onTime: (position, duration) => {
@@ -93,12 +102,16 @@ export const usePlayerStore = create<PlayerState>()((set, get) => {
         return;
       }
 
+      if (position >= HEALTHY_PLAYBACK_SECONDS) {
+        failuresInARow = 0;
+        retriedTrackId = null;
+      }
+
       set({ position, duration });
       maybeCrossfade(position, duration);
     },
     onEnded: () => advance(false, false),
-    // A song YouTube refuses should not stop the whole queue.
-    onError: () => advance(false, false),
+    onError: () => recover(),
     onPlayingChange: (isPlaying) => {
       if (!get().remote) {
         set({ status: isPlaying ? PlaybackStatus.Playing : PlaybackStatus.Paused });
@@ -154,6 +167,32 @@ export const usePlayerStore = create<PlayerState>()((set, get) => {
       const fresh = result.data.tracks.filter((track) => !known.has(track.id));
       set({ queue: [...get().queue, ...fresh] });
     }
+  }
+
+  /** A dropped connection resumes the song once; a song YouTube refuses is skipped. */
+  function recover() {
+    const { queue, index } = get();
+    const track = queue[index];
+    const position = engine.position;
+
+    if (track && position > 0 && retriedTrackId !== track.id) {
+      retriedTrackId = track.id;
+      start(index, position);
+
+      return;
+    }
+
+    failuresInARow += 1;
+
+    if (failuresInARow >= MAX_FAILURES_IN_A_ROW) {
+      failuresInARow = 0;
+      engine.pause(0);
+      set({ status: PlaybackStatus.Paused });
+
+      return;
+    }
+
+    advance(false, false);
   }
 
   function advance(isUserAction: boolean, withCrossfade: boolean) {
@@ -276,6 +315,9 @@ export const usePlayerStore = create<PlayerState>()((set, get) => {
   };
 
   function runCommand(command: Command) {
+    // Whoever asks for something new gets a fresh set of attempts.
+    failuresInARow = 0;
+
     switch (command.type) {
       case 'play': {
         local.play();

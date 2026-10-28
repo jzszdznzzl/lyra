@@ -7,6 +7,7 @@ export interface ByteRange {
 export const CHUNK_BYTES = 1024 * 1024;
 
 const RANGE_PATTERN = /^bytes=(\d*)-(\d*)$/;
+const HTTP_FORBIDDEN = 403;
 
 /** Parses a single HTTP byte range against a known length; null when unsatisfiable. */
 export function parseRange(header: string | null, length: number): ByteRange | null {
@@ -49,15 +50,43 @@ export function chunksOf({ start, end }: ByteRange, size = CHUNK_BYTES): ByteRan
   return chunks;
 }
 
-/** One continuous body made of sequential bounded upstream requests. */
+/**
+ * One continuous body made of sequential bounded upstream requests. When googlevideo revokes the
+ * URL partway (403), `refreshUrl` may supply a new one once; otherwise the player would see a
+ * network error and skip the song a few seconds in.
+ */
 export function chunkedBody(
   url: string,
   range: ByteRange,
   signal: AbortSignal,
   fetcher: typeof fetch = fetch,
+  refreshUrl?: () => Promise<string | null>,
 ): ReadableStream<Uint8Array> {
   const pieces = chunksOf(range);
   let next = 0;
+  let currentUrl = url;
+  let hasRefreshed = false;
+
+  const fetchPiece = async (piece: ByteRange) => {
+    const request = () =>
+      fetcher(currentUrl, { headers: { range: `bytes=${piece.start}-${piece.end}` }, signal });
+    const response = await request();
+
+    if (response.status !== HTTP_FORBIDDEN || hasRefreshed || !refreshUrl) {
+      return response;
+    }
+
+    hasRefreshed = true;
+    const fresh = await refreshUrl().catch(() => null);
+
+    if (!fresh) {
+      return response;
+    }
+
+    currentUrl = fresh;
+
+    return request();
+  };
 
   return new ReadableStream<Uint8Array>({
     async pull(controller) {
@@ -72,10 +101,7 @@ export function chunkedBody(
       next += 1;
 
       try {
-        const response = await fetcher(url, {
-          headers: { range: `bytes=${piece.start}-${piece.end}` },
-          signal,
-        });
+        const response = await fetchPiece(piece);
 
         if (!response.ok) {
           console.warn(

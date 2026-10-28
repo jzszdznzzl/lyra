@@ -3,6 +3,7 @@ import { create } from 'zustand';
 import { LyricsResponse } from '@lyra/shared';
 import type { AudioQuality, Track } from '@lyra/shared';
 
+import { audioStreamUrl } from '../../audio/stream-url.ts';
 import { api } from '../../lib/api.ts';
 import { imageUrl } from '../../lib/image.ts';
 import { AUDIO_CACHE, offlineAudioKey } from '../../offline/keys.ts';
@@ -37,7 +38,7 @@ async function fetchAudio(
   quality: AudioQuality,
   onProgress: (fraction: number) => void,
 ) {
-  const response = await fetch(`/api/stream/${encodeURIComponent(track.id)}?quality=${quality}`, {
+  const response = await fetch(audioStreamUrl(track.id, quality), {
     credentials: 'same-origin',
   });
 

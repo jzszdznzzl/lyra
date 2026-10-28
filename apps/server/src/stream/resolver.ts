@@ -1,11 +1,12 @@
 import { MusicError, StreamType, err, ok } from '@lyra/shared';
-import type { AudioQuality, Result } from '@lyra/shared';
+import type { AudioContainer, AudioQuality, Result } from '@lyra/shared';
 import type { Innertube } from 'youtubei.js';
 
 import { pickAudioFormat, pickVideoFormat } from './formats.ts';
+import type { PoTokenMinter } from '../ytmusic/po-token.ts';
 
 export type StreamSelection =
-  | { type: typeof StreamType.Audio; quality: AudioQuality }
+  | { type: typeof StreamType.Audio; quality: AudioQuality; container?: AudioContainer }
   | { type: typeof StreamType.Video; height: number };
 
 export interface ResolvedStream {
@@ -21,24 +22,35 @@ export interface ResolvedStream {
 // Leave a margin so a song that starts near expiry still finishes.
 const EXPIRY_MARGIN_MS = 10 * 60 * 1000;
 const DEFAULT_LIFETIME_MS = 60 * 60 * 1000;
-// Without a PO token, googlevideo cuts web-client streams after the first MiB. The visionOS
-// client is not held to that (same choice as yt-dlp); YT Music's own client is the fallback.
-const STREAM_CLIENTS = ['VISIONOS', 'YTMUSIC'] as const;
 
-async function fetchPlayableInfo(yt: Innertube, videoId: string) {
-  for (const client of STREAM_CLIENTS) {
-    const info = await yt.getBasicInfo(videoId, { client }).catch(() => null);
+/**
+ * The visionOS client needs no PO token, but YouTube rejects it with cookies and, from
+ * datacenter IPs, without them. YT Music's own client works signed in, but googlevideo cuts its
+ * streams after the first MiB unless the URL carries a PO token bound to the video.
+ */
+async function fetchPlayableInfo(yt: Innertube, videoId: string, poTokens: PoTokenMinter) {
+  if (!yt.session.logged_in) {
+    const info = await yt.getBasicInfo(videoId, { client: 'VISIONOS' }).catch(() => null);
 
     if (info?.playability_status?.status === 'OK' && info.streaming_data) {
-      return info;
+      return { info, poToken: null };
     }
   }
 
-  return null;
+  const poToken = await poTokens.mint(yt, videoId);
+  const info = await yt
+    .getBasicInfo(videoId, { client: 'YTMUSIC', ...(poToken ? { po_token: poToken } : {}) })
+    .catch(() => null);
+
+  return info?.playability_status?.status === 'OK' && info.streaming_data
+    ? { info, poToken }
+    : null;
 }
 
 function selectionKey(selection: StreamSelection) {
-  return selection.type === StreamType.Audio ? `a${selection.quality}` : `v${selection.height}`;
+  return selection.type === StreamType.Audio
+    ? `a${selection.quality}${selection.container ?? ''}`
+    : `v${selection.height}`;
 }
 
 function expiryOf(url: string, now: number) {
@@ -53,9 +65,11 @@ function expiryOf(url: string, now: number) {
 export class StreamResolver {
   #cache = new Map<string, ResolvedStream>();
   #now: () => number;
+  #poTokens: PoTokenMinter;
 
-  constructor(now: () => number) {
+  constructor(now: () => number, poTokens: PoTokenMinter) {
     this.#now = now;
+    this.#poTokens = poTokens;
   }
 
   async #resolve(
@@ -64,11 +78,13 @@ export class StreamResolver {
     selection: StreamSelection,
   ): Promise<Result<ResolvedStream, MusicError>> {
     try {
-      const info = await fetchPlayableInfo(yt, videoId);
+      const playable = await fetchPlayableInfo(yt, videoId, this.#poTokens);
 
-      if (!info) {
+      if (!playable) {
         return err(MusicError.Unavailable);
       }
+
+      const { info, poToken } = playable;
 
       const adaptive = info.streaming_data?.adaptive_formats ?? [];
       const picked =
@@ -84,6 +100,7 @@ export class StreamResolver {
                   isDrc: format.is_drc ?? false,
                 })),
               selection.quality,
+              selection.container,
             )
           : pickVideoFormat(
               // Video plays muted next to the audio engine, so only video-only streams matter.
@@ -105,7 +122,14 @@ export class StreamResolver {
         return err(MusicError.Unavailable);
       }
 
-      const url = await picked.format.decipher(yt.session.player);
+      const deciphered = new URL(await picked.format.decipher(yt.session.player));
+
+      // Added here rather than through the shared player, which concurrent songs would race on.
+      if (poToken) {
+        deciphered.searchParams.set('pot', poToken);
+      }
+
+      const url = deciphered.toString();
 
       return ok({
         url,

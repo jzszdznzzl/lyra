@@ -7,6 +7,7 @@ import { authPlugin } from '../auth/plugin.ts';
 import { sessionRateLimit } from '../security.ts';
 import { INVALID_QUERY, parseQuery } from '../query.ts';
 import { musicClient } from '../ytmusic/clients.ts';
+import { PoTokenMinter } from '../ytmusic/po-token.ts';
 import { chunkedBody, parseRange } from './ranges.ts';
 import { StreamResolver } from './resolver.ts';
 import type { StreamSelection } from './resolver.ts';
@@ -21,7 +22,7 @@ const HTTP_FORBIDDEN = 403;
  * send no CORS headers, which Web Audio (equalizer, crossfade) needs.
  */
 export function streamRoutes(ctx: AppContext, pool: InnertubePool) {
-  const resolver = new StreamResolver(ctx.now);
+  const resolver = new StreamResolver(ctx.now, new PoTokenMinter(ctx.now));
 
   return new Elysia({ prefix: '/stream' })
     .use(authPlugin(ctx))
@@ -37,7 +38,11 @@ export function streamRoutes(ctx: AppContext, pool: InnertubePool) {
 
         const selection: StreamSelection =
           query.type === StreamType.Audio
-            ? { type: StreamType.Audio, quality: query.quality }
+            ? {
+                type: StreamType.Audio,
+                quality: query.quality,
+                ...(query.container ? { container: query.container } : {}),
+              }
             : { type: StreamType.Video, height: query.height };
         const yt = await musicClient(ctx, pool, user);
         // One retry: a cached URL can be revoked early, which googlevideo answers with 403.
@@ -50,7 +55,7 @@ export function streamRoutes(ctx: AppContext, pool: InnertubePool) {
             });
           }
 
-          const { url, contentLength, mimeType, loudnessDb } = resolved.data;
+          const { url, itag, contentLength, mimeType, loudnessDb } = resolved.data;
           const range = parseRange(request.headers.get('range'), contentLength);
 
           if (!range) {
@@ -86,7 +91,17 @@ export function streamRoutes(ctx: AppContext, pool: InnertubePool) {
             headers.set(LOUDNESS_HEADER, String(loudnessDb));
           }
 
-          return new Response(chunkedBody(url, range, request.signal), {
+          // A URL revoked mid-song gets a fresh one; it must be the same file for bytes to line up.
+          const refreshUrl = async () => {
+            resolver.forget(user.id, params.id, selection);
+            const fresh = await resolver.resolve(yt, user.id, params.id, selection);
+
+            return fresh.data?.itag === itag && fresh.data.contentLength === contentLength
+              ? fresh.data.url
+              : null;
+          };
+
+          return new Response(chunkedBody(url, range, request.signal, fetch, refreshUrl), {
             status: request.headers.has('range') ? 206 : 200,
             headers,
           });

@@ -1,4 +1,5 @@
 import { AudioQuality } from '@lyra/shared';
+import type { AudioContainer } from '@lyra/shared';
 
 export interface AudioFormatInfo {
   itag: number;
@@ -18,13 +19,19 @@ const TARGET_BITRATE: Record<AudioQuality, number> = {
 /**
  * Picks the audio format closest to the quality's target without going over it, falling back
  * to the smallest one. Dynamic-range-compressed variants lose dynamics, so they come last.
+ * With a container, only formats in it count, unless the song has none.
  */
 export function pickAudioFormat<T extends AudioFormatInfo>(
   formats: readonly T[],
   quality: AudioQuality,
+  container?: AudioContainer,
 ) {
-  const candidates = formats.filter((format) => !format.isDrc);
-  const pool = candidates.length > 0 ? candidates : [...formats];
+  const playable = container
+    ? formats.filter((format) => format.mimeType.startsWith(`audio/${container}`))
+    : formats;
+  const usable = playable.length > 0 ? playable : formats;
+  const candidates = usable.filter((format) => !format.isDrc);
+  const pool = candidates.length > 0 ? candidates : [...usable];
   const sorted = [...pool].sort((a, b) => b.bitrate - a.bitrate);
   const target = TARGET_BITRATE[quality];
 

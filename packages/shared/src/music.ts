@@ -155,6 +155,11 @@ export const StreamType = Object.freeze({ Audio: 'audio', Video: 'video' } as co
 
 export type StreamType = (typeof StreamType)[keyof typeof StreamType];
 
+/** Audio file types; Safari on iPhone often cannot play WebM (Opus), only MP4 (AAC). */
+export const AudioContainer = Object.freeze({ WebM: 'webm', Mp4: 'mp4' } as const);
+
+export type AudioContainer = (typeof AudioContainer)[keyof typeof AudioContainer];
+
 export const VIDEO_HEIGHTS = [360, 480, 720, 1080] as const;
 
 export type VideoHeight = (typeof VIDEO_HEIGHTS)[number];
@@ -164,6 +169,8 @@ export const DEFAULT_VIDEO_HEIGHT: VideoHeight = 720;
 export const StreamQuery = z.object({
   type: z.enum(StreamType).default(StreamType.Audio),
   quality: z.enum(AudioQuality).default(AudioQuality.High),
+  // Absent means any container the player supports.
+  container: z.enum(AudioContainer).optional(),
   height: z.coerce
     .number()
     .pipe(z.union(VIDEO_HEIGHTS.map((height) => z.literal(height))))
