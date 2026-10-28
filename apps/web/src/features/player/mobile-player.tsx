@@ -1,8 +1,10 @@
 import { ChevronDown, ListMusic, MicVocal, Pause, Play, SlidersHorizontal } from 'lucide-react';
+import { useRouterState } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { imageUrl } from '../../lib/image.ts';
+import { useBackToClose } from '../../lib/use-back-to-close.ts';
 import { toCss } from '../../lib/palette.ts';
 import { useAccent } from '../../lib/use-accent.ts';
 import { Cover } from '../../ui/cover.tsx';
@@ -27,7 +29,12 @@ export function MobilePlayer() {
   const duration = usePlayerStore((state) => state.duration);
   const togglePlay = usePlayerStore((state) => state.togglePlay);
   const accent = useAccent(imageUrl(track?.thumbnail ?? null));
-  const [isOpen, setIsOpen] = useState(false);
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
+  // Open only on the page it was opened from: following a link (artist, album) reveals that page.
+  const [openedOn, setOpenedOn] = useState<string | null>(null);
+  const isOpen = openedOn === pathname;
+
+  useBackToClose(isOpen, () => setOpenedOn(null));
   const [panel, setPanel] = useState<'cover' | 'queue' | 'lyrics'>('cover');
   const active = useConnectStore(activeDevice);
   const selfId = useConnectStore((state) => state.selfId);
@@ -47,7 +54,7 @@ export function MobilePlayer() {
           <button
             type="button"
             aria-label={t('player.openNowPlaying')}
-            onClick={() => setIsOpen(true)}
+            onClick={() => setOpenedOn(pathname)}
             className="flex min-w-0 flex-1 items-center gap-3 text-left"
           >
             <Cover src={track.thumbnail} alt="" className="size-11 shrink-0 rounded-lg" />
@@ -97,7 +104,7 @@ export function MobilePlayer() {
             <button
               type="button"
               aria-label={t('player.close')}
-              onClick={() => setIsOpen(false)}
+              onClick={() => setOpenedOn(null)}
               className="p-1"
             >
               <ChevronDown className="size-6" />

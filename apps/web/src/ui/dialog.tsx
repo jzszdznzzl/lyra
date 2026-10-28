@@ -3,6 +3,8 @@ import { useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 
+import { useBackToClose } from '../lib/use-back-to-close.ts';
+
 interface DialogProps {
   title: string;
   onClose: () => void;
@@ -10,6 +12,8 @@ interface DialogProps {
 }
 
 export function Dialog({ title, onClose, children }: DialogProps) {
+  useBackToClose(true, onClose);
+
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {

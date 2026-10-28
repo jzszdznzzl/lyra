@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from '@tanstack/react-query';
-import { Link, Outlet } from '@tanstack/react-router';
-import { Compass, Download, Home, Plus, Search } from 'lucide-react';
+import { Link, Outlet, useCanGoBack, useRouter, useRouterState } from '@tanstack/react-router';
+import { ChevronLeft, Compass, Download, Home, Plus, Search } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -30,6 +30,9 @@ export function AppLayout() {
   const { data: me } = useSuspenseQuery(meQuery);
 
   const [isCreating, setIsCreating] = useState(false);
+  const router = useRouter();
+  const canGoBack = useCanGoBack();
+  const isHome = useRouterState({ select: (state) => state.location.pathname === '/' });
 
   useMediaSession();
   useCoverTheme();
@@ -79,11 +82,25 @@ export function AppLayout() {
         </div>
         <LibrarySidebar isGoogleLinked={me.isGoogleLinked} />
       </aside>
-      <main className="flex min-h-0 flex-col overflow-y-auto rounded-2xl border border-line bg-panel backdrop-blur-2xl">
+      <main
+        data-scroll-restoration-id="main"
+        className="flex min-h-0 flex-col overflow-y-auto rounded-2xl border border-line bg-panel backdrop-blur-2xl"
+      >
         <header className="sticky top-0 z-10 flex items-center justify-between px-4 pt-4 sm:px-7">
-          <span className="md:hidden">
-            <Brand />
-          </span>
+          {canGoBack && !isHome ? (
+            <button
+              type="button"
+              aria-label={t('nav.back')}
+              onClick={() => router.history.back()}
+              className="grid size-9 place-items-center rounded-full bg-bg/50 text-text backdrop-blur hover:bg-surface-2"
+            >
+              <ChevronLeft className="size-5" />
+            </button>
+          ) : (
+            <span className="md:hidden">
+              <Brand />
+            </span>
+          )}
           <Link to="/profile" className="ml-auto" aria-label={t('nav.profile')}>
             <Avatar name={me.name} url={me.avatarUrl} />
           </Link>

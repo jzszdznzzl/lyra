@@ -180,7 +180,13 @@ const routeTree = rootRoute.addChildren([
 ]);
 
 export function createAppRouter(queryClient: QueryClient) {
-  return createRouter({ routeTree, context: { queryClient }, defaultPreload: 'intent' });
+  return createRouter({
+    routeTree,
+    context: { queryClient },
+    defaultPreload: 'intent',
+    // Going back returns to the same scroll position; the app scrolls inside <main>.
+    scrollRestoration: true,
+  });
 }
 
 declare module '@tanstack/react-router' {
