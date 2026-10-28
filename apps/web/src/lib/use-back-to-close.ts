@@ -32,13 +32,22 @@ export function useBackToClose(isOpen: boolean, onClose: () => void) {
 
     const pending = pendingCloses.get(id);
 
+    const current: unknown = history.state;
+    const entry = { ...(typeof current === 'object' ? current : {}), [STATE_KEY]: id };
+    // An overlay closing in this same tick (one dialog swapped for another) still owns the top
+    // entry; taking it over avoids leaving it behind, where "back" would close the overlay below.
+    const swapped = [...pendingCloses].find(([closingId]) => isOwnEntry(closingId));
+
     if (pending) {
       clearTimeout(pending);
       pendingCloses.delete(id);
+    } else if (swapped) {
+      clearTimeout(swapped[1]);
+      pendingCloses.delete(swapped[0]);
+      history.replaceState(entry, '');
     } else {
       // Same URL, so the router sees no navigation; only the history stack grows.
-      const current: unknown = history.state;
-      history.pushState({ ...(typeof current === 'object' ? current : {}), [STATE_KEY]: id }, '');
+      history.pushState(entry, '');
     }
 
     let wasPopped = false;
