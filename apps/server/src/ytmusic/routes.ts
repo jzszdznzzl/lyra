@@ -8,12 +8,14 @@ import {
   PlaylistTracksInput,
   RenamePlaylistInput,
   SearchQuery,
+  Track,
   VideoForQuery,
   err,
 } from '@lyra/shared';
 import type { Result } from '@lyra/shared';
 
 import { authPlugin } from '../auth/plugin.ts';
+import { recordPlay } from '../stats/recorder.ts';
 import { sessionRateLimit } from '../security.ts';
 import { cleanTitle } from '../lyrics/lyrics.ts';
 import { INVALID_QUERY, parseQuery } from '../query.ts';
@@ -58,6 +60,8 @@ const MUSIC_ERROR_STATUS = {
 const IdParams = z.object({ id: z.string().regex(/^[\w-]{2,64}$/) });
 const VideoParams = z.object({ id: z.string().regex(/^[\w-]{11}$/) });
 const SuggestionQuery = z.object({ q: z.string().trim().min(1).max(200) });
+// Optional: older clients send nothing, and a play without details still counts.
+const Listen = z.object({ track: Track });
 
 export function musicRoutes(ctx: AppContext, pool: InnertubePool, images: ImageRegistry) {
   const clientFor = (user: User) => musicClient(ctx, pool, user);
@@ -189,7 +193,11 @@ export function musicRoutes(ctx: AppContext, pool: InnertubePool, images: ImageR
       // --- Writes: they all act on the linked YT Music account ---
       .post(
         '/history/:id',
-        ({ user, params, status }) => {
+        ({ user, params, body, status }) => {
+          // Counted for the statistics whatever the YouTube setting; the track gives top songs.
+          const listen = Listen.safeParse(body);
+          recordPlay(ctx, user.id, params.id, listen.success ? listen.data.track : null);
+
           // The player does not wait for YouTube: a lost entry only costs a recommendation.
           if (user.isYoutubeHistoryEnabled) {
             withAccount(user, (yt) => addToHistory(yt, params.id)).catch((error: unknown) => {

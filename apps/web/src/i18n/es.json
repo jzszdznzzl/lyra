@@ -434,7 +434,8 @@
     "tabs": {
       "users": "Usuarios",
       "announcements": "Comunicados",
-      "settings": "Ajustes"
+      "settings": "Ajustes",
+      "stats": "Estadísticas"
     },
     "users": {
       "title_one": "{{count}} usuario",
@@ -502,6 +503,47 @@
       "saveFirst": "Guarda los cambios antes de probar.",
       "save": "Guardar cambios",
       "saved": "Ajustes guardados"
+    },
+    "stats": {
+      "lastDays_one": "Último día",
+      "lastDays_other": "{{count}} días",
+      "totalsOnly": "Solo totales: nada de esto es por persona.",
+      "plays": "Reproducciones",
+      "listeners": "Oyentes",
+      "hours": "Horas de música",
+      "active": "Usuarios activos",
+      "signups": "Altas",
+      "online": "Conectados ahora",
+      "playsPerDay": "Reproducciones por día",
+      "activePerDay": "Usuarios activos por día",
+      "topTracks": "Canciones más escuchadas",
+      "topArtists": "Artistas más escuchados",
+      "noPlays": "Todavía no hay reproducciones en este período.",
+      "byHour": "A qué hora se escucha",
+      "byHourHint": "Reproducciones por hora del día, en tu zona horaria.",
+      "streams": "Cómo suenan las canciones",
+      "streamsHint": "Con qué cuenta se pidió cada canción a YouTube.",
+      "streamOwn": "Cuenta propia",
+      "streamAnonymous": "Sin cuenta",
+      "streamFallback": "Cuenta de respaldo",
+      "noProblems": "Ninguna canción falló en este período.",
+      "problems": "Fallaron {{errors}} canciones por errores de YouTube y {{google}} porque pedían una cuenta de Google.",
+      "server": "Servidor",
+      "users": "Usuarios",
+      "verified": "Verificados",
+      "googleLinked": "Con Google",
+      "suspended": "Suspendidos",
+      "admins": "Administradores",
+      "tokens": "Tokens personales",
+      "widgets": "Tarjetas públicas",
+      "playsAllTime": "Reproducciones (total)",
+      "widgetViews": "Vistas de tarjetas",
+      "apiRequests": "Peticiones a la API",
+      "images": "Portadas registradas",
+      "database": "Base de datos",
+      "table": "Ver los datos por día",
+      "day": "Día",
+      "errors": "Fallos"
     }
   },
   "announcements": {

@@ -1,4 +1,4 @@
-import { blob, index, integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import { blob, index, integer, primaryKey, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 
 const timestamp = (name: string) => integer(name, { mode: 'number' });
 
@@ -141,3 +141,43 @@ export const settings = sqliteTable('settings', {
   value: text('value', { mode: 'json' }).$type<unknown>(),
   updatedAt: timestamp('updated_at').notNull(),
 });
+
+// --- Statistics: totals only. Nothing here is shown per person. ---
+
+// One row per song heard past the listen threshold. The user id stays so "how many different
+// people listened" can be counted, and is cleared if the account is deleted.
+export const plays = sqliteTable(
+  'plays',
+  {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    userId: text('user_id').references(() => users.id, { onDelete: 'set null' }),
+    videoId: text('video_id').notNull(),
+    title: text('title'),
+    artists: text('artists', { mode: 'json' }).$type<unknown>(),
+    durationSeconds: integer('duration_seconds'),
+    playedAt: timestamp('played_at').notNull(),
+  },
+  (table) => [index('plays_played_at_idx').on(table.playedAt)],
+);
+
+// Which accounts used the app in each hour (hours since the epoch). Hours rather than days, so
+// the panel can show days in the admin's own time zone.
+export const activeHours = sqliteTable(
+  'active_hours',
+  {
+    hour: integer('hour').notNull(),
+    userId: text('user_id').notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.hour, table.userId] })],
+);
+
+// How many times each event happened in each hour.
+export const eventHours = sqliteTable(
+  'event_hours',
+  {
+    hour: integer('hour').notNull(),
+    name: text('name').notNull(),
+    count: integer('count').notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.hour, table.name] })],
+);

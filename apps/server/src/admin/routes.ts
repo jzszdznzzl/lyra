@@ -1,7 +1,13 @@
 import { Elysia } from 'elysia';
 import { z } from 'zod';
 
-import { AdminError, AuthError, CreateAnnouncementInput, UpdateSettingsInput } from '@lyra/shared';
+import {
+  AdminError,
+  AuthError,
+  CreateAnnouncementInput,
+  StatsQuery,
+  UpdateSettingsInput,
+} from '@lyra/shared';
 
 import {
   createAnnouncement,
@@ -9,7 +15,8 @@ import {
   recentAnnouncements,
 } from '../announcements/announcements.ts';
 import { authErrorStatus } from '../http-errors.ts';
-import { INVALID_BODY } from '../query.ts';
+import { INVALID_BODY, INVALID_QUERY, parseQuery } from '../query.ts';
+import { adminStats } from '../stats/stats.ts';
 import { adminPlugin } from './plugin.ts';
 import { settingsView, testMail } from './settings.ts';
 import { listUsers, removeUser, setSuspended, signOutEverywhere } from './users.ts';
@@ -22,6 +29,8 @@ export interface AdminRoutesOptions {
   onSignedOut: (userId: string) => void;
   // Tells every open app to fetch announcements again.
   onAnnouncementsChanged: () => void;
+  // Accounts with a device connected right now.
+  onlineNow: () => number;
 }
 
 // Checked inside the handlers, after the admin check: route-level schemas run first, and a 422
@@ -29,7 +38,7 @@ export interface AdminRoutesOptions {
 const RowId = z.string().min(1).max(64);
 
 export function adminRoutes(ctx: AppContext, options: AdminRoutesOptions) {
-  const { onAccountRemoved, onSignedOut, onAnnouncementsChanged } = options;
+  const { onAccountRemoved, onSignedOut, onAnnouncementsChanged, onlineNow } = options;
 
   return (
     new Elysia({ prefix: '/admin' })
@@ -145,6 +154,16 @@ export function adminRoutes(ctx: AppContext, options: AdminRoutesOptions) {
           onAnnouncementsChanged();
 
           return status(204);
+        },
+        { isAdmin: true },
+      )
+      // --- Statistics ---
+      .get(
+        '/stats',
+        async ({ query: raw, status }) => {
+          const query = parseQuery(StatsQuery, raw);
+
+          return query ? adminStats(ctx, query, onlineNow()) : status(422, INVALID_QUERY);
         },
         { isAdmin: true },
       )

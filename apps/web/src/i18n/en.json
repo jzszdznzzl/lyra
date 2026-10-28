@@ -434,7 +434,8 @@
     "tabs": {
       "users": "Users",
       "announcements": "Announcements",
-      "settings": "Settings"
+      "settings": "Settings",
+      "stats": "Statistics"
     },
     "users": {
       "title_one": "{{count}} user",
@@ -502,6 +503,47 @@
       "saveFirst": "Save your changes before testing.",
       "save": "Save changes",
       "saved": "Settings saved"
+    },
+    "stats": {
+      "lastDays_one": "Last day",
+      "lastDays_other": "{{count}} days",
+      "totalsOnly": "Totals only: none of this is per person.",
+      "plays": "Plays",
+      "listeners": "Listeners",
+      "hours": "Hours of music",
+      "active": "Active users",
+      "signups": "Sign-ups",
+      "online": "Online now",
+      "playsPerDay": "Plays per day",
+      "activePerDay": "Active users per day",
+      "topTracks": "Most played songs",
+      "topArtists": "Most played artists",
+      "noPlays": "No plays in this period yet.",
+      "byHour": "When people listen",
+      "byHourHint": "Plays per hour of the day, in your time zone.",
+      "streams": "How songs are played",
+      "streamsHint": "Which account asked YouTube for each song.",
+      "streamOwn": "Own account",
+      "streamAnonymous": "No account",
+      "streamFallback": "Fallback account",
+      "noProblems": "No song failed in this period.",
+      "problems": "{{errors}} songs failed with YouTube errors and {{google}} because they needed a Google account.",
+      "server": "Server",
+      "users": "Users",
+      "verified": "Verified",
+      "googleLinked": "With Google",
+      "suspended": "Suspended",
+      "admins": "Admins",
+      "tokens": "Personal tokens",
+      "widgets": "Public cards",
+      "playsAllTime": "Plays (all time)",
+      "widgetViews": "Card views",
+      "apiRequests": "API requests",
+      "images": "Covers registered",
+      "database": "Database",
+      "table": "Show the data per day",
+      "day": "Day",
+      "errors": "Failures"
     }
   },
   "announcements": {

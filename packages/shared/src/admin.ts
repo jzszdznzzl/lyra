@@ -29,6 +29,24 @@ export const MailFailure = z.object({
   reason: z.string(),
 });
 
+/** Things the server counts per hour for the statistics. */
+export const StatEvent = Object.freeze({
+  // A song started with the listener's own Google account.
+  StreamOwn: 'stream.own',
+  // A song started without an account.
+  StreamAnonymous: 'stream.anonymous',
+  // A song started through the fallback account.
+  StreamFallback: 'stream.fallback',
+  // YouTube asked for a Google account and none could play it.
+  StreamGoogleRequired: 'stream.google_required',
+  // Any other failure to start a song.
+  StreamError: 'stream.error',
+  WidgetView: 'widget.view',
+  ApiRequest: 'api.now_playing',
+} as const);
+
+export type StatEvent = (typeof StatEvent)[keyof typeof StatEvent];
+
 export const SMTP_PASSWORD_MAX_LENGTH = 500;
 
 export const FallbackStatus = Object.freeze({
@@ -74,3 +92,70 @@ export const UpdateSettingsInput = z.object({
 });
 
 export type UpdateSettingsInput = z.infer<typeof UpdateSettingsInput>;
+
+export const STATS_RANGES = [7, 30, 90, 365] as const;
+
+export const StatsQuery = z.object({
+  days: z.coerce
+    .number()
+    .int()
+    .refine((days) => STATS_RANGES.some((range) => range === days)),
+  // The admin's offset from UTC in minutes (UTC-3 → -180), so days start at their midnight.
+  offset: z.coerce
+    .number()
+    .int()
+    .min(-14 * 60)
+    .max(14 * 60),
+});
+
+export type StatsQuery = z.infer<typeof StatsQuery>;
+
+export const StatsDay = z.object({
+  day: z.string(),
+  signups: z.number(),
+  activeUsers: z.number(),
+  plays: z.number(),
+  listeners: z.number(),
+  streamOwn: z.number(),
+  streamAnonymous: z.number(),
+  streamFallback: z.number(),
+  streamGoogleRequired: z.number(),
+  streamErrors: z.number(),
+  widgetViews: z.number(),
+  apiRequests: z.number(),
+});
+
+export type StatsDay = z.infer<typeof StatsDay>;
+
+/** Server-wide totals for the admin panel; nothing in it belongs to one person. */
+export const AdminStats = z.object({
+  days: z.number(),
+  totals: z.object({
+    users: z.number(),
+    verified: z.number(),
+    suspended: z.number(),
+    googleLinked: z.number(),
+    admins: z.number(),
+    apiTokens: z.number(),
+    publicWidgets: z.number(),
+    onlineNow: z.number(),
+    playsAllTime: z.number(),
+  }),
+  period: z.object({
+    plays: z.number(),
+    listeners: z.number(),
+    activeUsers: z.number(),
+    signups: z.number(),
+    // Estimated from the length of the songs played.
+    minutesPlayed: z.number(),
+  }),
+  daily: z.array(StatsDay),
+  playsByHour: z.array(z.number()).length(24),
+  topTracks: z.array(
+    z.object({ videoId: z.string(), title: z.string(), artists: z.string(), plays: z.number() }),
+  ),
+  topArtists: z.array(z.object({ name: z.string(), plays: z.number() })),
+  storage: z.object({ databaseBytes: z.number(), images: z.number() }),
+});
+
+export type AdminStats = z.infer<typeof AdminStats>;

@@ -1,22 +1,30 @@
 import { Elysia } from 'elysia';
 import { z } from 'zod';
 
-import { LOUDNESS_HEADER, MusicError, StreamQuery, StreamType } from '@lyra/shared';
+import { LOUDNESS_HEADER, MusicError, StatEvent, StreamQuery, StreamType } from '@lyra/shared';
 
 import { authPlugin } from '../auth/plugin.ts';
 import { sessionRateLimit } from '../security.ts';
+import { countEvent } from '../stats/recorder.ts';
 import { INVALID_QUERY, parseQuery } from '../query.ts';
 import { fallbackClient, musicClient } from '../ytmusic/clients.ts';
 import { PoTokenMinter } from '../ytmusic/po-token.ts';
 import { chunkedBody, parseRange } from './ranges.ts';
 import { StreamResolver } from './resolver.ts';
-import { StreamAccounts } from './stream-accounts.ts';
+import { FALLBACK_CACHE_KEY, StreamAccounts } from './stream-accounts.ts';
 import type { StreamSelection } from './resolver.ts';
 import type { AppContext } from '../context.ts';
 import type { InnertubePool } from '../ytmusic/innertube.ts';
 
 const VideoParams = z.object({ id: z.string().regex(/^[\w-]{11}$/) });
 const HTTP_FORBIDDEN = 403;
+// The web app asks for a single byte to learn why a song failed; that is not a song starting.
+const DIAGNOSIS_RANGE = 'bytes=0-0';
+const FROM_START = /^bytes=0-/;
+const GOOGLE_ERRORS: readonly MusicError[] = [
+  MusicError.GoogleNotLinked,
+  MusicError.GoogleSessionExpired,
+];
 const ERROR_STATUS: Partial<Record<MusicError, number>> = {
   [MusicError.Unavailable]: 404,
   [MusicError.GoogleNotLinked]: 403,
@@ -54,6 +62,17 @@ export function streamRoutes(ctx: AppContext, pool: InnertubePool) {
                 ...(query.container ? { container: query.container } : {}),
               }
             : { type: StreamType.Video, height: query.height };
+        const rangeHeader = request.headers.get('range');
+        // Players fetch a song in many ranges; only the first request of an audio stream counts.
+        const isSongStart =
+          query.type === StreamType.Audio &&
+          rangeHeader !== DIAGNOSIS_RANGE &&
+          (rangeHeader === null || FROM_START.test(rangeHeader));
+        const count = (event: StatEvent) => {
+          if (isSongStart) {
+            countEvent(ctx, event);
+          }
+        };
         const yt = await musicClient(ctx, pool, user);
         const own = { yt, cacheKey: user.id, isSignedIn: yt.session.logged_in };
         // One retry: a cached URL can be revoked early, which googlevideo answers with 403.
@@ -63,6 +82,12 @@ export function streamRoutes(ctx: AppContext, pool: InnertubePool) {
           );
 
           if (resolved.error) {
+            count(
+              GOOGLE_ERRORS.includes(resolved.error)
+                ? StatEvent.StreamGoogleRequired
+                : StatEvent.StreamError,
+            );
+
             return status(ERROR_STATUS[resolved.error] ?? 502, { error: resolved.error });
           }
 
@@ -113,11 +138,19 @@ export function streamRoutes(ctx: AppContext, pool: InnertubePool) {
               : null;
           };
 
+          if (client.cacheKey === FALLBACK_CACHE_KEY) {
+            count(StatEvent.StreamFallback);
+          } else {
+            count(client.isSignedIn ? StatEvent.StreamOwn : StatEvent.StreamAnonymous);
+          }
+
           return new Response(chunkedBody(url, range, request.signal, fetch, refreshUrl), {
             status: request.headers.has('range') ? 206 : 200,
             headers,
           });
         }
+
+        count(StatEvent.StreamError);
 
         return status(502, { error: MusicError.Upstream });
       },

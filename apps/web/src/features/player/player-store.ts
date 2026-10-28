@@ -128,9 +128,12 @@ export const usePlayerStore = create<PlayerState>()((set, get) => {
 
       const current = get().queue[get().index];
 
-      // The server adds it to YouTube history when the user has that on; failures do not matter.
+      // Counted for the server's statistics, and added to YouTube history when the user has that
+      // on; failures do not matter.
       if (current && listens.update(current.id, position, duration)) {
-        void api('POST', `/music/history/${encodeURIComponent(current.id)}`, NoContent);
+        void api('POST', `/music/history/${encodeURIComponent(current.id)}`, NoContent, {
+          track: current,
+        });
       }
     },
     onEnded: () => advance(false, false),

@@ -177,6 +177,11 @@ export class ConnectHub {
     return room ? this.#activity(room) : null;
   }
 
+  /** How many accounts have at least one device connected right now. */
+  onlineUsers() {
+    return [...this.#rooms.values()].filter((room) => room.members.size > 0).length;
+  }
+
   /** Sends `message` to every connected device of every account. */
   broadcastAll(message: ServerMessage) {
     for (const room of this.#rooms.values()) {

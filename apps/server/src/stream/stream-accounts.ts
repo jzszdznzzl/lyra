@@ -16,7 +16,8 @@ export interface ChosenStream<T> {
 
 // Anonymous requests are retried after this long, in case YouTube lifts the block.
 const ANONYMOUS_RETRY_MS = 30 * 60 * 1000;
-const FALLBACK_CACHE_KEY = 'stream-fallback';
+
+export const FALLBACK_CACHE_KEY = 'stream-fallback';
 
 /**
  * Decides whose session asks YouTube for a song: the user's own Google account when linked,

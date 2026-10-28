@@ -74,6 +74,7 @@ export function createApp(ctx: AppContext, options: AppOptions = {}) {
         onAccountRemoved: forget,
         onSignedOut: signOut,
         onAnnouncementsChanged: () => hub.broadcastAll({ type: 'announcements' }),
+        onlineNow: () => hub.onlineUsers(),
       }),
     )
     .use(announcementRoutes(ctx))

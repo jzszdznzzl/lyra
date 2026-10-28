@@ -2,6 +2,7 @@ import { and, desc, eq, gt, isNull, ne } from 'drizzle-orm';
 
 import { randomToken, sha256 } from '../common/index.ts';
 import { schema } from '../db/index.ts';
+import { recordActive } from '../stats/recorder.ts';
 import type { AppContext } from '../context.ts';
 
 export interface ClientInfo {
@@ -33,6 +34,7 @@ export async function createSession(ctx: AppContext, userId: string, client: Cli
 
   await ctx.db.insert(schema.sessions).values(session);
   await ctx.db.update(schema.users).set({ lastActiveAt: now }).where(eq(schema.users.id, userId));
+  recordActive(ctx, userId);
 
   return { token, session };
 }
@@ -66,6 +68,7 @@ export async function findSession(ctx: AppContext, token: string, client: Client
       .set({ lastActiveAt: now })
       .where(eq(schema.users.id, row.user.id));
     row.user.lastActiveAt = now;
+    recordActive(ctx, row.user.id);
   }
 
   return row;

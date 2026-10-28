@@ -1,7 +1,7 @@
 import { queryOptions } from '@tanstack/react-query';
 import { z } from 'zod';
 
-import { AdminSettingsView, AdminUser, Announcement, MailFailure } from '@lyra/shared';
+import { AdminSettingsView, AdminStats, AdminUser, Announcement, MailFailure } from '@lyra/shared';
 import type { CreateAnnouncementInput, UpdateSettingsInput } from '@lyra/shared';
 
 import { NoContent, api, unwrap } from '../../lib/api.ts';
@@ -59,3 +59,15 @@ export async function sendTestMail(): Promise<{ isSent: boolean; reason: string 
     return { isSent: false, reason: null };
   }
 }
+
+export const adminStatsQuery = (days: number) =>
+  queryOptions({
+    queryKey: ['admin', 'stats', days],
+    queryFn: async () => {
+      // Days cut at the admin's own midnight: getTimezoneOffset is minutes behind UTC.
+      const offset = -new Date().getTimezoneOffset();
+
+      return unwrap(await api('GET', `/admin/stats?days=${days}&offset=${offset}`, AdminStats));
+    },
+    refetchInterval: 60 * 1000,
+  });

@@ -2,13 +2,21 @@ import { Elysia } from 'elysia';
 import { and, eq, isNull } from 'drizzle-orm';
 import { z } from 'zod';
 
-import { AuthError, DEFAULT_LANGUAGE, Language, TokenScope, USERNAME_PATTERN } from '@lyra/shared';
+import {
+  AuthError,
+  DEFAULT_LANGUAGE,
+  Language,
+  StatEvent,
+  TokenScope,
+  USERNAME_PATTERN,
+} from '@lyra/shared';
 import type { NowPlaying } from '@lyra/shared';
 
 import { apiTokenPlugin } from '../api-tokens/plugin.ts';
 import { clientInfo } from '../auth/plugin.ts';
 import { RateLimiter } from '../common/index.ts';
 import { schema } from '../db/index.ts';
+import { countEvent } from '../stats/recorder.ts';
 import { INVALID_QUERY, parseQuery } from '../query.ts';
 import { WidgetTheme, renderWidget } from './widget.ts';
 import type { AppContext } from '../context.ts';
@@ -91,6 +99,7 @@ export function nowPlayingRoutes(
       '/me/now-playing',
       async ({ user, set, status }) => {
         Object.assign(set.headers, CORS, { 'cache-control': NO_STORE });
+        countEvent(ctx, StatEvent.ApiRequest);
         const nowPlaying = await service.current(user.id);
 
         return nowPlaying ?? status(204);
@@ -132,6 +141,7 @@ export function nowPlayingRoutes(
           cancel: () => stop(),
         });
 
+        countEvent(ctx, StatEvent.ApiRequest);
         // Bun closes connections that stay quiet for a few seconds; this one waits on purpose.
         server?.timeout(request, 0);
 
@@ -184,6 +194,7 @@ export function nowPlayingRoutes(
           return status(404, { error: AuthError.NotFound });
         }
 
+        countEvent(ctx, StatEvent.WidgetView);
         const svg = renderWidget({
           nowPlaying: found.nowPlaying,
           cover: await covers.dataUri(found.nowPlaying?.track.coverUrl ?? null),
