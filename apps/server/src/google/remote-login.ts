@@ -142,13 +142,18 @@ export class RemoteLogin {
   }
 
   /** Returns null when another sign-in is already running. */
-  static async start(target: RemoteLoginTarget, handlers: RemoteLoginHandlers) {
+  static async start(
+    target: RemoteLoginTarget,
+    handlers: RemoteLoginHandlers,
+    executablePath?: string,
+  ) {
     if (RemoteLogin.#active) {
       return null;
     }
 
     const browser = await chromium.launch({
       headless: true,
+      ...(executablePath ? { executablePath } : {}),
       // Google refuses sign-in when the browser announces itself as automated.
       args: ['--disable-blink-features=AutomationControlled'],
     });

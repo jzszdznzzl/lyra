@@ -80,34 +80,38 @@ export function googleRoutes(
           ws.send(message);
         };
 
-        const session = await RemoteLogin.start(loginTarget, {
-          onFrame: (data) => send({ type: 'frame', data }),
-          onCookie: (cookie) => {
-            void (async () => {
-              const verified = await verifyGoogleCookie(cookie);
+        const session = await RemoteLogin.start(
+          loginTarget,
+          {
+            onFrame: (data) => send({ type: 'frame', data }),
+            onCookie: (cookie) => {
+              void (async () => {
+                const verified = await verifyGoogleCookie(cookie);
 
-              if (verified.error) {
-                send({ type: 'error', error: verified.error });
-              } else {
-                const account = await saveGoogleAccount(
-                  ctx,
-                  user.id,
-                  cookie,
-                  GoogleLinkMethod.Browser,
-                  verified.data,
-                );
-                pool.forget(user.id);
-                await images.rewrite(account);
-                send({ type: 'linked', account });
-              }
+                if (verified.error) {
+                  send({ type: 'error', error: verified.error });
+                } else {
+                  const account = await saveGoogleAccount(
+                    ctx,
+                    user.id,
+                    cookie,
+                    GoogleLinkMethod.Browser,
+                    verified.data,
+                  );
+                  pool.forget(user.id);
+                  await images.rewrite(account);
+                  send({ type: 'linked', account });
+                }
 
-              ws.close();
-            })();
+                ws.close();
+              })();
+            },
+            onClosed: () => {
+              sessions.delete(ws.id);
+            },
           },
-          onClosed: () => {
-            sessions.delete(ws.id);
-          },
-        }).catch((error: unknown) => {
+          ctx.env.BROWSER_EXECUTABLE,
+        ).catch((error: unknown) => {
           console.warn(
             `[google] remote browser failed: ${error instanceof Error ? error.message : String(error)}`,
           );

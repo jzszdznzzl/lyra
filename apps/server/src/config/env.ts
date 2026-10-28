@@ -24,6 +24,8 @@ export const Env = z.object({
   TRUST_PROXY: z.stringbool().default(false),
   // Built web app to serve next to the API; unset in development, where Vite serves it.
   WEB_DIST: z.string().min(1).optional(),
+  // Chrome or Chromium installed on the system, for hosts where Playwright's own build fails.
+  BROWSER_EXECUTABLE: z.string().min(1).optional(),
   MAIL_TRANSPORT: z.enum(MailTransport).default(MailTransport.Smtp),
   MAIL_FROM: z.string().min(1),
   SMTP_HOST: z.string().default(''),
