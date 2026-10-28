@@ -2,8 +2,10 @@ import { Elysia } from 'elysia';
 
 import { ChallengeStore } from './auth/passkeys.ts';
 import { authRoutes } from './auth/routes.ts';
+import { connectRoutes } from './connect/routes.ts';
 import { isGoogleLinked } from './google/accounts.ts';
 import { googleRoutes } from './google/routes.ts';
+import { lyricsRoutes } from './lyrics/routes.ts';
 import { streamRoutes } from './stream/routes.ts';
 import { userRoutes } from './users/routes.ts';
 import { imageProxyRoutes } from './ytmusic/image-proxy.ts';
@@ -33,6 +35,8 @@ export function createApp(ctx: AppContext, options: AppOptions = {}) {
     )
     .use(musicRoutes(ctx, pool))
     .use(streamRoutes(ctx, pool))
+    .use(lyricsRoutes(ctx, pool))
+    .use(connectRoutes(ctx))
     .use(imageProxyRoutes(ctx));
 }
 
