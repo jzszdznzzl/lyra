@@ -24,7 +24,11 @@ export function connectRoutes(ctx: AppContext, hub: ConnectHub) {
       if (parsed.data.type === 'hello') {
         hub.join(
           userId,
-          { id: ws.id, send: (message: ServerMessage) => ws.send(message) },
+          {
+            id: ws.id,
+            send: (message: ServerMessage) => ws.send(message),
+            close: () => ws.close(),
+          },
           parsed.data.device,
         );
 

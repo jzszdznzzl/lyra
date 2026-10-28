@@ -43,6 +43,13 @@
       "when": 1793204770793,
       "tag": "0005_acoustic_the_stranger",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1793210814151,
+      "tag": "0006_cuddly_rafael_vega",
+      "breakpoints": true
     }
   ]
 }

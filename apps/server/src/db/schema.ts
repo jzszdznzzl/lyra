@@ -18,6 +18,10 @@ export const users = sqliteTable('users', {
   isNowPlayingPublic: integer('is_now_playing_public', { mode: 'boolean' })
     .notNull()
     .default(false),
+  // Set by an admin: the account keeps its data but cannot sign in or use any session or token.
+  suspendedAt: timestamp('suspended_at'),
+  // Updated with the session (at most once a minute), for the admin panel and activity stats.
+  lastActiveAt: timestamp('last_active_at'),
   createdAt: timestamp('created_at').notNull(),
 });
 

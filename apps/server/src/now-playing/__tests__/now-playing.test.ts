@@ -52,7 +52,7 @@ async function setup() {
   const service = new NowPlayingService(ctx, hub);
   const events: NowPlaying[] = [];
   service.subscribe(USER_ID, (nowPlaying) => events.push(nowPlaying));
-  hub.join(USER_ID, { id: 'socket-1', send: () => {} }, DEVICE);
+  hub.join(USER_ID, { id: 'socket-1', send: () => {}, close: () => {} }, DEVICE);
   const report = (patch: Partial<PlaybackState>) =>
     hub.handle(USER_ID, 'socket-1', { type: 'state', state: state(patch) });
   // Lets the fire-and-forget database write finish.

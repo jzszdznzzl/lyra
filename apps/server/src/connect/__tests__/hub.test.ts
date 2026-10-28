@@ -32,7 +32,10 @@ function state(patch: Partial<PlaybackState> = {}): PlaybackState {
 function fakeSocket(id: string) {
   const inbox: ServerMessage[] = [];
 
-  return { socket: { id, send: (message: ServerMessage) => inbox.push(message) }, inbox };
+  return {
+    socket: { id, send: (message: ServerMessage) => inbox.push(message), close: () => {} },
+    inbox,
+  };
 }
 
 const last = (inbox: ServerMessage[], type: ServerMessage['type']) =>
@@ -176,5 +179,20 @@ describe('ConnectHub commands while the active device is away', () => {
       state: { isPlaying: false },
     });
     expect(last(phone2.inbox, 'command')).toEqual({ type: 'command', command: { type: 'play' } });
+  });
+});
+
+describe('kick', () => {
+  test('closes every device of the user and forgets the room', () => {
+    const closed: string[] = [];
+    const socket = (id: string) => ({ id, send: () => {}, close: () => closed.push(id) });
+    hub.join('u1', socket('a'), { id: 'device-aaaa', name: 'A', kind: 'desktop' });
+    hub.join('u1', socket('b'), { id: 'device-bbbb', name: 'B', kind: 'mobile' });
+    hub.join('u2', socket('c'), { id: 'device-cccc', name: 'C', kind: 'mobile' });
+
+    hub.kick('u1');
+
+    expect(closed.sort()).toEqual(['a', 'b']);
+    expect(hub.activity('u1')).toBeNull();
   });
 });

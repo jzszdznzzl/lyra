@@ -2,6 +2,7 @@ import { Elysia } from 'elysia';
 
 import type { PublicConfig } from '@lyra/shared';
 
+import { adminRoutes } from './admin/routes.ts';
 import { apiTokenRoutes } from './api-tokens/routes.ts';
 import { ChallengeStore } from './auth/passkeys.ts';
 import { authRoutes } from './auth/routes.ts';
@@ -33,6 +34,11 @@ export function createApp(ctx: AppContext, options: AppOptions = {}) {
   const images = new ImageRegistry(ctx);
   const linked = (userId: string) => isGoogleLinked(ctx, userId);
   const hub = new ConnectHub(ctx.now);
+  const signOut = (userId: string) => hub.kick(userId);
+  const forget = (userId: string) => {
+    pool.forget(userId);
+    hub.kick(userId);
+  };
   const nowPlaying = new NowPlayingService(ctx, hub);
   const covers = new WidgetCovers(images, new URL(ctx.env.PUBLIC_URL).origin);
 
@@ -45,7 +51,7 @@ export function createApp(ctx: AppContext, options: AppOptions = {}) {
       userRoutes(ctx, {
         challenges,
         isGoogleLinked: linked,
-        onAccountDeleted: (userId) => pool.forget(userId),
+        onAccountDeleted: forget,
       }),
     )
     .use(
@@ -60,6 +66,7 @@ export function createApp(ctx: AppContext, options: AppOptions = {}) {
     .use(lyricsRoutes(ctx, pool))
     .use(connectRoutes(ctx, hub))
     .use(apiTokenRoutes(ctx))
+    .use(adminRoutes(ctx, { onAccountRemoved: forget, onSignedOut: signOut }))
     .use(nowPlayingRoutes(ctx, nowPlaying, covers))
     .use(imageRoutes(ctx, images));
 }

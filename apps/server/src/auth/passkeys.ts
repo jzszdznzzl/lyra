@@ -187,6 +187,10 @@ export async function finishPasskeyLogin(
     return err(AuthError.PasskeyFailed);
   }
 
+  if (row.user.suspendedAt !== null) {
+    return err(AuthError.AccountSuspended);
+  }
+
   await ctx.db
     .update(schema.passkeys)
     .set({ counter: verification.authenticationInfo.newCounter, lastUsedAt: ctx.now() })

@@ -1,4 +1,4 @@
-import { and, desc, eq, gt, ne } from 'drizzle-orm';
+import { and, desc, eq, gt, isNull, ne } from 'drizzle-orm';
 
 import { randomToken, sha256 } from '../common/index.ts';
 import { schema } from '../db/index.ts';
@@ -32,6 +32,7 @@ export async function createSession(ctx: AppContext, userId: string, client: Cli
   };
 
   await ctx.db.insert(schema.sessions).values(session);
+  await ctx.db.update(schema.users).set({ lastActiveAt: now }).where(eq(schema.users.id, userId));
 
   return { token, session };
 }
@@ -43,7 +44,14 @@ export async function findSession(ctx: AppContext, token: string, client: Client
     .select({ session: schema.sessions, user: schema.users })
     .from(schema.sessions)
     .innerJoin(schema.users, eq(schema.users.id, schema.sessions.userId))
-    .where(and(eq(schema.sessions.tokenHash, sha256(token)), gt(schema.sessions.expiresAt, now)));
+    .where(
+      and(
+        eq(schema.sessions.tokenHash, sha256(token)),
+        gt(schema.sessions.expiresAt, now),
+        // A suspended account has no valid session, whatever cookies are still around.
+        isNull(schema.users.suspendedAt),
+      ),
+    );
 
   if (!row) {
     return null;
@@ -53,6 +61,11 @@ export async function findSession(ctx: AppContext, token: string, client: Client
     const touched = { lastSeenAt: now, expiresAt: now + SESSION_TTL_MS, ip: client.ip };
     await ctx.db.update(schema.sessions).set(touched).where(eq(schema.sessions.id, row.session.id));
     Object.assign(row.session, touched);
+    await ctx.db
+      .update(schema.users)
+      .set({ lastActiveAt: now })
+      .where(eq(schema.users.id, row.user.id));
+    row.user.lastActiveAt = now;
   }
 
   return row;

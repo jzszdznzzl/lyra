@@ -1,4 +1,4 @@
-import { and, count, desc, eq } from 'drizzle-orm';
+import { and, count, desc, eq, isNull } from 'drizzle-orm';
 import { z } from 'zod';
 
 import { API_TOKEN_PREFIX, AuthError, MAX_API_TOKENS, TokenScope, err, ok } from '@lyra/shared';
@@ -99,7 +99,7 @@ export async function findApiTokenUser(
     .select({ token: schema.apiTokens, user: schema.users })
     .from(schema.apiTokens)
     .innerJoin(schema.users, eq(schema.users.id, schema.apiTokens.userId))
-    .where(eq(schema.apiTokens.tokenHash, sha256(token)));
+    .where(and(eq(schema.apiTokens.tokenHash, sha256(token)), isNull(schema.users.suspendedAt)));
 
   if (!row || !toInfo(row.token).scopes.includes(scope)) {
     return null;

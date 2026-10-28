@@ -1,5 +1,5 @@
 import { Elysia } from 'elysia';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, isNull } from 'drizzle-orm';
 import { z } from 'zod';
 
 import { AuthError, DEFAULT_LANGUAGE, Language, TokenScope, USERNAME_PATTERN } from '@lyra/shared';
@@ -57,7 +57,13 @@ export function nowPlayingRoutes(
     const [user] = await ctx.db
       .select()
       .from(schema.users)
-      .where(and(eq(schema.users.username, username), eq(schema.users.isNowPlayingPublic, true)));
+      .where(
+        and(
+          eq(schema.users.username, username),
+          eq(schema.users.isNowPlayingPublic, true),
+          isNull(schema.users.suspendedAt),
+        ),
+      );
 
     if (!user) {
       return null;

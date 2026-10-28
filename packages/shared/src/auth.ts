@@ -17,6 +17,9 @@ export const AuthError = Object.freeze({
   InvalidImage: 'invalid_image',
   RegistrationClosed: 'registration_closed',
   TooManyTokens: 'too_many_tokens',
+  AccountSuspended: 'account_suspended',
+  // Admins cannot suspend or delete themselves or another admin.
+  ProtectedAccount: 'protected_account',
 } as const);
 
 export type AuthError = (typeof AuthError)[keyof typeof AuthError];

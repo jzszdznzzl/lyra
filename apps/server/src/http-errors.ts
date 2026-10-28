@@ -15,6 +15,8 @@ const AUTH_ERROR_STATUS = {
   [AuthError.TooManyRequests]: 429,
   [AuthError.RegistrationClosed]: 403,
   [AuthError.TooManyTokens]: 409,
+  [AuthError.AccountSuspended]: 403,
+  [AuthError.ProtectedAccount]: 409,
 } as const satisfies Record<AuthError, number>;
 
 export function authErrorStatus(error: AuthError) {

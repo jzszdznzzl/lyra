@@ -4,6 +4,7 @@ import type { ClientMessage, Device, PlaybackState, ServerMessage } from '@lyra/
 export interface ConnectSocket {
   id: string;
   send: (message: ServerMessage) => void;
+  close: () => void;
 }
 
 interface Member {
@@ -174,6 +175,25 @@ export class ConnectHub {
     const room = this.#rooms.get(userId);
 
     return room ? this.#activity(room) : null;
+  }
+
+  /** Disconnects every device of the user, e.g. when an admin suspends or deletes the account. */
+  kick(userId: string) {
+    const room = this.#rooms.get(userId);
+
+    if (!room) {
+      return;
+    }
+
+    if (room.graceTimer) {
+      clearTimeout(room.graceTimer);
+    }
+
+    this.#rooms.delete(userId);
+
+    for (const member of room.members.values()) {
+      member.socket.close();
+    }
   }
 
   join(userId: string, socket: ConnectSocket, device: Device) {

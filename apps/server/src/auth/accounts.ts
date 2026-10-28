@@ -78,6 +78,8 @@ export async function register(
     emailVerifiedAt: null,
     isYoutubeHistoryEnabled: true,
     isNowPlayingPublic: false,
+    suspendedAt: null,
+    lastActiveAt: null,
     createdAt: ctx.now(),
   };
 
@@ -135,6 +137,10 @@ export async function login(ctx: AppContext, input: LoginInput): Promise<Result<
 
   if (user.emailVerifiedAt === null) {
     return err(AuthError.EmailNotVerified);
+  }
+
+  if (user.suspendedAt !== null) {
+    return err(AuthError.AccountSuspended);
   }
 
   return ok(user);

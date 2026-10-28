@@ -209,7 +209,9 @@
     "browser_unavailable": "The sign-in browser couldn't start on the server.",
     "browser_busy": "Another sign-in is in progress. Try again in a minute.",
     "registration_closed": "New accounts are closed on this Lyra.",
-    "too_many_tokens": "You already have the most tokens allowed. Revoke one to create another."
+    "too_many_tokens": "You already have the most tokens allowed. Revoke one to create another.",
+    "account_suspended": "Your account is suspended. Talk to whoever runs this server.",
+    "protected_account": "You cannot do that to your own account or another admin's."
   },
   "search": {
     "placeholder": "Songs, albums, artists, videos",
@@ -428,6 +430,28 @@
     "failed": "Could not share the link"
   },
   "admin": {
-    "title": "Admin panel"
+    "title": "Admin panel",
+    "tabs": {
+      "users": "Users"
+    },
+    "users": {
+      "title_one": "{{count}} user",
+      "title_other": "{{count}} users",
+      "filter": "Search by name or username",
+      "joined": "joined {{date}}",
+      "active": "active {{date}}",
+      "neverActive": "never signed in",
+      "suspended": "Suspended",
+      "unverified": "Unverified",
+      "actions": "Actions for {{name}}",
+      "suspend": "Suspend",
+      "unsuspend": "Restore",
+      "signOut": "Sign out everywhere",
+      "delete": "Delete account",
+      "suspendConfirm": "Suspend {{name}}? Their sessions end and they cannot sign in until you restore them.",
+      "deleteConfirm": "Delete {{name}}'s account? Everything is erased and it cannot be undone.",
+      "done": "Done",
+      "none": "Nobody matches the search."
+    }
   }
 }

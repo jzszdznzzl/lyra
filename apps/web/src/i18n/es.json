@@ -209,7 +209,9 @@
     "browser_unavailable": "El navegador de inicio de sesión no pudo arrancar en el servidor.",
     "browser_busy": "Hay otro inicio de sesión en curso. Inténtalo en un minuto.",
     "registration_closed": "No se pueden crear cuentas nuevas en este Lyra.",
-    "too_many_tokens": "Ya tienes el máximo de tokens. Revoca alguno para crear otro."
+    "too_many_tokens": "Ya tienes el máximo de tokens. Revoca alguno para crear otro.",
+    "account_suspended": "Tu cuenta está suspendida. Habla con quien administra este servidor.",
+    "protected_account": "No puedes hacer eso con tu cuenta ni con la de otro administrador."
   },
   "search": {
     "placeholder": "Canciones, álbumes, artistas, vídeos",
@@ -428,6 +430,28 @@
     "failed": "No se pudo compartir el enlace"
   },
   "admin": {
-    "title": "Administración"
+    "title": "Administración",
+    "tabs": {
+      "users": "Usuarios"
+    },
+    "users": {
+      "title_one": "{{count}} usuario",
+      "title_other": "{{count}} usuarios",
+      "filter": "Buscar por nombre o usuario",
+      "joined": "se unió {{date}}",
+      "active": "activo {{date}}",
+      "neverActive": "nunca entró",
+      "suspended": "Suspendido",
+      "unverified": "Sin verificar",
+      "actions": "Acciones para {{name}}",
+      "suspend": "Suspender",
+      "unsuspend": "Reactivar",
+      "signOut": "Cerrar todas sus sesiones",
+      "delete": "Eliminar cuenta",
+      "suspendConfirm": "¿Suspender a {{name}}? Se cerrarán sus sesiones y no podrá entrar hasta que lo reactives.",
+      "deleteConfirm": "¿Eliminar la cuenta de {{name}}? Se borra todo y no se puede deshacer.",
+      "done": "Listo",
+      "none": "Nadie coincide con la búsqueda."
+    }
   }
 }

@@ -28,6 +28,7 @@ import { describeUserAgent } from '../common/index.ts';
 import { schema } from '../db/index.ts';
 import { authErrorStatus } from '../http-errors.ts';
 import { avatarPath, deleteAvatar, saveAvatar } from './avatar.ts';
+import { deleteAccount } from './delete-account.ts';
 import { toUserProfile } from './profile.ts';
 import type { ChallengeStore } from '../auth/passkeys.ts';
 import type { AppContext } from '../context.ts';
@@ -106,9 +107,7 @@ export function userRoutes(ctx: AppContext, options: UserRoutesOptions) {
             return status(401, { error: AuthError.InvalidCredentials });
           }
 
-          await deleteAvatar(ctx.dataDir, user.id);
-          // Sessions, passkeys, email tokens and the Google link go with it (ON DELETE CASCADE).
-          await ctx.db.delete(schema.users).where(eq(schema.users.id, user.id));
+          await deleteAccount(ctx, user.id);
           onAccountDeleted(user.id);
           clearSessionCookie(cookie);
 
