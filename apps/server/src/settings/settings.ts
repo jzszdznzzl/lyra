@@ -5,6 +5,7 @@ import type { AdminSettings } from '@lyra/shared';
 
 import { decrypt, encrypt } from '../common/index.ts';
 import { schema } from '../db/index.ts';
+import { moduleLogger } from '../logger.ts';
 import type { Env } from '../config/env.ts';
 import type { Database } from '../db/index.ts';
 
@@ -38,6 +39,8 @@ const Stored = z.object({
 type Stored = z.infer<typeof Stored>;
 
 const STORED_KEYS: readonly string[] = Object.keys(Stored.shape);
+
+const log = moduleLogger('settings');
 
 function isStoredKey(key: string): key is keyof Stored {
   return STORED_KEYS.includes(key);
@@ -75,7 +78,7 @@ export class SettingsStore {
       if (parsed.success) {
         Object.assign(stored, { [row.key]: parsed.data });
       } else {
-        console.warn(`[settings] ignoring an invalid stored value for ${row.key}`);
+        log.warn(`ignoring an invalid stored value for ${row.key}`);
       }
     }
 

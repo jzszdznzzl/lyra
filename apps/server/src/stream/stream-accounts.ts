@@ -2,6 +2,8 @@ import { MusicError, err, ok } from '@lyra/shared';
 import type { Result } from '@lyra/shared';
 import type { Innertube } from 'youtubei.js';
 
+import { moduleLogger } from '../logger.ts';
+
 export interface StreamClient {
   yt: Innertube;
   // Resolved URLs are cached under this key: the user's own, or one shared by fallback users.
@@ -16,6 +18,8 @@ export interface ChosenStream<T> {
 
 // Anonymous requests are retried after this long, in case YouTube lifts the block.
 const ANONYMOUS_RETRY_MS = 30 * 60 * 1000;
+
+const log = moduleLogger('stream');
 
 export const FALLBACK_CACHE_KEY = 'stream-fallback';
 
@@ -47,7 +51,7 @@ export class StreamAccounts {
     const result = await resolve(client);
 
     if (result.error === MusicError.GoogleSessionExpired) {
-      console.warn('[stream] the fallback Google account must be linked again');
+      log.warn('the fallback Google account must be linked again');
 
       return err(MusicError.GoogleNotLinked);
     }
@@ -70,7 +74,7 @@ export class StreamAccounts {
     }
 
     if (this.#anonymousBlockedUntil === 0) {
-      console.warn('[stream] YouTube asks anonymous requests to sign in');
+      log.warn('YouTube asks anonymous requests to sign in');
     }
 
     this.#anonymousBlockedUntil = this.#now() + ANONYMOUS_RETRY_MS;

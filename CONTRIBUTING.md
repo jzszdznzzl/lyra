@@ -46,6 +46,7 @@ The host machine has many ports in use, so lyra uses random high ports: the serv
    - `SECRET_KEY`: keep it safe; losing it unlinks every Google account.
    - `REGISTRATION_ENABLED=false` once your accounts exist: sign-ups are refused and the app hides them.
    - `REGISTRATION_ENABLED`, `STREAM_FALLBACK_USERNAME`, `MAIL_FROM` and `SMTP_*` are starting values: admins can change them later from `/admin` → Settings, without touching this file.
+   - `LOG_LEVEL` (`info` by default; `debug` adds a line per request, `warn` keeps only problems) and `LOG_FORMAT` (`pretty` for `pm2 logs`, `json` for a log collector).
    - `ADMIN_EMAILS`: comma-separated emails of the people who run the server. Each gets the `/admin` panel (users, announcements, settings and statistics) once that email is verified; for everyone else the panel answers 404, like a page that does not exist.
    - `STREAM_FALLBACK_USERNAME` on servers in a datacenter, where YouTube refuses anonymous requests ("confirm you're not a bot"). Create a Lyra user, link a dedicated Google account to it (not a personal one: heavy use may get it limited) and set its username here. Users without their own Google account then play songs through it; likes, playlists and the library still need their own.
 3. Start the server with Bun from a directory without a `.env` (Bun would load it):

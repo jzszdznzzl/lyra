@@ -11,6 +11,7 @@ import { ConnectHub } from './connect/hub.ts';
 import { connectRoutes } from './connect/routes.ts';
 import { isGoogleLinked } from './google/accounts.ts';
 import { googleRoutes } from './google/routes.ts';
+import { httpLog } from './http-log.ts';
 import { ImageRegistry } from './images/registry.ts';
 import { imageRoutes } from './images/routes.ts';
 import { lyricsRoutes } from './lyrics/routes.ts';
@@ -44,6 +45,7 @@ export function createApp(ctx: AppContext, options: AppOptions = {}) {
   const covers = new WidgetCovers(images, new URL(ctx.env.PUBLIC_URL).origin);
 
   return new Elysia({ prefix: '/api' })
+    .use(httpLog())
     .use(originGuard(ctx))
     .get('/health', () => ({ status: 'ok' }))
     .get('/config', (): PublicConfig => ({

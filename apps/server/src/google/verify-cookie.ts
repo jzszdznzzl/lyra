@@ -4,10 +4,13 @@ import { GoogleError, err, ok } from '@lyra/shared';
 import type { Result } from '@lyra/shared';
 
 import { bestThumbnail } from '../ytmusic/mappers.ts';
+import { errorMessage, moduleLogger } from '../logger.ts';
 import type { GoogleIdentity } from './accounts.ts';
 
 // YouTube signs authenticated requests with SAPISID; without one the cookie is not a session.
 const SESSION_COOKIES = ['SAPISID', '__Secure-3PAPISID'];
+
+const log = moduleLogger('google');
 
 export function hasSessionCookie(cookie: string) {
   return cookie
@@ -46,9 +49,7 @@ export async function verifyGoogleCookie(
       photo: bestThumbnail(active.account_photo),
     });
   } catch (error) {
-    console.warn(
-      `[google] cookie check failed: ${error instanceof Error ? error.message : String(error)}`,
-    );
+    log.warn(`cookie check failed: ${errorMessage(error)}`);
 
     return err(GoogleError.InvalidCookies);
   }

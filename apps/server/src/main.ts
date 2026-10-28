@@ -5,6 +5,7 @@ import { Elysia } from 'elysia';
 
 import { createApp } from './app.ts';
 import { loadEnv } from './config/env.ts';
+import { moduleLogger } from './logger.ts';
 import { openDatabase } from './db/index.ts';
 import { createMailer } from './mail/index.ts';
 import { ImageRegistry } from './images/registry.ts';
@@ -51,4 +52,4 @@ const app = (
     : api
 ).listen(env.PORT);
 
-console.info(`lyra listening on http://localhost:${app.server?.port ?? env.PORT}`);
+moduleLogger('server').info(`lyra listening on http://localhost:${app.server?.port ?? env.PORT}`);

@@ -4,6 +4,7 @@ import { Track } from '@lyra/shared';
 import type { Device, NowPlaying, NowPlayingTrack, PlaybackState } from '@lyra/shared';
 
 import { schema } from '../db/index.ts';
+import { errorMessage, moduleLogger } from '../logger.ts';
 import type { ConnectHub, RoomActivity } from '../connect/hub.ts';
 import type { AppContext } from '../context.ts';
 
@@ -16,6 +17,8 @@ export type NowPlayingListener = (nowPlaying: NowPlaying) => void;
 
 // Position reports drift a little; a bigger jump is a seek, which listeners should hear about.
 const SEEK_TOLERANCE_MS = 2000;
+const log = moduleLogger('now-playing');
+
 // Each open event stream holds a connection, so one account cannot hoard them.
 export const MAX_LISTENERS_PER_USER = 10;
 
@@ -116,7 +119,7 @@ export class NowPlayingService {
     }
 
     this.#save(userId, activity.state).catch((error: unknown) => {
-      console.warn(`[now-playing] ${error instanceof Error ? error.message : String(error)}`);
+      log.warn({ err: error }, `could not save the last song: ${errorMessage(error)}`);
     });
 
     const nowPlaying = this.#fromState(activity.state, activity.device);

@@ -3,6 +3,7 @@ import type { AudioContainer, AudioQuality, Result } from '@lyra/shared';
 import type { Innertube } from 'youtubei.js';
 
 import { pickAudioFormat, pickVideoFormat } from './formats.ts';
+import { errorMessage, moduleLogger } from '../logger.ts';
 import type { PoTokenMinter } from '../ytmusic/po-token.ts';
 
 export type StreamSelection =
@@ -24,6 +25,8 @@ const LOGIN_REQUIRED = 'LOGIN_REQUIRED';
 // Leave a margin so a song that starts near expiry still finishes.
 const EXPIRY_MARGIN_MS = 10 * 60 * 1000;
 const DEFAULT_LIFETIME_MS = 60 * 60 * 1000;
+
+const log = moduleLogger('stream');
 
 /**
  * The visionOS client needs no PO token, but YouTube rejects it with cookies and, from
@@ -155,9 +158,7 @@ export class StreamResolver {
         expiresAt: expiryOf(url, this.#now()),
       });
     } catch (error) {
-      console.warn(
-        `[stream] ${videoId}: ${error instanceof Error ? error.message : String(error)}`,
-      );
+      log.warn(`${videoId}: ${errorMessage(error)}`);
 
       return err(MusicError.Upstream);
     }

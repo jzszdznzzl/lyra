@@ -10,6 +10,27 @@ export const MailTransport = Object.freeze({
 
 export type MailTransport = (typeof MailTransport)[keyof typeof MailTransport];
 
+export const LogLevel = Object.freeze({
+  Fatal: 'fatal',
+  Error: 'error',
+  Warn: 'warn',
+  Info: 'info',
+  Debug: 'debug',
+  Trace: 'trace',
+  Silent: 'silent',
+} as const);
+
+export type LogLevel = (typeof LogLevel)[keyof typeof LogLevel];
+
+export const LogFormat = Object.freeze({
+  // Coloured, one readable line per event: what `pm2 logs` or a terminal wants.
+  Pretty: 'pretty',
+  // One JSON object per line, for log collectors.
+  Json: 'json',
+} as const);
+
+export type LogFormat = (typeof LogFormat)[keyof typeof LogFormat];
+
 export const Env = z.object({
   PORT: z.coerce.number().int().min(1).max(65_535),
   PUBLIC_URL: z.url(),
@@ -40,6 +61,9 @@ export const Env = z.object({
         .map((email) => email.trim().toLowerCase())
         .filter(Boolean),
     ),
+  // How much the server logs: debug adds every request, info is the normal amount.
+  LOG_LEVEL: z.enum(LogLevel).default(LogLevel.Info),
+  LOG_FORMAT: z.enum(LogFormat).default(LogFormat.Pretty),
   MAIL_TRANSPORT: z.enum(MailTransport).default(MailTransport.Smtp),
   MAIL_FROM: z.string().min(1),
   SMTP_HOST: z.string().default(''),

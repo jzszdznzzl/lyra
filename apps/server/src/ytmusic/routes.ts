@@ -34,6 +34,7 @@ import {
   getUpNext,
 } from './catalog.ts';
 import { accountClient, musicClient } from './clients.ts';
+import { errorMessage, moduleLogger } from '../logger.ts';
 import {
   addToHistory,
   addTracks,
@@ -62,6 +63,8 @@ const VideoParams = z.object({ id: z.string().regex(/^[\w-]{11}$/) });
 const SuggestionQuery = z.object({ q: z.string().trim().min(1).max(200) });
 // Optional: older clients send nothing, and a play without details still counts.
 const Listen = z.object({ track: Track });
+
+const log = moduleLogger('library');
 
 export function musicRoutes(ctx: AppContext, pool: InnertubePool, images: ImageRegistry) {
   const clientFor = (user: User) => musicClient(ctx, pool, user);
@@ -201,9 +204,7 @@ export function musicRoutes(ctx: AppContext, pool: InnertubePool, images: ImageR
           // The player does not wait for YouTube: a lost entry only costs a recommendation.
           if (user.isYoutubeHistoryEnabled) {
             withAccount(user, (yt) => addToHistory(yt, params.id)).catch((error: unknown) => {
-              console.warn(
-                `[library] history: ${error instanceof Error ? error.message : String(error)}`,
-              );
+              log.warn({ err: error }, `history: ${errorMessage(error)}`);
             });
           }
 

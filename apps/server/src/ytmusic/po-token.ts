@@ -2,6 +2,7 @@ import { BotGuardClient } from 'bgutils-js/botguard';
 import { GOOG_API_KEY, base64ToU8, buildURL, u8ToBase64 } from 'bgutils-js/utils';
 import { JSDOM, VirtualConsole } from 'jsdom';
 import { z } from 'zod';
+import { errorMessage, moduleLogger } from '../logger.ts';
 import type { WebPoSignalOutput } from 'bgutils-js/shared-types';
 import type { Innertube } from 'youtubei.js';
 
@@ -23,6 +24,8 @@ const EXPIRY_MARGIN_MS = 10 * 60 * 1000;
 // After a failure, wait before trying again instead of hitting Google on every song.
 const RETRY_DELAY_MS = 60 * 1000;
 const BLANK_PAGE = '<!doctype html><html><head></head><body></body></html>';
+
+const log = moduleLogger('po-token');
 
 /**
  * Mints Proof of Origin tokens with Google's BotGuard. Without one, googlevideo stops serving
@@ -110,9 +113,7 @@ export class PoTokenMinter {
 
     existing?.dom.window.close();
     this.#minter = this.#create(yt).catch((error: unknown) => {
-      console.warn(
-        `[po-token] ${error instanceof Error ? error.message : String(error)}; retrying later`,
-      );
+      log.warn({ err: error }, `${errorMessage(error)}; retrying later`);
       this.#retryAt = this.#now() + RETRY_DELAY_MS;
 
       return null;

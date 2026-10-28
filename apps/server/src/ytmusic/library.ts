@@ -1,12 +1,15 @@
 import type { Innertube } from 'youtubei.js';
 
 import { MusicError, err, ok } from '@lyra/shared';
+import { errorMessage, moduleLogger } from '../logger.ts';
 import type { CreatePlaylistInput, PlaylistCreated, Result } from '@lyra/shared';
 
 // YT Music shows playlists as "VL" + id; the editing endpoints want the bare id.
 const BROWSE_PREFIX = /^VL/;
 // Endpoints are called as music.youtube.com does, the same requests ytmusicapi sends.
 const CLIENT = 'YTMUSIC';
+
+const log = moduleLogger('library');
 
 function playlistId(id: string) {
   return id.replace(BROWSE_PREFIX, '');
@@ -16,9 +19,7 @@ async function write<T>(label: string, task: () => Promise<T>): Promise<Result<T
   try {
     return ok(await task());
   } catch (error) {
-    console.warn(
-      `[library] ${label}: ${error instanceof Error ? error.message.split('\n')[0] : String(error)}`,
-    );
+    log.warn(`${label}: ${errorMessage(error)}`);
 
     return err(MusicError.Upstream);
   }

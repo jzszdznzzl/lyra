@@ -18,6 +18,7 @@ import type {
 
 import { describeHeader } from './headers.ts';
 import { bestThumbnail, toMediaItems, toShelves, toTracks } from './mappers.ts';
+import { moduleLogger } from '../logger.ts';
 
 const SEARCH_TYPES = {
   [SearchFilter.All]: 'all',
@@ -37,13 +38,15 @@ const HIDDEN_LIBRARY_PLAYLISTS = new Set(['VLLM', 'LM', 'VLSE', 'SE']);
 const BROWSE_PLAYLIST_PREFIX = 'VL';
 const HTTP_NOT_FOUND = /404|not found|does not exist/i;
 
+const log = moduleLogger('ytmusic');
+
 /** Normalizes youtubei.js failures into domain errors; real bugs still surface in the log. */
 async function attempt<T>(task: () => Promise<T>): Promise<Result<T, MusicError>> {
   try {
     return ok(await task());
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    console.warn(`[ytmusic] ${message}`);
+    log.warn(message);
 
     return err(HTTP_NOT_FOUND.test(message) ? MusicError.NotFound : MusicError.Upstream);
   }

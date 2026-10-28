@@ -1,3 +1,5 @@
+import { moduleLogger } from '../logger.ts';
+
 export interface ByteRange {
   start: number;
   end: number;
@@ -8,6 +10,7 @@ export const CHUNK_BYTES = 1024 * 1024;
 
 const RANGE_PATTERN = /^bytes=(\d*)-(\d*)$/;
 const HTTP_FORBIDDEN = 403;
+const log = moduleLogger('stream');
 
 /** Parses a single HTTP byte range against a known length; null when unsatisfiable. */
 export function parseRange(header: string | null, length: number): ByteRange | null {
@@ -104,9 +107,7 @@ export function chunkedBody(
         const response = await fetchPiece(piece);
 
         if (!response.ok) {
-          console.warn(
-            `[stream] upstream answered ${response.status} for bytes ${piece.start}-${piece.end}`,
-          );
+          log.warn(`upstream answered ${response.status} for bytes ${piece.start}-${piece.end}`);
           controller.error(new Error(`upstream ${response.status}`));
 
           return;

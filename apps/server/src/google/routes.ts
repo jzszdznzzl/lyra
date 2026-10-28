@@ -7,6 +7,7 @@ import { authPlugin } from '../auth/plugin.ts';
 import { getGoogleAccount, saveGoogleAccount, unlinkGoogleAccount } from './accounts.ts';
 import { GOOGLE_LOGIN_TARGET, RemoteLogin } from './remote-login.ts';
 import { verifyGoogleCookie } from './verify-cookie.ts';
+import { errorMessage, moduleLogger } from '../logger.ts';
 import type { AppContext } from '../context.ts';
 import type { ImageRegistry } from '../images/registry.ts';
 import type { InnertubePool } from '../ytmusic/innertube.ts';
@@ -25,6 +26,8 @@ export interface GoogleRoutesOptions {
   // Tests point the remote browser at a local fake instead of Google.
   loginTarget?: RemoteLoginTarget;
 }
+
+const log = moduleLogger('google');
 
 export function googleRoutes(
   ctx: AppContext,
@@ -116,9 +119,7 @@ export function googleRoutes(
           },
           ctx.env.BROWSER_EXECUTABLE,
         ).catch((error: unknown) => {
-          console.warn(
-            `[google] remote browser failed: ${error instanceof Error ? error.message : String(error)}`,
-          );
+          log.warn({ err: error }, `remote browser failed: ${errorMessage(error)}`);
 
           return undefined;
         });

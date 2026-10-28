@@ -4,6 +4,7 @@ import nodemailer from 'nodemailer';
 import type { Transporter } from 'nodemailer';
 
 import { MailTransport } from '../config/env.ts';
+import { moduleLogger } from '../logger.ts';
 import type { Env } from '../config/env.ts';
 import type { SettingsStore } from '../settings/settings.ts';
 
@@ -17,6 +18,8 @@ export interface Mail {
 export interface Mailer {
   send(mail: Mail): Promise<void>;
 }
+
+const log = moduleLogger('mail');
 
 /** Keeps sent mails in memory; tests read `sent` to follow links. */
 export class MemoryMailer implements Mailer {
@@ -52,7 +55,7 @@ export function createMailer(env: Env, settings: SettingsStore): Mailer {
   if (env.MAIL_TRANSPORT === MailTransport.Log) {
     return {
       send(mail) {
-        console.info(`[mail] to=${mail.to} subject=${mail.subject}\n${mail.text}`);
+        log.info(`to=${mail.to} subject=${mail.subject}\n${mail.text}`);
 
         return Promise.resolve();
       },

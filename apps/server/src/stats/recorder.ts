@@ -3,16 +3,19 @@ import { sql } from 'drizzle-orm';
 import type { StatEvent, Track } from '@lyra/shared';
 
 import { schema } from '../db/index.ts';
+import { errorMessage, moduleLogger } from '../logger.ts';
 import type { AppContext } from '../context.ts';
 
 const HOUR_MS = 60 * 60 * 1000;
+
+const log = moduleLogger('stats');
 
 /** Statistics must never break what they measure: a failed write is logged and dropped. */
 function quietly(label: string, write: () => void) {
   try {
     write();
   } catch (error) {
-    console.warn(`[stats] ${label}: ${error instanceof Error ? error.message : String(error)}`);
+    log.warn(`${label}: ${errorMessage(error)}`);
   }
 }
 
