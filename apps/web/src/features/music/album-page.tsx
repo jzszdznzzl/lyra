@@ -6,6 +6,8 @@ import { useDocumentTitle } from '../../lib/use-document-title.ts';
 
 import { albumQuery } from './api.ts';
 import { Page } from '../../ui/page.tsx';
+import { ShareButton } from '../share/share-button.tsx';
+import { ShareKind } from '../share/share.ts';
 import { CollectionHeader } from './collection-header.tsx';
 import { ErrorState, LoadingState } from './query-state.tsx';
 import { TrackList } from './track-list.tsx';
@@ -40,6 +42,7 @@ export function AlbumPage() {
         subtitle={album.data.subtitle}
         thumbnail={album.data.thumbnail}
         tracks={album.data.tracks}
+        actions={<ShareButton kind={ShareKind.Album} id={album.data.id} title={album.data.title} />}
       />
       <TrackList tracks={album.data.tracks} showCovers={false} showIndex />
     </Page>

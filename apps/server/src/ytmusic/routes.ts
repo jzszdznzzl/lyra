@@ -14,12 +14,14 @@ import {
 import type { Result } from '@lyra/shared';
 
 import { authPlugin } from '../auth/plugin.ts';
+import { sessionRateLimit } from '../security.ts';
 import { cleanTitle } from '../lyrics/lyrics.ts';
 import { INVALID_QUERY, parseQuery } from '../query.ts';
 import {
   getAlbum,
   getArtist,
   getExplore,
+  getTrack,
   getHome,
   getLibraryPlaylists,
   getLikedSongs,
@@ -41,6 +43,7 @@ import {
 } from './library.ts';
 import type { User } from '../auth/sessions.ts';
 import type { AppContext } from '../context.ts';
+import type { ImageRegistry } from '../images/registry.ts';
 import type { InnertubePool } from './innertube.ts';
 
 const MUSIC_ERROR_STATUS = {
@@ -55,7 +58,7 @@ const IdParams = z.object({ id: z.string().regex(/^[\w-]{2,64}$/) });
 const VideoParams = z.object({ id: z.string().regex(/^[\w-]{11}$/) });
 const SuggestionQuery = z.object({ q: z.string().trim().min(1).max(200) });
 
-export function musicRoutes(ctx: AppContext, pool: InnertubePool) {
+export function musicRoutes(ctx: AppContext, pool: InnertubePool, images: ImageRegistry) {
   const clientFor = (user: User) => musicClient(ctx, pool, user);
 
   /** Library data only exists for a signed-in YT Music account. */
@@ -80,6 +83,11 @@ export function musicRoutes(ctx: AppContext, pool: InnertubePool) {
   return (
     new Elysia({ prefix: '/music' })
       .use(authPlugin(ctx))
+      .use(sessionRateLimit(ctx, 'music', 120))
+      // Cover URLs are swapped for lyra image ids before anything leaves the server.
+      .onAfterHandle(async ({ responseValue }) => {
+        await images.rewrite(responseValue);
+      })
       .get(
         '/home',
         async ({ user, status }) => respond(await getHome(await clientFor(user)), status),
@@ -115,6 +123,12 @@ export function musicRoutes(ctx: AppContext, pool: InnertubePool) {
             : status(422, INVALID_QUERY);
         },
         { isSignedIn: true },
+      )
+      .get(
+        '/tracks/:id',
+        async ({ user, params, status }) =>
+          respond(await getTrack(await clientFor(user), params.id), status),
+        { isSignedIn: true, params: VideoParams },
       )
       .get(
         '/albums/:id',

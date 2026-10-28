@@ -99,6 +99,32 @@ function topResult(card: YTNodes.MusicCardShelf): MediaItem[] {
   return items;
 }
 
+/** One song by id, for shared links; YouTube gives its artists as one "A, B & C" string. */
+export function getTrack(yt: Innertube, videoId: string): Promise<Result<Track, MusicError>> {
+  return attempt(async () => {
+    const info = await yt.music.getInfo(videoId);
+    const basic = info.basic_info;
+    const names = (basic.author ?? '')
+      .split(/\s*(?:,\s*&|,|&)\s*/)
+      .map((name) => name.trim())
+      .filter(Boolean);
+
+    return {
+      kind: MediaKind.Song,
+      id: videoId,
+      title: basic.title ?? '',
+      artists: names.map((name, index) => ({
+        id: index === 0 ? (basic.channel_id ?? null) : null,
+        name,
+      })),
+      album: null,
+      durationSeconds: basic.duration ?? null,
+      thumbnail: bestThumbnail(basic.thumbnail),
+      isExplicit: false,
+    };
+  });
+}
+
 export function getExplore(yt: Innertube): Promise<Result<HomeFeed, MusicError>> {
   return attempt(async () => {
     const explore = await yt.music.getExplore();

@@ -9,6 +9,7 @@ import {
   ListPlus,
   ListStart,
   MoreHorizontal,
+  Share2,
   Trash2,
   User,
 } from 'lucide-react';
@@ -21,6 +22,8 @@ import { Menu } from '../../ui/menu.tsx';
 import type { MenuItem } from '../../ui/menu.tsx';
 import { meQuery } from '../auth/api.ts';
 import { useDownloads } from '../offline/downloads.ts';
+import { useShare } from '../share/share-button.tsx';
+import { ShareKind } from '../share/share.ts';
 import { usePlayerStore } from '../player/player-store.ts';
 import { removeFromPlaylist } from './api.ts';
 import { AddToPlaylistDialog } from './playlist-dialogs.tsx';
@@ -47,6 +50,7 @@ export function TrackMenu({ track, playlist }: TrackMenuProps) {
   const { playNext, addToQueue } = usePlayerStore.getState();
   const hasLibrary = me?.isGoogleLinked ?? false;
   const isDownloaded = useDownloads((state) => state.records.has(track.id));
+  const share = useShare();
   const albumId = track.album?.id ?? null;
   const artistId = track.artists.find((artist) => artist.id)?.id ?? null;
 
@@ -106,6 +110,12 @@ export function TrackMenu({ track, playlist }: TrackMenuProps) {
       },
     });
   }
+
+  items.push({
+    label: t('share.action'),
+    icon: <Share2 className="size-4" />,
+    onSelect: () => void share(ShareKind.Track, track.id, track.title),
+  });
 
   if (albumId) {
     items.push({

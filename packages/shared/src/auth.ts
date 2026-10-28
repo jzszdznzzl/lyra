@@ -15,6 +15,7 @@ export const AuthError = Object.freeze({
   PasskeyFailed: 'passkey_failed',
   NotFound: 'not_found',
   InvalidImage: 'invalid_image',
+  RegistrationClosed: 'registration_closed',
 } as const);
 
 export type AuthError = (typeof AuthError)[keyof typeof AuthError];
@@ -188,3 +189,8 @@ export const PasskeyLoginInput = z.object({
 });
 
 export type PasskeyLoginInput = z.infer<typeof PasskeyLoginInput>;
+
+/** Public settings the app needs before anyone signs in. */
+export const PublicConfig = z.object({ isRegistrationEnabled: z.boolean() });
+
+export type PublicConfig = z.infer<typeof PublicConfig>;

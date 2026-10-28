@@ -159,7 +159,8 @@
     "invalid_cookies": "Esas cookies no contienen una sesión de YouTube iniciada.",
     "not_signed_in": "Google no terminó de iniciar sesión. Inténtalo de nuevo.",
     "browser_unavailable": "El navegador de inicio de sesión no pudo arrancar en el servidor.",
-    "browser_busy": "Hay otro inicio de sesión en curso. Inténtalo en un minuto."
+    "browser_busy": "Hay otro inicio de sesión en curso. Inténtalo en un minuto.",
+    "registration_closed": "No se pueden crear cuentas nuevas en este Lyra."
   },
   "search": {
     "placeholder": "Canciones, álbumes, artistas, vídeos",
@@ -193,7 +194,8 @@
     "song": "Canción",
     "linkToSeeLibrary": "Vincula Google para ver tus playlists.",
     "loadFailed": "No se pudo cargar esta página.",
-    "retry": "Reintentar"
+    "retry": "Reintentar",
+    "similar": "Canciones similares"
   },
   "google": {
     "browser": {
@@ -361,5 +363,10 @@
     "crash": "Algo se rompió",
     "crashBody": "Lyra tuvo un error inesperado en esta página.",
     "reload": "Recargar"
+  },
+  "share": {
+    "action": "Compartir",
+    "copied": "Enlace copiado",
+    "failed": "No se pudo compartir el enlace"
   }
 }

@@ -2,7 +2,12 @@ import { afterAll, beforeAll, describe, expect, test } from 'bun:test';
 import type { Server } from 'bun';
 
 import { createApp } from '../../app.ts';
-import { TestClient, createTestContext, linkToken } from '../../testing/test-context.ts';
+import {
+  TEST_ORIGIN,
+  TestClient,
+  createTestContext,
+  linkToken,
+} from '../../testing/test-context.ts';
 
 const PASSWORD = 'violet-harbor-71-quietly-ember';
 const FAKE_LOGIN = `<!doctype html><body><button style="width:300px;height:300px"
@@ -68,7 +73,7 @@ describe('google routes', () => {
     const closed = Promise.withResolvers<void>();
 
     const socket = new WebSocket(`ws://localhost:${server.server?.port}/api/google/browser`, {
-      headers: { cookie: client.cookie },
+      headers: { cookie: client.cookie, origin: TEST_ORIGIN },
     });
     socket.addEventListener('message', (event) => {
       const message: { type: string; error?: string } = JSON.parse(String(event.data));

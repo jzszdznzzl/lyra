@@ -9,12 +9,22 @@ import type { PlaylistPage as PlaylistData } from '@lyra/shared';
 import { PlaylistActions } from '../library/playlist-actions.tsx';
 import { likedQuery, playlistQuery } from './api.ts';
 import { Page } from '../../ui/page.tsx';
+import { ShareButton } from '../share/share-button.tsx';
+import { ShareKind } from '../share/share.ts';
 import { CollectionHeader } from './collection-header.tsx';
 import { ErrorState, LoadingState } from './query-state.tsx';
 import { TrackList } from './track-list.tsx';
 import type { UseQueryResult } from '@tanstack/react-query';
 
-function PlaylistView({ query, title }: { query: UseQueryResult<PlaylistData>; title?: string }) {
+function PlaylistView({
+  query,
+  title,
+  isShareable = true,
+}: {
+  query: UseQueryResult<PlaylistData>;
+  title?: string;
+  isShareable?: boolean;
+}) {
   const { t } = useTranslation();
   useDocumentTitle(title ?? query.data?.title);
 
@@ -43,9 +53,14 @@ function PlaylistView({ query, title }: { query: UseQueryResult<PlaylistData>; t
         thumbnail={query.data.thumbnail}
         tracks={query.data.tracks}
         actions={
-          query.data.isEditable ? (
-            <PlaylistActions id={query.data.id} title={query.data.title} />
-          ) : null
+          <>
+            {isShareable ? (
+              <ShareButton kind={ShareKind.Playlist} id={query.data.id} title={query.data.title} />
+            ) : null}
+            {query.data.isEditable ? (
+              <PlaylistActions id={query.data.id} title={query.data.title} />
+            ) : null}
+          </>
         }
       />
       <TrackList
@@ -65,5 +80,8 @@ export function PlaylistPage() {
 export function LikedPage() {
   const { t } = useTranslation();
 
-  return <PlaylistView query={useQuery(likedQuery)} title={t('music.likedSongs')} />;
+  // Liked songs is private to the account; a link to it would open someone else's.
+  return (
+    <PlaylistView query={useQuery(likedQuery)} title={t('music.likedSongs')} isShareable={false} />
+  );
 }

@@ -49,6 +49,10 @@ export function authRoutes(ctx: AppContext, options: AuthRoutesOptions) {
     .post(
       '/register',
       async ({ body, request, server, status }) => {
+        if (!ctx.env.REGISTRATION_ENABLED) {
+          return status(403, { error: AuthError.RegistrationClosed });
+        }
+
         if (!mailLimiter.hit(`register:${clientInfo(ctx, request, server).ip}`)) {
           return status(429, { error: AuthError.TooManyRequests });
         }

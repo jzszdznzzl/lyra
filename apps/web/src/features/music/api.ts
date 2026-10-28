@@ -8,6 +8,8 @@ import {
   PlaylistPage,
   SearchResults,
   SearchSuggestions,
+  Track,
+  UpNext,
 } from '@lyra/shared';
 import type { SearchFilter } from '@lyra/shared';
 
@@ -57,6 +59,20 @@ export const suggestionsQuery = (q: string) =>
       ),
     staleTime: 5 * MINUTE_MS,
     enabled: q.trim() !== '',
+  });
+
+export const trackQuery = (id: string) =>
+  queryOptions({
+    queryKey: ['music', 'track', id],
+    queryFn: async () => unwrap(await api('GET', `/music/tracks/${path(id)}`, Track)),
+    staleTime: 60 * MINUTE_MS,
+  });
+
+export const upNextQuery = (id: string) =>
+  queryOptions({
+    queryKey: ['music', 'up-next', id],
+    queryFn: async () => unwrap(await api('GET', `/music/up-next/${path(id)}`, UpNext)),
+    staleTime: 30 * MINUTE_MS,
   });
 
 export const albumQuery = (id: string) =>

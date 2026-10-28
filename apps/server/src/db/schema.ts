@@ -80,3 +80,10 @@ export const googleAccounts = sqliteTable('google_accounts', {
   photo: text('photo'),
   linkedAt: timestamp('linked_at').notNull(),
 });
+
+export const images = sqliteTable('images', {
+  // First 128 bits of the URL's SHA-256, base64url: opaque, stable and safe to put in paths.
+  id: text('id').primaryKey(),
+  url: text('url').notNull(),
+  createdAt: timestamp('created_at').notNull(),
+});

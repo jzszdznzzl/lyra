@@ -15,6 +15,13 @@
       "when": 1793151242443,
       "tag": "0001_lumpy_pestilence",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1793169974296,
+      "tag": "0002_red_bullseye",
+      "breakpoints": true
     }
   ]
 }

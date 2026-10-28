@@ -10,6 +10,8 @@ import type { Track } from '@lyra/shared';
 import { usePlayerStore } from '../player/player-store.ts';
 import { artistQuery } from './api.ts';
 import { Page } from '../../ui/page.tsx';
+import { ShareButton } from '../share/share-button.tsx';
+import { ShareKind } from '../share/share.ts';
 import { CollectionHeader } from './collection-header.tsx';
 import { ErrorState, LoadingState } from './query-state.tsx';
 import { Shelf } from './shelf.tsx';
@@ -55,6 +57,9 @@ export function ArtistPage() {
         thumbnail={artist.data.thumbnail}
         tracks={topSongs}
         isRound
+        actions={
+          <ShareButton kind={ShareKind.Artist} id={artist.data.id} title={artist.data.name} />
+        }
       />
       {topSongs.length > 0 ? (
         <section>

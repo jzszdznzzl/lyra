@@ -10,7 +10,7 @@ import { z } from 'zod';
 import { SearchFilter } from '@lyra/shared';
 import type { QueryClient } from '@tanstack/react-query';
 
-import { meQuery } from '../features/auth/api.ts';
+import { configQuery, meQuery } from '../features/auth/api.ts';
 import { AuthLayout } from '../features/auth/auth-layout.tsx';
 import { CheckEmailPage } from '../features/auth/check-email-page.tsx';
 import { ForgotPasswordPage } from '../features/auth/forgot-password-page.tsx';
@@ -24,6 +24,7 @@ import { ArtistPage } from '../features/music/artist-page.tsx';
 import { ExplorePage } from '../features/music/explore-page.tsx';
 import { LikedPage, PlaylistPage } from '../features/music/playlist-page.tsx';
 import { SearchPage } from '../features/music/search-page.tsx';
+import { TrackPage } from '../features/music/track-page.tsx';
 import { DownloadsPage } from '../features/offline/downloads-page.tsx';
 import { ProfilePage } from '../features/profile/profile-page.tsx';
 import { AppLayout } from './app-layout.tsx';
@@ -35,6 +36,8 @@ interface RouterContext {
 
 const TokenSearch = z.object({ token: z.string().catch('') });
 const EmailSearch = z.object({ email: z.string().catch('') });
+// Only paths inside the app ("/track/…"), never "//evil.example" or full URLs.
+const SafeRedirect = z.string().regex(/^\/(?!\/)/);
 const MusicSearch = z.object({
   q: z.string().catch(''),
   filter: z.enum(SearchFilter).catch(SearchFilter.All),
@@ -57,13 +60,24 @@ const authRoute = createRoute({
 const registerRoute = createRoute({
   getParentRoute: () => authRoute,
   path: '/register',
-  beforeLoad: redirectIfSignedIn,
+  beforeLoad: async ({ context }) => {
+    await redirectIfSignedIn({ context });
+
+    if (!(await context.queryClient.ensureQueryData(configQuery)).isRegistrationEnabled) {
+      throw redirect({ to: '/login' });
+    }
+  },
   component: RegisterPage,
 });
 
 const loginRoute = createRoute({
   getParentRoute: () => authRoute,
   path: '/login',
+  validateSearch: (search): { redirect?: string } => {
+    const target = SafeRedirect.safeParse(search['redirect']);
+
+    return target.success ? { redirect: target.data } : {};
+  },
   beforeLoad: redirectIfSignedIn,
   component: LoginPage,
 });
@@ -99,10 +113,18 @@ const resetPasswordRoute = createRoute({
 const appRoute = createRoute({
   getParentRoute: () => rootRoute,
   id: 'app',
-  beforeLoad: async ({ context }) => {
+  beforeLoad: async ({ context, location }) => {
     // The first page asks for an account; signing in is one link away from there.
     if (!(await context.queryClient.ensureQueryData(meQuery))) {
-      throw redirect({ to: '/register' });
+      const config = await context.queryClient.ensureQueryData(configQuery);
+      const target = location.href;
+
+      // A shared link opened while signed out comes back after signing in.
+      if (config.isRegistrationEnabled && target === '/') {
+        throw redirect({ to: '/register' });
+      }
+
+      throw redirect({ to: '/login', search: { redirect: target } });
     }
   },
   component: AppLayout,
@@ -115,6 +137,12 @@ const searchRoute = createRoute({
   path: '/search',
   validateSearch: (search) => MusicSearch.parse(search),
   component: SearchPage,
+});
+
+const trackRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/track/$id',
+  component: TrackPage,
 });
 
 const albumRoute = createRoute({
@@ -171,6 +199,7 @@ const routeTree = rootRoute.addChildren([
   appRoute.addChildren([
     homeRoute,
     searchRoute,
+    trackRoute,
     albumRoute,
     artistRoute,
     playlistRoute,

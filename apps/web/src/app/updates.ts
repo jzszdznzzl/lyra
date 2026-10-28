@@ -4,6 +4,13 @@ import { PlaybackStatus, usePlayerStore } from '../features/player/player-store.
 
 const CHECK_INTERVAL_MS = 30 * 60 * 1000;
 
+// Only audio playing on this device matters; mirroring another device's playback does not.
+function isPlayingHere() {
+  const { status, remote } = usePlayerStore.getState();
+
+  return status === PlaybackStatus.Playing && remote === null;
+}
+
 /**
  * Installs new versions as soon as nothing is playing: right away when idle, otherwise at the
  * next pause. Switching versions reloads the page, which would cut a song short.
@@ -16,7 +23,7 @@ export function startUpdates() {
     onNeedRefresh: () => {
       const apply = () => void updateSW(true);
 
-      if (usePlayerStore.getState().status !== PlaybackStatus.Playing) {
+      if (!isPlayingHere()) {
         apply();
 
         return;
@@ -27,8 +34,8 @@ export function startUpdates() {
       }
 
       isWaitingForPause = true;
-      const unsubscribe = usePlayerStore.subscribe((state) => {
-        if (state.status !== PlaybackStatus.Playing) {
+      const unsubscribe = usePlayerStore.subscribe(() => {
+        if (!isPlayingHere()) {
           unsubscribe();
           apply();
         }

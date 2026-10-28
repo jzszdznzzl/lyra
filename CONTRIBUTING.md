@@ -40,6 +40,7 @@ The host machine has many ports in use, so lyra uses random high ports: the serv
    - `WEB_DIST`: absolute path to `apps/web/dist`, so one process serves the API and the app.
    - `TRUST_PROXY=true` only when every request comes through a reverse proxy or tunnel that sets `CF-Connecting-IP`; never when the port is reachable directly.
    - `SECRET_KEY`: keep it safe; losing it unlinks every Google account.
+   - `REGISTRATION_ENABLED=false` once your accounts exist: sign-ups are refused and the app hides them.
 3. Start the server with Bun from a directory without a `.env` (Bun would load it):
    `bun --env-file=/path/to/lyra.env /path/to/lyra/apps/server/dist/main.mjs`.
    Database migrations run on start.

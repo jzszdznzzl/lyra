@@ -1,5 +1,5 @@
-import { useQueryClient } from '@tanstack/react-query';
-import { Link, useNavigate } from '@tanstack/react-router';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { Link, useNavigate, useSearch } from '@tanstack/react-router';
 import { Fingerprint } from 'lucide-react';
 import { useState } from 'react';
 import type { FormEvent } from 'react';
@@ -10,6 +10,7 @@ import { Notice, NoticeTone } from '../../ui/notice.tsx';
 import { TextField } from '../../ui/text-field.tsx';
 import { ApiError } from '../../lib/api.ts';
 import {
+  configQuery,
   finishPasskeyLogin,
   login,
   meQuery,
@@ -24,6 +25,8 @@ export function LoginPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { redirect: redirectTo } = useSearch({ from: '/auth/login' });
+  const config = useQuery(configQuery);
   const errorText = useErrorText();
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
@@ -32,7 +35,7 @@ export function LoginPage() {
 
   async function signedIn(profile: UserProfile) {
     queryClient.setQueryData(meQuery.queryKey, profile);
-    await navigate({ to: '/' });
+    await navigate({ to: redirectTo ?? '/' });
   }
 
   async function submit(event: FormEvent) {
@@ -143,12 +146,14 @@ export function LoginPage() {
           {t('auth.login.submit')}
         </Button>
       </form>
-      <p className="text-center text-sm text-muted">
-        {t('auth.login.noAccount')}{' '}
-        <Link to="/register" className="font-bold text-text hover:text-accent">
-          {t('auth.login.createAccount')}
-        </Link>
-      </p>
+      {config.data?.isRegistrationEnabled === false ? null : (
+        <p className="text-center text-sm text-muted">
+          {t('auth.login.noAccount')}{' '}
+          <Link to="/register" className="font-bold text-text hover:text-accent">
+            {t('auth.login.createAccount')}
+          </Link>
+        </p>
+      )}
     </div>
   );
 }

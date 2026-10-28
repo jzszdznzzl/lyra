@@ -159,7 +159,8 @@
     "invalid_cookies": "Those cookies don't contain a signed-in YouTube session.",
     "not_signed_in": "Google didn't finish signing in. Try again.",
     "browser_unavailable": "The sign-in browser couldn't start on the server.",
-    "browser_busy": "Another sign-in is in progress. Try again in a minute."
+    "browser_busy": "Another sign-in is in progress. Try again in a minute.",
+    "registration_closed": "New accounts are closed on this Lyra."
   },
   "search": {
     "placeholder": "Songs, albums, artists, videos",
@@ -193,7 +194,8 @@
     "song": "Song",
     "linkToSeeLibrary": "Link Google to see your playlists.",
     "loadFailed": "Couldn't load this page.",
-    "retry": "Try again"
+    "retry": "Try again",
+    "similar": "Similar songs"
   },
   "google": {
     "browser": {
@@ -361,5 +363,10 @@
     "crash": "Something broke",
     "crashBody": "Lyra hit an unexpected error on this page.",
     "reload": "Reload"
+  },
+  "share": {
+    "action": "Share",
+    "copied": "Link copied",
+    "failed": "Could not share the link"
   }
 }

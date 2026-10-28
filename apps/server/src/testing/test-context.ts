@@ -58,6 +58,8 @@ export class TestClient {
     const headers = new Headers({
       'user-agent': this.#userAgent,
       'cf-connecting-ip': '203.0.113.7',
+      // Like a browser on the app's own page, which the origin guard expects.
+      origin: TEST_ORIGIN,
     });
 
     if (this.#cookie) {

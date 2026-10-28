@@ -3,6 +3,7 @@ import { z } from 'zod';
 
 import {
   PasskeyInfo,
+  PublicConfig,
   PasskeyLoginStart,
   PasskeyRegistrationStart,
   SessionInfo,
@@ -44,6 +45,17 @@ function writeCachedProfile(profile: UserProfile | null) {
     // Storage can be blocked; the app then simply needs the network to start.
   }
 }
+
+export const configQuery = queryOptions({
+  queryKey: ['config'],
+  queryFn: async () => {
+    const result = await api('GET', '/config', PublicConfig);
+
+    // Offline nobody signs up anyway; assume the usual setting.
+    return result.data ?? { isRegistrationEnabled: true };
+  },
+  staleTime: Number.POSITIVE_INFINITY,
+});
 
 export const meQuery = queryOptions({
   queryKey: ['me'],

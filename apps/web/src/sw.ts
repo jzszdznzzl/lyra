@@ -69,7 +69,7 @@ async function trimCache(cache: Cache, max: number) {
 
 // Covers rarely change and make the offline library recognisable: cache first, capped in size.
 registerRoute(
-  ({ url }) => url.origin === self.location.origin && url.pathname === '/api/images',
+  ({ url }) => url.origin === self.location.origin && url.pathname.startsWith('/api/images/'),
   async ({ request }) => {
     const cache = await caches.open(IMAGE_CACHE);
     const hit = await cache.match(request);

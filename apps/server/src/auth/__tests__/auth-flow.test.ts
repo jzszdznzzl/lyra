@@ -236,3 +236,18 @@ describe('password reset', () => {
     ).toEqual({ error: 'invalid_token' });
   });
 });
+
+describe('closed registration', () => {
+  test('refuses sign-ups and says so in the public config', async () => {
+    const closed = createTestContext();
+    const closedApp = createApp({ ...closed, env: { ...closed.env, REGISTRATION_ENABLED: false } });
+    const client = new TestClient(closedApp);
+
+    expect((await client.request('GET', '/config')).body).toEqual({ isRegistrationEnabled: false });
+    expect(await client.request('POST', '/auth/register', ACCOUNT)).toEqual({
+      status: 403,
+      body: { error: 'registration_closed' },
+    });
+    expect(closed.mailer.sent).toHaveLength(0);
+  });
+});

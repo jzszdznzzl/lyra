@@ -8,6 +8,7 @@ import { getGoogleAccount, saveGoogleAccount, unlinkGoogleAccount } from './acco
 import { GOOGLE_LOGIN_TARGET, RemoteLogin } from './remote-login.ts';
 import { verifyGoogleCookie } from './verify-cookie.ts';
 import type { AppContext } from '../context.ts';
+import type { ImageRegistry } from '../images/registry.ts';
 import type { InnertubePool } from '../ytmusic/innertube.ts';
 import type { RemoteLoginTarget } from './remote-login.ts';
 
@@ -20,18 +21,22 @@ const GOOGLE_ERROR_STATUS = {
 
 export interface GoogleRoutesOptions {
   pool: InnertubePool;
+  images: ImageRegistry;
   // Tests point the remote browser at a local fake instead of Google.
   loginTarget?: RemoteLoginTarget;
 }
 
 export function googleRoutes(
   ctx: AppContext,
-  { pool, loginTarget = GOOGLE_LOGIN_TARGET }: GoogleRoutesOptions,
+  { pool, images, loginTarget = GOOGLE_LOGIN_TARGET }: GoogleRoutesOptions,
 ) {
   const sessions = new Map<string, RemoteLogin>();
 
   return new Elysia({ prefix: '/google' })
     .use(authPlugin(ctx))
+    .onAfterHandle(async ({ responseValue }) => {
+      await images.rewrite(responseValue);
+    })
     .get('/', async ({ user }) => ({ account: await getGoogleAccount(ctx, user.id) }), {
       isSignedIn: true,
     })
@@ -92,6 +97,7 @@ export function googleRoutes(
                   verified.data,
                 );
                 pool.forget(user.id);
+                await images.rewrite(account);
                 send({ type: 'linked', account });
               }
 

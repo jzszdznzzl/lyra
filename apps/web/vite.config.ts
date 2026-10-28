@@ -21,7 +21,12 @@ export default defineConfig({
       // 'prompt': the app decides when to switch (never mid-song), see app/updates.ts.
       registerType: 'prompt',
       injectRegister: false,
-      injectManifest: { globPatterns: ['**/*.{js,css,html,svg,png,woff2}'] },
+      injectManifest: {
+        globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
+        // The share banner is only for link previews; no need to store it on every device.
+        globIgnores: ['og.png'],
+        sourcemap: false,
+      },
       manifest: {
         name: 'Lyra',
         short_name: 'Lyra',
@@ -47,6 +52,10 @@ export default defineConfig({
       },
     }),
   ],
+  build: {
+    // Explicit: shipping the original sources would publish the whole client code base.
+    sourcemap: false,
+  },
   server: {
     port: WEB_PORT,
     strictPort: true,
