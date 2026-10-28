@@ -123,3 +123,13 @@ export const lastPlayed = sqliteTable('last_played', {
   track: text('track', { mode: 'json' }).$type<unknown>().notNull(),
   playedAt: timestamp('played_at').notNull(),
 });
+
+export const announcements = sqliteTable('announcements', {
+  id: text('id').primaryKey(),
+  message: text('message').notNull(),
+  level: text('level').notNull(),
+  // Kept when the admin who wrote it is deleted; the message is the server's, not theirs.
+  createdBy: text('created_by').references(() => users.id, { onDelete: 'set null' }),
+  createdAt: timestamp('created_at').notNull(),
+  expiresAt: timestamp('expires_at').notNull(),
+});

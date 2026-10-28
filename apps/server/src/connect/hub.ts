@@ -177,6 +177,15 @@ export class ConnectHub {
     return room ? this.#activity(room) : null;
   }
 
+  /** Sends `message` to every connected device of every account. */
+  broadcastAll(message: ServerMessage) {
+    for (const room of this.#rooms.values()) {
+      for (const member of room.members.values()) {
+        member.socket.send(message);
+      }
+    }
+  }
+
   /** Disconnects every device of the user, e.g. when an admin suspends or deletes the account. */
   kick(userId: string) {
     const room = this.#rooms.get(userId);

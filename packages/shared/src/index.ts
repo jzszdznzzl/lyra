@@ -1,4 +1,5 @@
 export * from './admin.ts';
+export * from './announcements.ts';
 export * from './api-tokens.ts';
 export * from './auth.ts';
 export * from './connect.ts';

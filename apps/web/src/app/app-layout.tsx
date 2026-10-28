@@ -1,4 +1,4 @@
-import { useSuspenseQuery } from '@tanstack/react-query';
+import { useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
 import { Link, Outlet, useCanGoBack, useRouter, useRouterState } from '@tanstack/react-router';
 import {
   ChevronLeft,
@@ -13,6 +13,8 @@ import {
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { AnnouncementBanner } from '../features/announcements/announcement-banner.tsx';
+import { announcementsQuery } from '../features/announcements/api.ts';
 import { meQuery } from '../features/auth/api.ts';
 import { startConnect } from '../features/connect/connect-client.ts';
 import { CreatePlaylistDialog } from '../features/library/playlist-dialogs.tsx';
@@ -51,10 +53,18 @@ export function AppLayout() {
   const router = useRouter();
   const canGoBack = useCanGoBack();
   const isHome = useRouterState({ select: (state) => state.location.pathname === '/' });
+  const queryClient = useQueryClient();
 
   useMediaSession();
   useCoverTheme();
-  useEffect(() => startConnect(), []);
+  useEffect(
+    () =>
+      startConnect({
+        onAnnouncements: () =>
+          void queryClient.invalidateQueries({ queryKey: announcementsQuery.queryKey }),
+      }),
+    [queryClient],
+  );
   useEffect(() => {
     void useDownloads.getState().load();
   }, []);
@@ -153,6 +163,7 @@ export function AppLayout() {
             {t('offline.banner')}
           </p>
         )}
+        <AnnouncementBanner />
         <Outlet />
       </main>
       <NowPlayingPanel />

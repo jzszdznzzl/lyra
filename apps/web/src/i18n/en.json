@@ -432,7 +432,8 @@
   "admin": {
     "title": "Admin panel",
     "tabs": {
-      "users": "Users"
+      "users": "Users",
+      "announcements": "Announcements"
     },
     "users": {
       "title_one": "{{count}} user",
@@ -452,6 +453,26 @@
       "deleteConfirm": "Delete {{name}}'s account? Everything is erased and it cannot be undone.",
       "done": "Done",
       "none": "Nobody matches the search."
+    },
+    "announcements": {
+      "new": "New announcement",
+      "message": "Message",
+      "placeholder": "E.g. Tonight at 22:00 Lyra restarts for a few minutes.",
+      "level": "Type",
+      "levels": {
+        "info": "Information",
+        "warning": "Warning"
+      },
+      "duration": "Shown for",
+      "publish": "Publish",
+      "recent": "Recent",
+      "none": "No announcements yet.",
+      "endsIn": "ends {{date}}",
+      "ended": "ended {{date}}",
+      "end": "End now"
     }
+  },
+  "announcements": {
+    "dismiss": "Close announcement"
   }
 }

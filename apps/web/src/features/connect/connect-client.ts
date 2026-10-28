@@ -13,8 +13,13 @@ const REPORT_DEBOUNCE_MS = 150;
 const SEEK_TOLERANCE_SECONDS = 1.5;
 const REMOTE_TICK_MS = 500;
 
+interface ConnectOptions {
+  // An admin published or ended an announcement.
+  onAnnouncements?: () => void;
+}
+
 /** Keeps this tab in the account's Connect room and bridges it to the player. */
-export function startConnect() {
+export function startConnect({ onAnnouncements }: ConnectOptions = {}) {
   const device = thisDevice();
   let socket: WebSocket | null = null;
   let retryMs = RECONNECT_MIN_MS;
@@ -105,6 +110,10 @@ export function startConnect() {
       }
       case 'release': {
         player.release();
+        break;
+      }
+      case 'announcements': {
+        onAnnouncements?.();
         break;
       }
       default: {

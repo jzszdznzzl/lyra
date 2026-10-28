@@ -1,6 +1,7 @@
 import type { z } from 'zod';
 
 export const INVALID_QUERY = { type: 'validation', on: 'query' } as const;
+export const INVALID_BODY = { type: 'validation', on: 'body' } as const;
 
 /**
  * Elysia splits every comma-separated query value into an array when a Standard Schema

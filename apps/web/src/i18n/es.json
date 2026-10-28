@@ -432,7 +432,8 @@
   "admin": {
     "title": "Administración",
     "tabs": {
-      "users": "Usuarios"
+      "users": "Usuarios",
+      "announcements": "Comunicados"
     },
     "users": {
       "title_one": "{{count}} usuario",
@@ -452,6 +453,26 @@
       "deleteConfirm": "¿Eliminar la cuenta de {{name}}? Se borra todo y no se puede deshacer.",
       "done": "Listo",
       "none": "Nadie coincide con la búsqueda."
+    },
+    "announcements": {
+      "new": "Nuevo comunicado",
+      "message": "Mensaje",
+      "placeholder": "Ej.: Esta noche a las 22:00 Lyra se reinicia unos minutos.",
+      "level": "Tipo",
+      "levels": {
+        "info": "Información",
+        "warning": "Aviso"
+      },
+      "duration": "Se muestra durante",
+      "publish": "Publicar",
+      "recent": "Recientes",
+      "none": "Todavía no publicaste comunicados.",
+      "endsIn": "termina {{date}}",
+      "ended": "terminó {{date}}",
+      "end": "Terminar ahora"
     }
+  },
+  "announcements": {
+    "dismiss": "Cerrar comunicado"
   }
 }

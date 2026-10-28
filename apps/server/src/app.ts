@@ -3,6 +3,7 @@ import { Elysia } from 'elysia';
 import type { PublicConfig } from '@lyra/shared';
 
 import { adminRoutes } from './admin/routes.ts';
+import { announcementRoutes } from './announcements/routes.ts';
 import { apiTokenRoutes } from './api-tokens/routes.ts';
 import { ChallengeStore } from './auth/passkeys.ts';
 import { authRoutes } from './auth/routes.ts';
@@ -66,7 +67,14 @@ export function createApp(ctx: AppContext, options: AppOptions = {}) {
     .use(lyricsRoutes(ctx, pool))
     .use(connectRoutes(ctx, hub))
     .use(apiTokenRoutes(ctx))
-    .use(adminRoutes(ctx, { onAccountRemoved: forget, onSignedOut: signOut }))
+    .use(
+      adminRoutes(ctx, {
+        onAccountRemoved: forget,
+        onSignedOut: signOut,
+        onAnnouncementsChanged: () => hub.broadcastAll({ type: 'announcements' }),
+      }),
+    )
+    .use(announcementRoutes(ctx))
     .use(nowPlayingRoutes(ctx, nowPlaying, covers))
     .use(imageRoutes(ctx, images));
 }

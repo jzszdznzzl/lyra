@@ -92,6 +92,8 @@ export const ServerMessage = z.discriminatedUnion('type', [
   z.object({ type: z.literal('takeover'), state: PlaybackState }),
   // Sent to the device that must stop because another one took over.
   z.object({ type: z.literal('release') }),
+  // Sent to everyone when an admin publishes or ends an announcement.
+  z.object({ type: z.literal('announcements') }),
 ]);
 
 export type ServerMessage = z.infer<typeof ServerMessage>;
