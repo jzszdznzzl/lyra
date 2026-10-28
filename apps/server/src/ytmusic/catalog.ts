@@ -1,5 +1,5 @@
 import { YTMusic, YTNodes } from 'youtubei.js';
-import type { Innertube } from 'youtubei.js';
+import type { Helpers, Innertube } from 'youtubei.js';
 
 import { MediaKind, MusicError, SearchFilter, err, ok } from '@lyra/shared';
 import type {
@@ -47,6 +47,32 @@ async function attempt<T>(task: () => Promise<T>): Promise<Result<T, MusicError>
 
     return err(HTTP_NOT_FOUND.test(message) ? MusicError.NotFound : MusicError.Upstream);
   }
+}
+
+function toPanelTracks(nodes: readonly Helpers.YTNode[]): Track[] {
+  return nodes.flatMap((node): Track[] => {
+    const video = node.is(YTNodes.PlaylistPanelVideoWrapper) ? node.primary : node;
+
+    if (!video?.is(YTNodes.PlaylistPanelVideo)) {
+      return [];
+    }
+
+    return [
+      {
+        kind: MediaKind.Song,
+        id: video.video_id,
+        title: video.title.toString(),
+        artists: (video.artists ?? []).map((artist) => ({
+          id: artist.channel_id ?? null,
+          name: artist.name,
+        })),
+        album: video.album ? { id: video.album.id ?? null, name: video.album.name } : null,
+        durationSeconds: video.duration.seconds || null,
+        thumbnail: bestThumbnail(video.thumbnail),
+        isExplicit: false,
+      },
+    ];
+  });
 }
 
 export function getHome(yt: Innertube): Promise<Result<HomeFeed, MusicError>> {
@@ -99,29 +125,20 @@ function topResult(card: YTNodes.MusicCardShelf): MediaItem[] {
   return items;
 }
 
-/** One song by id, for shared links; YouTube gives its artists as one "A, B & C" string. */
+/**
+ * One song by id, for shared links. It comes from the up-next queue rather than the player:
+ * YouTube asks anonymous players on datacenter IPs to sign in, but still answers this.
+ */
 export function getTrack(yt: Innertube, videoId: string): Promise<Result<Track, MusicError>> {
   return attempt(async () => {
-    const info = await yt.music.getInfo(videoId);
-    const basic = info.basic_info;
-    const names = (basic.author ?? '')
-      .split(/\s*(?:,\s*&|,|&)\s*/)
-      .map((name) => name.trim())
-      .filter(Boolean);
+    const panel = await yt.music.getUpNext(videoId, false);
+    const track = toPanelTracks(panel.contents).find((candidate) => candidate.id === videoId);
 
-    return {
-      kind: MediaKind.Song,
-      id: videoId,
-      title: basic.title ?? '',
-      artists: names.map((name, index) => ({
-        id: index === 0 ? (basic.channel_id ?? null) : null,
-        name,
-      })),
-      album: null,
-      durationSeconds: basic.duration ?? null,
-      thumbnail: bestThumbnail(basic.thumbnail),
-      isExplicit: false,
-    };
+    if (!track) {
+      throw new Error(`song ${videoId} not found`);
+    }
+
+    return track;
   });
 }
 
@@ -249,29 +266,7 @@ export function getLibraryPlaylists(yt: Innertube): Promise<Result<LibraryPlayli
 export function getUpNext(yt: Innertube, videoId: string): Promise<Result<UpNext, MusicError>> {
   return attempt(async () => {
     const panel = await yt.music.getUpNext(videoId, true);
-    const tracks = panel.contents.flatMap((node): Track[] => {
-      const video = node.is(YTNodes.PlaylistPanelVideoWrapper) ? node.primary : node;
-
-      if (!video?.is(YTNodes.PlaylistPanelVideo)) {
-        return [];
-      }
-
-      return [
-        {
-          kind: MediaKind.Song,
-          id: video.video_id,
-          title: video.title.toString(),
-          artists: (video.artists ?? []).map((artist) => ({
-            id: artist.channel_id ?? null,
-            name: artist.name,
-          })),
-          album: video.album ? { id: video.album.id ?? null, name: video.album.name } : null,
-          durationSeconds: video.duration.seconds || null,
-          thumbnail: bestThumbnail(video.thumbnail),
-          isExplicit: false,
-        },
-      ];
-    });
+    const tracks = toPanelTracks(panel.contents);
 
     return { tracks };
   });

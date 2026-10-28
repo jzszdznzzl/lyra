@@ -3,7 +3,15 @@ import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { getAlbum, getArtist, getHome, getPlaylist, getSuggestions, search } from '../catalog.ts';
+import {
+  getAlbum,
+  getArtist,
+  getHome,
+  getPlaylist,
+  getSuggestions,
+  getTrack,
+  search,
+} from '../catalog.ts';
 import { InnertubePool } from '../innertube.ts';
 
 // Hits the real YT Music API, so it only runs when asked: LYRA_LIVE=1 bun test.
@@ -25,6 +33,11 @@ describe.skipIf(!isLive)('catalog (live)', () => {
       const songs = await search(yt, 'daft punk get lucky', 'songs');
       const song = songs.data?.items[0];
       expect(song?.kind).toBe('song');
+
+      const track = await getTrack(yt, song?.id ?? '');
+      expect(track.data?.id).toBe(song?.id);
+      expect(track.data?.title).toBeTruthy();
+      expect(track.data?.artists[0]?.name).toBe('Daft Punk');
 
       const albums = await search(yt, 'random access memories', 'albums');
       const albumId = albums.data?.items.find((item) => item.kind === 'album')?.id ?? '';
