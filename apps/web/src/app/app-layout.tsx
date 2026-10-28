@@ -9,7 +9,9 @@ import { startConnect } from '../features/connect/connect-client.ts';
 import { CreatePlaylistDialog } from '../features/library/playlist-dialogs.tsx';
 import { MobilePlayer } from '../features/player/mobile-player.tsx';
 import { NowPlayingPanel } from '../features/player/now-playing-panel.tsx';
+import { ImmersiveView } from '../features/player/immersive-view.tsx';
 import { PlayerBar } from '../features/player/player-bar.tsx';
+import { useUiStore } from '../features/player/ui-store.ts';
 import { useCoverTheme } from '../features/player/use-cover-theme.ts';
 import { useMediaSession } from '../features/player/use-media-session.ts';
 import { changeLanguage } from '../i18n/index.ts';
@@ -37,6 +39,37 @@ export function AppLayout() {
   useMediaSession();
   useCoverTheme();
   useEffect(() => startConnect(), []);
+  useEffect(() => {
+    // "F" toggles full screen, as in video players; never while typing.
+    const onKey = (event: KeyboardEvent) => {
+      const target = event.target;
+      const isTyping =
+        target instanceof HTMLElement &&
+        (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName));
+
+      if (
+        event.key.toLowerCase() !== 'f' ||
+        isTyping ||
+        event.ctrlKey ||
+        event.metaKey ||
+        event.altKey
+      ) {
+        return;
+      }
+
+      const ui = useUiStore.getState();
+
+      if (ui.immersive) {
+        ui.closeImmersive();
+      } else {
+        ui.openImmersive();
+      }
+    };
+
+    window.addEventListener('keydown', onKey);
+
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
 
   // The account's language follows the user to every device.
   useEffect(() => {
@@ -111,6 +144,7 @@ export function AppLayout() {
       <PlayerBar />
       <MobilePlayer />
       <Toaster />
+      <ImmersiveView />
       {isCreating ? <CreatePlaylistDialog onClose={() => setIsCreating(false)} /> : null}
       <nav className="flex justify-around rounded-2xl border border-line bg-panel py-2 backdrop-blur-2xl md:hidden">
         {NAV_ITEMS.map(({ to, icon: Icon, label }) => (

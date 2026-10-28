@@ -1,4 +1,12 @@
-import { ChevronDown, ListMusic, MicVocal, Pause, Play, SlidersHorizontal } from 'lucide-react';
+import {
+  ChevronDown,
+  ListMusic,
+  Maximize,
+  MicVocal,
+  Pause,
+  Play,
+  SlidersHorizontal,
+} from 'lucide-react';
 import { useRouterState } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -21,6 +29,7 @@ import { ProgressBar } from './progress-bar.tsx';
 import { LyricsView } from './lyrics-view.tsx';
 import { QueuePanel } from './queue-panel.tsx';
 import { TransportControls } from './transport-controls.tsx';
+import { PanelView, useUiStore } from './ui-store.ts';
 import { VideoToggle } from './video-toggle.tsx';
 import { VideoView } from './video-view.tsx';
 
@@ -40,7 +49,9 @@ export function MobilePlayer() {
   const isOpen = openedOn === pathname;
 
   useBackToClose(isOpen, () => setOpenedOn(null));
-  const [panel, setPanel] = useState<'cover' | 'queue' | 'lyrics'>('cover');
+  const panel = useUiStore((state) => state.panelView);
+  const setPanel = useUiStore((state) => state.setPanelView);
+  const openImmersive = useUiStore((state) => state.openImmersive);
   const active = useConnectStore(activeDevice);
   const selfId = useConnectStore((state) => state.selfId);
   const playingElsewhere = active && active.id !== selfId ? active.name : null;
@@ -117,36 +128,49 @@ export function MobilePlayer() {
             <span className="text-xs font-bold tracking-widest uppercase">
               {t('player.playingFrom')}
             </span>
-            <button
-              type="button"
-              aria-label={t('player.settings.title')}
-              onClick={() => setIsSettingsOpen(true)}
-              className="p-1"
-            >
-              <SlidersHorizontal className="size-5" />
-            </button>
+            <span className="flex items-center gap-1">
+              <button
+                type="button"
+                aria-label={t('video.fullscreen')}
+                onClick={openImmersive}
+                className="p-1"
+              >
+                <Maximize className="size-5" />
+              </button>
+              <button
+                type="button"
+                aria-label={t('player.settings.title')}
+                onClick={() => setIsSettingsOpen(true)}
+                className="p-1"
+              >
+                <SlidersHorizontal className="size-5" />
+              </button>
+            </span>
           </header>
-          {panel === 'queue' ? (
+          {panel === PanelView.Queue ? (
             <div className="mt-6 flex-1">
               <QueuePanel />
             </div>
-          ) : panel === 'lyrics' ? (
+          ) : panel === PanelView.Lyrics ? (
             <div className="mt-6 flex min-h-0 flex-1 flex-col">
               <LyricsView track={track} />
             </div>
           ) : (
-            <div className="relative mx-auto mt-8 mb-8 w-full max-w-sm">
-              {isVideoMode && track.kind === MediaKind.Video ? (
-                <VideoView track={track} className="aspect-video w-full" />
-              ) : (
-                <Cover
-                  src={track.thumbnail}
-                  alt={track.title}
-                  className="aspect-square w-full shadow-2xl shadow-accent/40"
-                />
-              )}
-              <div className="absolute top-3 left-3">
-                <VideoToggle track={track} />
+            // Fills the space between header and controls and centers the cover or video in it.
+            <div className="flex min-h-0 flex-1 items-center justify-center py-6">
+              <div className="relative w-full max-w-sm">
+                {isVideoMode && track.kind === MediaKind.Video ? (
+                  <VideoView track={track} className="aspect-video w-full" />
+                ) : (
+                  <Cover
+                    src={track.thumbnail}
+                    alt={track.title}
+                    className="aspect-square w-full shadow-2xl shadow-accent/40"
+                  />
+                )}
+                <div className="absolute top-3 left-3">
+                  <VideoToggle track={track} />
+                </div>
               </div>
             </div>
           )}
@@ -173,8 +197,10 @@ export function MobilePlayer() {
                 <button
                   type="button"
                   aria-label={t('lyrics.title')}
-                  aria-pressed={panel === 'lyrics'}
-                  onClick={() => setPanel(panel === 'lyrics' ? 'cover' : 'lyrics')}
+                  aria-pressed={panel === PanelView.Lyrics}
+                  onClick={() =>
+                    setPanel(panel === PanelView.Lyrics ? PanelView.Cover : PanelView.Lyrics)
+                  }
                   className="p-1 text-muted aria-pressed:text-accent"
                 >
                   <MicVocal className="size-5" />
@@ -182,8 +208,10 @@ export function MobilePlayer() {
                 <button
                   type="button"
                   aria-label={t('player.queue')}
-                  aria-pressed={panel === 'queue'}
-                  onClick={() => setPanel(panel === 'queue' ? 'cover' : 'queue')}
+                  aria-pressed={panel === PanelView.Queue}
+                  onClick={() =>
+                    setPanel(panel === PanelView.Queue ? PanelView.Cover : PanelView.Queue)
+                  }
                   className="p-1 text-muted aria-pressed:text-accent"
                 >
                   <ListMusic className="size-5" />

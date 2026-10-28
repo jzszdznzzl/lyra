@@ -246,7 +246,11 @@
       "autoplay": "Keep playing similar songs when the queue ends",
       "equalizer": "Equalizer",
       "eqEnabled": "Enable equalizer",
-      "preset": "Preset"
+      "preset": "Preset",
+      "dataSaver": "Save data on mobile data",
+      "dataSaverHint": "Uses these qualities on mobile data or with the browser's data saver.",
+      "onMobileData": "You are on mobile data now.",
+      "videoOnData": "Video {{height}}p"
     },
     "presets": {
       "flat": "Flat",
@@ -313,6 +317,7 @@
     "video": "Video",
     "notFound": "No music video found for this song.",
     "fullscreen": "Full screen",
-    "quality": "Video quality"
+    "quality": "Video quality",
+    "exitFullscreen": "Exit full screen"
   }
 }

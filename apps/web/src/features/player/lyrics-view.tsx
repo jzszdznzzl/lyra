@@ -33,7 +33,7 @@ function lyricsQuery(track: Track) {
   };
 }
 
-export function LyricsView({ track }: { track: Track }) {
+export function LyricsView({ track, size = 'md' }: { track: Track; size?: 'md' | 'lg' }) {
   const { t } = useTranslation();
   const query = useQuery(lyricsQuery(track));
   const positionMs = usePlayerStore((state) => state.position * 1000);
@@ -77,7 +77,7 @@ export function LyricsView({ track }: { track: Track }) {
             key={`${index}-${line.timeMs ?? 'x'}`}
             data-line={index}
             onClick={timeMs === null ? undefined : () => seek(timeMs / 1000)}
-            className={`py-1.5 text-xl leading-snug font-extrabold tracking-tight transition-colors ${
+            className={`leading-snug font-extrabold tracking-tight transition-colors ${size === 'lg' ? 'py-3 text-3xl sm:text-5xl' : 'py-1.5 text-xl'} ${
               !lyrics.isSynced
                 ? 'text-text/80'
                 : index === active

@@ -32,6 +32,10 @@ test('two devices: remote pause, listen here and lyrics', async ({ page, browser
 
   // Pausing on the phone pauses the PC.
   await phoneBar.getByRole('button', { name: 'Pause' }).click();
+  // The remote shows the pause at once, without waiting for the PC's report.
+  await expect(phoneBar.getByRole('button', { name: 'Play', exact: true })).toBeVisible({
+    timeout: 500,
+  });
   await expect(pcBar.getByRole('button', { name: 'Play', exact: true })).toBeVisible({
     timeout: 15_000,
   });

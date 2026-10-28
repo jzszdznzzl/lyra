@@ -1,8 +1,8 @@
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { MediaKind } from '@lyra/shared';
 
+import { useMediaQuery } from '../../lib/use-media-query.ts';
 import { Cover } from '../../ui/cover.tsx';
 import { LikeButton } from '../library/like-button.tsx';
 import { TrackMenu } from '../library/track-menu.tsx';
@@ -10,29 +10,33 @@ import { ArtistLinks } from '../music/artist-links.tsx';
 import { currentTrack, usePlayerStore } from './player-store.ts';
 import { LyricsView } from './lyrics-view.tsx';
 import { QueuePanel } from './queue-panel.tsx';
+import { PanelView, useUiStore } from './ui-store.ts';
 import { VideoToggle } from './video-toggle.tsx';
 import { VideoView } from './video-view.tsx';
-
-const Tab = Object.freeze({ NowPlaying: 'now', Lyrics: 'lyrics', Queue: 'queue' } as const);
-
-type Tab = (typeof Tab)[keyof typeof Tab];
 
 /** Right column on wide screens, as in the desktop mockup. */
 export function NowPlayingPanel() {
   const { t } = useTranslation();
   const track = usePlayerStore(currentTrack);
   const isVideoMode = usePlayerStore((state) => state.isVideoMode);
-  const [tab, setTab] = useState<Tab>(Tab.NowPlaying);
-  const TAB_LABELS: Record<Tab, string> = {
-    [Tab.NowPlaying]: t('player.nowPlaying'),
-    [Tab.Lyrics]: t('lyrics.title'),
-    [Tab.Queue]: t('player.queue'),
+  // Matches Tailwind's xl breakpoint; below it the panel would only waste a video download.
+  const isWide = useMediaQuery('(min-width: 1280px)');
+  const tab = useUiStore((state) => state.panelView);
+  const setTab = useUiStore((state) => state.setPanelView);
+  const TAB_LABELS: Record<PanelView, string> = {
+    [PanelView.Cover]: t('player.nowPlaying'),
+    [PanelView.Lyrics]: t('lyrics.title'),
+    [PanelView.Queue]: t('player.queue'),
   };
+
+  if (!isWide) {
+    return null;
+  }
 
   return (
     <aside className="hidden min-h-0 flex-col gap-4 overflow-y-auto rounded-2xl border border-line bg-panel p-4 backdrop-blur-2xl xl:flex">
       <div className="flex gap-1.5">
-        {Object.values(Tab).map((option) => (
+        {Object.values(PanelView).map((option) => (
           <button
             key={option}
             type="button"
@@ -45,7 +49,7 @@ export function NowPlayingPanel() {
         ))}
       </div>
       {track ? (
-        tab === Tab.NowPlaying ? (
+        tab === PanelView.Cover ? (
           <>
             <div className="relative">
               {isVideoMode && track.kind === MediaKind.Video ? (
@@ -74,7 +78,7 @@ export function NowPlayingPanel() {
             </div>
             <QueuePanel />
           </>
-        ) : tab === Tab.Lyrics ? (
+        ) : tab === PanelView.Lyrics ? (
           <LyricsView track={track} />
         ) : (
           <QueuePanel />

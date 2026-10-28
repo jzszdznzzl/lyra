@@ -14,7 +14,7 @@ import {
   shuffleQueue,
 } from '../../audio/queue.ts';
 import { api } from '../../lib/api.ts';
-import { loadSettings, saveSettings } from './settings.ts';
+import { effectiveQuality, loadSettings, saveSettings } from './settings.ts';
 import type { PlayerSettings } from './settings.ts';
 
 export const PlaybackStatus = Object.freeze({
@@ -80,7 +80,7 @@ const REPEAT_ORDER = [RepeatMode.Off, RepeatMode.All, RepeatMode.One] as const;
 const SHARED_HISTORY = 100;
 
 export function streamUrl(track: Track, settings: PlayerSettings) {
-  return `/api/stream/${encodeURIComponent(track.id)}?quality=${settings.quality}`;
+  return `/api/stream/${encodeURIComponent(track.id)}?quality=${effectiveQuality(settings).quality}`;
 }
 
 export const usePlayerStore = create<PlayerState>()((set, get) => {
@@ -212,7 +212,11 @@ export const usePlayerStore = create<PlayerState>()((set, get) => {
       if (status === PlaybackStatus.Idle && queue[index]) {
         start(index, position);
       } else {
-        engine.play(settings.fadeMs).catch(() => set({ status: PlaybackStatus.Paused }));
+        // Resuming inside a pause fade never stops the element, so no "play" event would come.
+        engine
+          .play(settings.fadeMs)
+          .then(() => set({ status: PlaybackStatus.Playing }))
+          .catch(() => set({ status: PlaybackStatus.Paused }));
       }
     },
     pause: () => {
@@ -354,6 +358,13 @@ export const usePlayerStore = create<PlayerState>()((set, get) => {
 
     if (remote) {
       remote.send(command);
+
+      // Reflect it here right away; waiting for the playing device's report feels laggy.
+      if (command.type === 'play' || command.type === 'pause') {
+        set({ status: command.type === 'play' ? PlaybackStatus.Playing : PlaybackStatus.Paused });
+      } else if (command.type === 'seek') {
+        set({ position: command.positionMs / 1000 });
+      }
     } else {
       runCommand(command);
     }

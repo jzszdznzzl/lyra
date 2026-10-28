@@ -246,7 +246,11 @@
       "autoplay": "Seguir con canciones parecidas cuando termine la cola",
       "equalizer": "Ecualizador",
       "eqEnabled": "Activar ecualizador",
-      "preset": "Preajuste"
+      "preset": "Preajuste",
+      "dataSaver": "Ahorrar datos con datos móviles",
+      "dataSaverHint": "Usa estas calidades con datos móviles o con el ahorro de datos del navegador.",
+      "onMobileData": "Ahora estás con datos móviles.",
+      "videoOnData": "Vídeo {{height}}p"
     },
     "presets": {
       "flat": "Plano",
@@ -313,6 +317,7 @@
     "video": "Vídeo",
     "notFound": "No hay videoclip para esta canción.",
     "fullscreen": "Pantalla completa",
-    "quality": "Calidad de vídeo"
+    "quality": "Calidad de vídeo",
+    "exitFullscreen": "Salir de pantalla completa"
   }
 }

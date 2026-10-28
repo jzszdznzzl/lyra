@@ -11,7 +11,7 @@ import {
 } from '../../audio/equalizer.ts';
 import { Dialog } from '../../ui/dialog.tsx';
 import { usePlayerStore } from './player-store.ts';
-import { MAX_CROSSFADE_SECONDS, MAX_FADE_MS } from './settings.ts';
+import { MAX_CROSSFADE_SECONDS, MAX_FADE_MS, isOnMeteredNetwork } from './settings.ts';
 
 const FADE_STEP_MS = 100;
 
@@ -127,6 +127,47 @@ export function AudioSettingsDialog({ onClose }: { onClose: () => void }) {
             ))}
           </div>
         </div>
+        <section className="flex flex-col gap-2 rounded-2xl border border-line p-3">
+          <Toggle
+            label={t('player.settings.dataSaver')}
+            isOn={settings.isDataSaverEnabled}
+            onChange={(isDataSaverEnabled) => updateSettings({ isDataSaverEnabled })}
+          />
+          <p className="text-xs text-muted">
+            {t('player.settings.dataSaverHint')}
+            {isOnMeteredNetwork() ? ` ${t('player.settings.onMobileData')}` : ''}
+          </p>
+          {settings.isDataSaverEnabled ? (
+            <>
+              <div className="flex flex-wrap gap-1.5">
+                {Object.values(AudioQuality).map((quality) => (
+                  <button
+                    key={quality}
+                    type="button"
+                    aria-pressed={settings.cellularQuality === quality}
+                    onClick={() => updateSettings({ cellularQuality: quality })}
+                    className="rounded-full border border-line px-3 py-1.5 text-xs font-semibold text-muted aria-pressed:border-transparent aria-pressed:bg-text aria-pressed:text-bg"
+                  >
+                    {t(`player.settings.${quality}`)}
+                  </button>
+                ))}
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {VIDEO_HEIGHTS.map((height) => (
+                  <button
+                    key={height}
+                    type="button"
+                    aria-pressed={settings.cellularVideoHeight === height}
+                    onClick={() => updateSettings({ cellularVideoHeight: height })}
+                    className="rounded-full border border-line px-3 py-1.5 text-xs font-semibold text-muted aria-pressed:border-transparent aria-pressed:bg-text aria-pressed:text-bg"
+                  >
+                    {t('player.settings.videoOnData', { height })}
+                  </button>
+                ))}
+              </div>
+            </>
+          ) : null}
+        </section>
         <Toggle
           label={t('player.settings.autoplay')}
           isOn={settings.isAutoplayEnabled}

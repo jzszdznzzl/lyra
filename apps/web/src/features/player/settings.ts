@@ -8,6 +8,13 @@ const STORAGE_KEY = 'lyra.player-settings';
 
 export const MAX_CROSSFADE_SECONDS = 12;
 export const MAX_FADE_MS = 2000;
+const DATA_SAVER_VIDEO_HEIGHT = 360;
+
+const VideoHeightSetting = z
+  .number()
+  .refine((height) => VIDEO_HEIGHTS.some((allowed) => allowed === height));
+
+const NetworkInfo = z.object({ type: z.string().optional(), saveData: z.boolean().optional() });
 
 export const PlayerSettings = z.object({
   quality: z.enum(AudioQuality).catch(AudioQuality.High),
@@ -21,10 +28,11 @@ export const PlayerSettings = z.object({
     .catch(EQ_FREQUENCIES.map(() => 0)),
   volume: z.number().min(0).max(1).catch(0.8),
   isAutoplayEnabled: z.boolean().catch(true),
-  videoHeight: z
-    .number()
-    .refine((height) => VIDEO_HEIGHTS.some((allowed) => allowed === height))
-    .catch(DEFAULT_VIDEO_HEIGHT),
+  videoHeight: VideoHeightSetting.catch(DEFAULT_VIDEO_HEIGHT),
+  // On mobile data (or with the browser's data saver) these replace the two above.
+  isDataSaverEnabled: z.boolean().catch(true),
+  cellularQuality: z.enum(AudioQuality).catch(AudioQuality.Normal),
+  cellularVideoHeight: VideoHeightSetting.catch(DATA_SAVER_VIDEO_HEIGHT),
 });
 
 export type PlayerSettings = z.infer<typeof PlayerSettings>;
@@ -46,4 +54,20 @@ export function saveSettings(settings: PlayerSettings) {
   } catch {
     // Storage can be blocked; settings still apply until the tab closes.
   }
+}
+
+/** True on mobile data or when the browser's data saver is on (Network Information API). */
+export function isOnMeteredNetwork() {
+  const info = NetworkInfo.safeParse(Reflect.get(navigator, 'connection'));
+
+  return info.success && (info.data.type === 'cellular' || info.data.saveData === true);
+}
+
+export function effectiveQuality(settings: PlayerSettings) {
+  const isSaving = settings.isDataSaverEnabled && isOnMeteredNetwork();
+
+  return {
+    quality: isSaving ? settings.cellularQuality : settings.quality,
+    videoHeight: isSaving ? settings.cellularVideoHeight : settings.videoHeight,
+  };
 }
