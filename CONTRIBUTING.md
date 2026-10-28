@@ -35,6 +35,9 @@ The host machine has many ports in use, so lyra uses random high ports: the serv
 ## Running in production
 
 1. `pnpm install && pnpm build`. This produces `apps/server/dist/main.mjs` and `apps/web/dist`.
+   Then install the Chromium that the Google sign-in browser uses, as the same user that runs the server (browsers live in that user's `~/.cache/ms-playwright`):
+   `pnpm --filter @lyra/server exec playwright install --with-deps chromium-headless-shell`.
+   `--with-deps` installs the system libraries and needs root on Debian or Ubuntu; without it, run `sudo pnpm --filter @lyra/server exec playwright install-deps chromium` once.
 2. Write a production env file outside the repository, based on `.env.example`:
    - `PUBLIC_URL`: the public HTTPS address (passkeys and email links depend on it).
    - `WEB_DIST`: absolute path to `apps/web/dist`, so one process serves the API and the app.
