@@ -67,3 +67,16 @@ export const passkeys = sqliteTable(
   },
   (table) => [index('passkeys_user_id_idx').on(table.userId)],
 );
+
+export const googleAccounts = sqliteTable('google_accounts', {
+  userId: text('user_id')
+    .primaryKey()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  // AES-256-GCM with SECRET_KEY; these cookies are as good as the Google password.
+  cookieCiphertext: text('cookie_ciphertext').notNull(),
+  method: text('method').notNull(),
+  name: text('name').notNull(),
+  email: text('email'),
+  photo: text('photo'),
+  linkedAt: timestamp('linked_at').notNull(),
+});

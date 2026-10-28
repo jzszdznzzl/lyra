@@ -18,11 +18,14 @@
     "@zxcvbn-ts/language-common": "4.1.3",
     "@zxcvbn-ts/language-en": "4.1.1",
     "@zxcvbn-ts/language-es-es": "4.1.2",
+    "bgutils-js": "4.0.3",
     "drizzle-orm": "0.45.4",
     "elysia": "1.4.30",
     "mailchecker": "6.0.21",
     "nodemailer": "10.2.1",
+    "playwright": "1.64.1",
     "sharp": "0.35.5",
+    "youtubei.js": "18.3.0",
     "zod": "4.6.7"
   },
   "devDependencies": {
