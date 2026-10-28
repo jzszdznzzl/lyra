@@ -1,3 +1,5 @@
+import { mkdir } from 'node:fs/promises';
+import { join } from 'node:path';
 import nodemailer from 'nodemailer';
 
 import { MailTransport } from '../config/env.ts';
@@ -30,6 +32,20 @@ export class MemoryMailer implements Mailer {
 }
 
 export function createMailer(env: Env): Mailer {
+  if (env.MAIL_TRANSPORT === MailTransport.File) {
+    const outbox = join(env.DATA_DIR, 'outbox');
+
+    return {
+      async send(mail) {
+        await mkdir(outbox, { recursive: true });
+        await Bun.write(
+          join(outbox, `${Date.now()}-${crypto.randomUUID()}.json`),
+          JSON.stringify(mail),
+        );
+      },
+    };
+  }
+
   if (env.MAIL_TRANSPORT === MailTransport.Log) {
     return {
       send(mail) {

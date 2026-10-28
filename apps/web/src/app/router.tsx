@@ -1,17 +1,145 @@
-import { Outlet, createRootRoute, createRoute, createRouter } from '@tanstack/react-router';
+import {
+  Outlet,
+  createRootRouteWithContext,
+  createRoute,
+  createRouter,
+  redirect,
+} from '@tanstack/react-router';
+import { z } from 'zod';
+import type { QueryClient } from '@tanstack/react-query';
 
+import { meQuery } from '../features/auth/api.ts';
+import { AuthLayout } from '../features/auth/auth-layout.tsx';
+import { CheckEmailPage } from '../features/auth/check-email-page.tsx';
+import { ForgotPasswordPage } from '../features/auth/forgot-password-page.tsx';
+import { LoginPage } from '../features/auth/login-page.tsx';
+import { RegisterPage } from '../features/auth/register-page.tsx';
+import { ResetPasswordPage } from '../features/auth/reset-password-page.tsx';
+import { VerifyEmailPage } from '../features/auth/verify-email-page.tsx';
 import { HomePage } from '../features/home/home-page.tsx';
+import { PlaceholderPage } from '../features/home/placeholder-page.tsx';
+import { ProfilePage } from '../features/profile/profile-page.tsx';
+import { AppLayout } from './app-layout.tsx';
 
-const rootRoute = createRootRoute({ component: Outlet });
+interface RouterContext {
+  queryClient: QueryClient;
+}
 
-const homeRoute = createRoute({ getParentRoute: () => rootRoute, path: '/', component: HomePage });
+const TokenSearch = z.object({ token: z.string().catch('') });
+const EmailSearch = z.object({ email: z.string().catch('') });
 
-const routeTree = rootRoute.addChildren([homeRoute]);
+const rootRoute = createRootRouteWithContext<RouterContext>()({ component: Outlet });
 
-export const router = createRouter({ routeTree });
+async function redirectIfSignedIn({ context }: { context: RouterContext }) {
+  if (await context.queryClient.ensureQueryData(meQuery)) {
+    throw redirect({ to: '/' });
+  }
+}
+
+const authRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  id: 'auth',
+  component: AuthLayout,
+});
+
+const registerRoute = createRoute({
+  getParentRoute: () => authRoute,
+  path: '/register',
+  beforeLoad: redirectIfSignedIn,
+  component: RegisterPage,
+});
+
+const loginRoute = createRoute({
+  getParentRoute: () => authRoute,
+  path: '/login',
+  beforeLoad: redirectIfSignedIn,
+  component: LoginPage,
+});
+
+const forgotPasswordRoute = createRoute({
+  getParentRoute: () => authRoute,
+  path: '/forgot-password',
+  beforeLoad: redirectIfSignedIn,
+  component: ForgotPasswordPage,
+});
+
+const checkEmailRoute = createRoute({
+  getParentRoute: () => authRoute,
+  path: '/check-email',
+  validateSearch: (search) => EmailSearch.parse(search),
+  component: CheckEmailPage,
+});
+
+const verifyEmailRoute = createRoute({
+  getParentRoute: () => authRoute,
+  path: '/verify-email',
+  validateSearch: (search) => TokenSearch.parse(search),
+  component: VerifyEmailPage,
+});
+
+const resetPasswordRoute = createRoute({
+  getParentRoute: () => authRoute,
+  path: '/reset-password',
+  validateSearch: (search) => TokenSearch.parse(search),
+  component: ResetPasswordPage,
+});
+
+const appRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  id: 'app',
+  beforeLoad: async ({ context }) => {
+    // The first page asks for an account; signing in is one link away from there.
+    if (!(await context.queryClient.ensureQueryData(meQuery))) {
+      throw redirect({ to: '/register' });
+    }
+  },
+  component: AppLayout,
+});
+
+const homeRoute = createRoute({ getParentRoute: () => appRoute, path: '/', component: HomePage });
+
+const searchRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/search',
+  component: () => <PlaceholderPage title="nav.search" />,
+});
+
+const exploreRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/explore',
+  component: () => <PlaceholderPage title="nav.explore" />,
+});
+
+const downloadsRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/downloads',
+  component: () => <PlaceholderPage title="nav.downloads" />,
+});
+
+const profileRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/profile',
+  component: ProfilePage,
+});
+
+const routeTree = rootRoute.addChildren([
+  authRoute.addChildren([
+    registerRoute,
+    loginRoute,
+    forgotPasswordRoute,
+    checkEmailRoute,
+    verifyEmailRoute,
+    resetPasswordRoute,
+  ]),
+  appRoute.addChildren([homeRoute, searchRoute, exploreRoute, downloadsRoute, profileRoute]),
+]);
+
+export function createAppRouter(queryClient: QueryClient) {
+  return createRouter({ routeTree, context: { queryClient }, defaultPreload: 'intent' });
+}
 
 declare module '@tanstack/react-router' {
   interface Register {
-    router: typeof router;
+    router: ReturnType<typeof createAppRouter>;
   }
 }

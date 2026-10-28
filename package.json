@@ -14,7 +14,7 @@
     "lint": "oxlint --type-aware",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "typecheck": "pnpm -r typecheck",
+    "typecheck": "pnpm -r typecheck && tsc --noEmit",
     "build": "pnpm -r build",
     "test": "pnpm -r test",
     "test:e2e": "playwright test",

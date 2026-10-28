@@ -1,6 +1,15 @@
 {
   "app": {
-    "name": "Lyra"
+    "name": "Lyra",
+    "tagline": "Your music, everywhere you are."
+  },
+  "nav": {
+    "home": "Home",
+    "search": "Search",
+    "explore": "Explore",
+    "downloads": "Downloads",
+    "library": "Your library",
+    "profile": "Profile"
   },
   "home": {
     "greeting": {
@@ -8,5 +17,131 @@
       "afternoon": "Good afternoon",
       "evening": "Good evening"
     }
+  },
+  "auth": {
+    "email": "Email",
+    "username": "Username",
+    "usernameHint": "3-20 lowercase letters, numbers or underscores.",
+    "name": "Name",
+    "password": "Password",
+    "identifier": "Email or username",
+    "register": {
+      "title": "Create your account",
+      "subtitle": "Stream YT Music with crossfade, an equalizer and control from any device.",
+      "submit": "Create account",
+      "haveAccount": "Already have an account?",
+      "signIn": "Sign in"
+    },
+    "login": {
+      "title": "Welcome back",
+      "submit": "Sign in",
+      "passkey": "Sign in with a passkey",
+      "or": "or",
+      "forgot": "Forgot your password?",
+      "noAccount": "New to Lyra?",
+      "createAccount": "Create an account",
+      "resend": "Send the confirmation link again"
+    },
+    "checkEmail": {
+      "title": "Check your inbox",
+      "body": "We sent a confirmation link to {{email}}. Open it on any device to activate your account.",
+      "resend": "Send it again",
+      "resent": "Sent. It can take a minute to arrive.",
+      "back": "Back to sign in"
+    },
+    "verify": {
+      "title": "Confirming your email…",
+      "failed": "This link is invalid or has expired.",
+      "back": "Back to sign in"
+    },
+    "forgot": {
+      "title": "Reset your password",
+      "body": "Enter your email and we will send you a link to choose a new password.",
+      "submit": "Send link",
+      "sent": "If an account uses that email, a reset link is on its way."
+    },
+    "reset": {
+      "title": "Choose a new password",
+      "submit": "Save password",
+      "done": "Password changed. Sign in with your new password."
+    },
+    "strength": {
+      "label": "Strength",
+      "0": "Very weak",
+      "1": "Weak",
+      "2": "Fair",
+      "3": "Strong",
+      "4": "Very strong",
+      "required": "Use a longer passphrase or mix in unrelated words."
+    }
+  },
+  "profile": {
+    "title": "Profile",
+    "details": {
+      "title": "Your details",
+      "save": "Save",
+      "saved": "Saved."
+    },
+    "avatar": {
+      "change": "Change photo",
+      "remove": "Remove photo"
+    },
+    "language": "Language",
+    "theme": {
+      "title": "Theme",
+      "dark": "Dark",
+      "light": "Light",
+      "system": "System"
+    },
+    "google": {
+      "title": "Google account",
+      "body": "Link your Google account so Lyra can use YT Music like the official app.",
+      "linked": "Linked",
+      "notLinked": "Not linked",
+      "link": "Link Google account"
+    },
+    "password": {
+      "title": "Password",
+      "current": "Current password",
+      "new": "New password",
+      "submit": "Change password",
+      "done": "Password changed. Your other devices were signed out."
+    },
+    "passkeys": {
+      "title": "Passkeys",
+      "body": "Sign in with your fingerprint, face or screen lock instead of a password.",
+      "add": "Add a passkey",
+      "empty": "No passkeys yet.",
+      "rename": "Rename",
+      "remove": "Remove",
+      "created": "Added {{date}}",
+      "lastUsed": "Last used {{date}}",
+      "namePrompt": "Name for this passkey"
+    },
+    "sessions": {
+      "title": "Where you're signed in",
+      "current": "This device",
+      "lastSeen": "Active {{date}}",
+      "revoke": "Sign out",
+      "revokeOthers": "Sign out of all other devices"
+    },
+    "signOut": "Sign out"
+  },
+  "errors": {
+    "invalid_credentials": "Wrong email, username or password.",
+    "email_not_verified": "Confirm your email before signing in.",
+    "email_taken": "An account already uses this email.",
+    "username_taken": "That username is taken.",
+    "disposable_email": "Use a permanent email address, not a disposable one.",
+    "weak_password": "That password is too easy to guess.",
+    "invalid_token": "This link is invalid or has expired.",
+    "unauthorized": "Your session ended. Sign in again.",
+    "too_many_requests": "Too many attempts. Wait a few minutes and try again.",
+    "passkey_failed": "The passkey could not be used. Try again.",
+    "not_found": "Not found.",
+    "invalid_image": "That file is not an image we can use.",
+    "validation": "Check the highlighted fields.",
+    "network": "Can't reach Lyra. Check your connection.",
+    "unexpected": "Something went wrong. Try again."
   }
 }

@@ -4,6 +4,8 @@ export const MailTransport = Object.freeze({
   Smtp: 'smtp',
   // Prints mails to the log instead of sending them, for development and tests.
   Log: 'log',
+  // Writes each mail as JSON into DATA_DIR/outbox, so end-to-end tests can follow the links.
+  File: 'file',
 } as const);
 
 export type MailTransport = (typeof MailTransport)[keyof typeof MailTransport];

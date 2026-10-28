@@ -4,7 +4,7 @@ import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 
 // Random high ports: the usual ones (3000, 8080…) are taken on the host machine.
-const WEB_PORT = 44_790;
+const WEB_PORT = Number(process.env['WEB_PORT'] ?? 44_790);
 const SERVER_PORT = Number(process.env['PORT'] ?? 39_422);
 
 export default defineConfig({

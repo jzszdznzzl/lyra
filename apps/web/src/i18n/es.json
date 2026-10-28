@@ -1,6 +1,15 @@
 {
   "app": {
-    "name": "Lyra"
+    "name": "Lyra",
+    "tagline": "Tu música, estés donde estés."
+  },
+  "nav": {
+    "home": "Inicio",
+    "search": "Buscar",
+    "explore": "Explorar",
+    "downloads": "Descargas",
+    "library": "Tu biblioteca",
+    "profile": "Perfil"
   },
   "home": {
     "greeting": {
@@ -8,5 +17,131 @@
       "afternoon": "Buenas tardes",
       "evening": "Buenas noches"
     }
+  },
+  "auth": {
+    "email": "Correo",
+    "username": "Usuario",
+    "usernameHint": "De 3 a 20 letras minúsculas, números o guiones bajos.",
+    "name": "Nombre",
+    "password": "Contraseña",
+    "identifier": "Correo o usuario",
+    "register": {
+      "title": "Crea tu cuenta",
+      "subtitle": "Escucha YT Music con crossfade, ecualizador y control desde cualquier dispositivo.",
+      "submit": "Crear cuenta",
+      "haveAccount": "¿Ya tienes cuenta?",
+      "signIn": "Inicia sesión"
+    },
+    "login": {
+      "title": "Hola de nuevo",
+      "submit": "Iniciar sesión",
+      "passkey": "Entrar con una passkey",
+      "or": "o",
+      "forgot": "¿Olvidaste tu contraseña?",
+      "noAccount": "¿Nuevo en Lyra?",
+      "createAccount": "Crea una cuenta",
+      "resend": "Enviar de nuevo el enlace de confirmación"
+    },
+    "checkEmail": {
+      "title": "Revisa tu correo",
+      "body": "Enviamos un enlace de confirmación a {{email}}. Ábrelo en cualquier dispositivo para activar tu cuenta.",
+      "resend": "Enviarlo de nuevo",
+      "resent": "Enviado. Puede tardar un minuto en llegar.",
+      "back": "Volver a iniciar sesión"
+    },
+    "verify": {
+      "title": "Confirmando tu correo…",
+      "failed": "Este enlace no es válido o ha caducado.",
+      "back": "Volver a iniciar sesión"
+    },
+    "forgot": {
+      "title": "Restablece tu contraseña",
+      "body": "Escribe tu correo y te enviaremos un enlace para elegir una contraseña nueva.",
+      "submit": "Enviar enlace",
+      "sent": "Si alguna cuenta usa ese correo, el enlace ya va en camino."
+    },
+    "reset": {
+      "title": "Elige una contraseña nueva",
+      "submit": "Guardar contraseña",
+      "done": "Contraseña cambiada. Inicia sesión con la nueva."
+    },
+    "strength": {
+      "label": "Seguridad",
+      "0": "Muy débil",
+      "1": "Débil",
+      "2": "Aceptable",
+      "3": "Fuerte",
+      "4": "Muy fuerte",
+      "required": "Usa una frase más larga o mezcla palabras sin relación."
+    }
+  },
+  "profile": {
+    "title": "Perfil",
+    "details": {
+      "title": "Tus datos",
+      "save": "Guardar",
+      "saved": "Guardado."
+    },
+    "avatar": {
+      "change": "Cambiar foto",
+      "remove": "Quitar foto"
+    },
+    "language": "Idioma",
+    "theme": {
+      "title": "Tema",
+      "dark": "Oscuro",
+      "light": "Claro",
+      "system": "Sistema"
+    },
+    "google": {
+      "title": "Cuenta de Google",
+      "body": "Vincula tu cuenta de Google para que Lyra use YT Music como la app oficial.",
+      "linked": "Vinculada",
+      "notLinked": "Sin vincular",
+      "link": "Vincular cuenta de Google"
+    },
+    "password": {
+      "title": "Contraseña",
+      "current": "Contraseña actual",
+      "new": "Contraseña nueva",
+      "submit": "Cambiar contraseña",
+      "done": "Contraseña cambiada. Se cerró la sesión en tus otros dispositivos."
+    },
+    "passkeys": {
+      "title": "Passkeys",
+      "body": "Entra con tu huella, tu cara o el bloqueo de pantalla en vez de una contraseña.",
+      "add": "Añadir passkey",
+      "empty": "Aún no tienes passkeys.",
+      "rename": "Renombrar",
+      "remove": "Quitar",
+      "created": "Añadida {{date}}",
+      "lastUsed": "Último uso {{date}}",
+      "namePrompt": "Nombre para esta passkey"
+    },
+    "sessions": {
+      "title": "Dónde tienes la sesión abierta",
+      "current": "Este dispositivo",
+      "lastSeen": "Activa {{date}}",
+      "revoke": "Cerrar sesión",
+      "revokeOthers": "Cerrar sesión en los demás dispositivos"
+    },
+    "signOut": "Cerrar sesión"
+  },
+  "errors": {
+    "invalid_credentials": "Correo, usuario o contraseña incorrectos.",
+    "email_not_verified": "Confirma tu correo antes de iniciar sesión.",
+    "email_taken": "Ya hay una cuenta con este correo.",
+    "username_taken": "Ese usuario ya está en uso.",
+    "disposable_email": "Usa un correo permanente, no uno desechable.",
+    "weak_password": "Esa contraseña es demasiado fácil de adivinar.",
+    "invalid_token": "Este enlace no es válido o ha caducado.",
+    "unauthorized": "Tu sesión terminó. Vuelve a iniciar sesión.",
+    "too_many_requests": "Demasiados intentos. Espera unos minutos y vuelve a probar.",
+    "passkey_failed": "No se pudo usar la passkey. Inténtalo de nuevo.",
+    "not_found": "No encontrado.",
+    "invalid_image": "Ese archivo no es una imagen que podamos usar.",
+    "validation": "Revisa los campos marcados.",
+    "network": "No se puede conectar con Lyra. Revisa tu conexión.",
+    "unexpected": "Algo salió mal. Inténtalo de nuevo."
   }
 }
