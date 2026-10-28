@@ -1,5 +1,19 @@
 [
   {
+    "id": "2026-10-28-admin",
+    "date": "2026-10-28",
+    "changes": {
+      "es": [
+        "Quien administra el servidor puede publicar comunicados, que aparecen arriba de la app y desaparecen solos; puedes cerrarlos.",
+        "Nuevo panel de administración para quienes cuidan el servidor: usuarios, comunicados, ajustes y estadísticas (solo totales, nunca por persona)."
+      ],
+      "en": [
+        "Whoever runs the server can post announcements, shown at the top of the app until they expire; you can close them.",
+        "New admin panel for the people who run the server: users, announcements, settings and statistics (totals only, never per person)."
+      ]
+    }
+  },
+  {
     "id": "2026-10-28-listening",
     "date": "2026-10-28",
     "changes": {
