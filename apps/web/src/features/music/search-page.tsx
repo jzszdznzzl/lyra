@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useSearch } from '@tanstack/react-router';
-import { Search } from 'lucide-react';
+import { History, Search, X } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -14,6 +14,7 @@ import { useDownloads } from '../offline/downloads.ts';
 import { searchDownloads } from '../offline/search-downloads.ts';
 import { usePlayerStore } from '../player/player-store.ts';
 import { searchQuery, suggestionsQuery } from './api.ts';
+import { useRecentSearches } from './recent-searches.ts';
 import { isTrack } from './links.ts';
 import { MediaCard } from './media-card.tsx';
 import { ErrorState, LoadingState } from './query-state.tsx';
@@ -47,6 +48,16 @@ export function SearchPage() {
     enabled: isFocused && typed.trim() !== '' && typed !== q,
   });
   const results = useQuery(searchQuery(q, filter));
+  const recent = useRecentSearches((state) => state.queries);
+  const removeRecent = useRecentSearches((state) => state.remove);
+  const clearRecent = useRecentSearches((state) => state.clear);
+
+  // Every search that runs (typed, suggested or from a link) joins the history.
+  useEffect(() => {
+    if (q.trim() !== '') {
+      useRecentSearches.getState().add(q);
+    }
+  }, [q]);
   useDocumentTitle(q ? `${q} · ${t('nav.search')}` : t('nav.search'));
 
   function submit(query: string) {
@@ -126,6 +137,44 @@ export function SearchPage() {
           </button>
         ))}
       </div>
+      {q === '' && recent.length > 0 ? (
+        <section className="flex max-w-xl flex-col gap-1">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xs font-bold tracking-wider text-muted uppercase">
+              {t('search.recent')}
+            </h2>
+            <button
+              type="button"
+              onClick={clearRecent}
+              className="text-xs font-bold text-muted hover:text-text"
+            >
+              {t('search.clearRecent')}
+            </button>
+          </div>
+          <ul>
+            {recent.map((query) => (
+              <li key={query} className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => submit(query)}
+                  className="flex min-w-0 flex-1 items-center gap-3 rounded-xl px-2 py-2.5 text-left text-[15px] hover:bg-surface"
+                >
+                  <History className="size-4 shrink-0 text-muted" />
+                  <span className="truncate">{query}</span>
+                </button>
+                <button
+                  type="button"
+                  aria-label={t('search.removeRecent', { query })}
+                  onClick={() => removeRecent(query)}
+                  className="rounded-full p-2 text-muted hover:bg-surface hover:text-text"
+                >
+                  <X className="size-4" />
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
       {q !== '' && isOffline ? (
         <section className="flex flex-col gap-2">
           <p className="text-xs font-bold tracking-wider text-muted uppercase">

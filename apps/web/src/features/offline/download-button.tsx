@@ -37,7 +37,11 @@ export function DownloadAllButton({ tracks }: { tracks: Track[] }) {
     <Button
       variant={ButtonVariant.Secondary}
       isBusy={isBusy}
-      aria-label={t('offline.downloadAll')}
+      aria-label={
+        done > 0
+          ? t('offline.downloadRemaining', { count: tracks.length - done })
+          : t('offline.downloadAll')
+      }
       onClick={() => download(tracks, quality)}
     >
       {isBusy ? null : <Download className="size-4" />}
@@ -45,7 +49,9 @@ export function DownloadAllButton({ tracks }: { tracks: Track[] }) {
       <span className={isBusy ? '' : 'hidden sm:inline'}>
         {isBusy
           ? t('offline.downloadingAll', { done, total: tracks.length })
-          : t('offline.downloadAll')}
+          : done > 0
+            ? t('offline.downloadRemaining', { count: tracks.length - done })
+            : t('offline.downloadAll')}
       </span>
     </Button>
   );

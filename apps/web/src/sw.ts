@@ -103,8 +103,19 @@ registerRoute(
   },
 );
 
+const SkipWaitingMessage = { type: 'SKIP_WAITING' } as const;
+
+// registerSW (autoUpdate) sends this to a waiting worker; activating it reloads the open pages
+// onto the new version. Without it, updates waited until every tab and the app were closed.
 self.addEventListener('message', (event) => {
-  if (event.data === 'skip-waiting') {
+  const data: unknown = event.data;
+
+  if (
+    typeof data === 'object' &&
+    data !== null &&
+    'type' in data &&
+    data.type === SkipWaitingMessage.type
+  ) {
     void self.skipWaiting();
   }
 });

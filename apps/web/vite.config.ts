@@ -18,7 +18,8 @@ export default defineConfig({
       strategies: 'injectManifest',
       srcDir: 'src',
       filename: 'sw.ts',
-      registerType: 'autoUpdate',
+      // 'prompt': the app decides when to switch (never mid-song), see app/updates.ts.
+      registerType: 'prompt',
       injectRegister: false,
       injectManifest: { globPatterns: ['**/*.{js,css,html,svg,png,woff2}'] },
       manifest: {

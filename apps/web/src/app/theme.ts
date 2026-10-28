@@ -7,6 +7,7 @@ export const Theme = Object.freeze({
 export type Theme = (typeof Theme)[keyof typeof Theme];
 
 const STORAGE_KEY = 'lyra.theme';
+const THEME_COLORS = { [Theme.Dark]: '#0b0a0f', [Theme.Light]: '#f7f3f5' } as const;
 
 function resolve(theme: Theme): Exclude<Theme, 'system'> {
   if (theme !== Theme.System) {
@@ -20,14 +21,20 @@ export function readStoredTheme(): Theme {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
 
-    return Object.values(Theme).find((theme) => theme === stored) ?? Theme.Dark;
+    // Following the device is what people expect until they pick a theme themselves.
+    return Object.values(Theme).find((theme) => theme === stored) ?? Theme.System;
   } catch {
-    return Theme.Dark;
+    return Theme.System;
   }
 }
 
 export function applyTheme(theme: Theme) {
-  document.documentElement.dataset['theme'] = resolve(theme);
+  const resolved = resolve(theme);
+  document.documentElement.dataset['theme'] = resolved;
+  // The status bar of the installed app follows the theme too.
+  document
+    .querySelector('meta[name="theme-color"]')
+    ?.setAttribute('content', THEME_COLORS[resolved]);
 
   try {
     localStorage.setItem(STORAGE_KEY, theme);

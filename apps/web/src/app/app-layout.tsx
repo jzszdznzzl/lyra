@@ -76,7 +76,7 @@ export function AppLayout() {
   }
 
   return (
-    <div className="grid h-dvh grid-rows-[1fr_auto_auto] gap-2 p-2 md:grid-cols-[260px_minmax(0,1fr)] md:grid-rows-[minmax(0,1fr)_auto] xl:grid-cols-[260px_minmax(0,1fr)_320px]">
+    <div className="fixed inset-0 grid grid-rows-[minmax(0,1fr)_auto_auto] gap-2 p-2 pb-[max(env(safe-area-inset-bottom),0.5rem)] md:grid-cols-[260px_minmax(0,1fr)] md:grid-rows-[minmax(0,1fr)_auto] xl:grid-cols-[260px_minmax(0,1fr)_320px]">
       <aside className="hidden flex-col gap-1.5 rounded-2xl border border-line bg-panel p-4 backdrop-blur-2xl md:flex">
         <div className="px-2 pb-5">
           <Brand />
@@ -121,7 +121,7 @@ export function AppLayout() {
       </aside>
       <main
         data-scroll-restoration-id="main"
-        className="flex min-h-0 flex-col overflow-y-auto rounded-2xl border border-line bg-panel backdrop-blur-2xl"
+        className="flex min-h-0 flex-col overflow-y-auto overscroll-contain rounded-2xl border border-line bg-panel backdrop-blur-2xl"
       >
         <header className="sticky top-0 z-10 flex items-center justify-between px-4 pt-4 sm:px-7">
           {canGoBack && !isHome ? (

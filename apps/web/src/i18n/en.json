@@ -165,7 +165,10 @@
       "artists": "Artists",
       "playlists": "Playlists"
     },
-    "fromDownloads": "In your downloads"
+    "fromDownloads": "In your downloads",
+    "recent": "Recent searches",
+    "clearRecent": "Clear all",
+    "removeRecent": "Remove “{{query}}” from history"
   },
   "music": {
     "quickPicks": "Quick picks",
@@ -336,7 +339,9 @@
     "banner": "You’re offline. Your downloads still play.",
     "failed": "Some songs could not be downloaded.",
     "install": "Install Lyra",
-    "installHint": "Add Lyra to your home screen for a full-screen app."
+    "installHint": "Add Lyra to your home screen for a full-screen app.",
+    "downloadRemaining_one": "Download {{count}} remaining",
+    "downloadRemaining_other": "Download {{count}} remaining"
   },
   "common": {
     "close": "Close"

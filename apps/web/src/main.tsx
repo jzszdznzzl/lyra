@@ -2,9 +2,9 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { RouterProvider } from '@tanstack/react-router';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { registerSW } from 'virtual:pwa-register';
 
 import { createAppRouter } from './app/router.tsx';
+import { startUpdates } from './app/updates.ts';
 import { applyTheme, followSystemTheme, readStoredTheme } from './app/theme.ts';
 import { initI18n } from './i18n/index.ts';
 
@@ -16,8 +16,7 @@ const queryClient = new QueryClient({
 const router = createAppRouter(queryClient);
 
 async function start() {
-  // New versions activate on the next load, so a deploy never breaks a song mid-play.
-  registerSW({ immediate: true });
+  startUpdates();
   applyTheme(readStoredTheme());
   followSystemTheme();
   await initI18n();

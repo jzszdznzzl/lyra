@@ -165,7 +165,10 @@
       "artists": "Artistas",
       "playlists": "Playlists"
     },
-    "fromDownloads": "En tus descargas"
+    "fromDownloads": "En tus descargas",
+    "recent": "Búsquedas recientes",
+    "clearRecent": "Borrar todo",
+    "removeRecent": "Quitar «{{query}}» del historial"
   },
   "music": {
     "quickPicks": "Selección rápida",
@@ -336,7 +339,9 @@
     "banner": "Estás sin conexión. Tus descargas siguen sonando.",
     "failed": "Algunas canciones no se pudieron descargar.",
     "install": "Instalar Lyra",
-    "installHint": "Añade Lyra a tu pantalla de inicio para usarla como app."
+    "installHint": "Añade Lyra a tu pantalla de inicio para usarla como app.",
+    "downloadRemaining_one": "Descargar {{count}} restante",
+    "downloadRemaining_other": "Descargar {{count}} restantes"
   },
   "common": {
     "close": "Cerrar"
