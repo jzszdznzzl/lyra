@@ -46,7 +46,9 @@ export function createApp(ctx: AppContext, options: AppOptions = {}) {
   return new Elysia({ prefix: '/api' })
     .use(originGuard(ctx))
     .get('/health', () => ({ status: 'ok' }))
-    .get('/config', (): PublicConfig => ({ isRegistrationEnabled: ctx.env.REGISTRATION_ENABLED }))
+    .get('/config', (): PublicConfig => ({
+      isRegistrationEnabled: ctx.settings.current.isRegistrationEnabled,
+    }))
     .use(authRoutes(ctx, { challenges, isGoogleLinked: linked }))
     .use(
       userRoutes(ctx, {

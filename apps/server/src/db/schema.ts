@@ -133,3 +133,11 @@ export const announcements = sqliteTable('announcements', {
   createdAt: timestamp('created_at').notNull(),
   expiresAt: timestamp('expires_at').notNull(),
 });
+
+// Settings changed from the admin panel, one JSON value per key; the env file holds the defaults.
+export const settings = sqliteTable('settings', {
+  key: text('key').primaryKey(),
+  // NULL is a value too: it turns an optional setting off on purpose.
+  value: text('value', { mode: 'json' }).$type<unknown>(),
+  updatedAt: timestamp('updated_at').notNull(),
+});

@@ -433,7 +433,8 @@
     "title": "Admin panel",
     "tabs": {
       "users": "Users",
-      "announcements": "Announcements"
+      "announcements": "Announcements",
+      "settings": "Settings"
     },
     "users": {
       "title_one": "{{count}} user",
@@ -470,6 +471,37 @@
       "endsIn": "ends {{date}}",
       "ended": "ended {{date}}",
       "end": "End now"
+    },
+    "settings": {
+      "accounts": "Accounts",
+      "registration": "Open registration",
+      "registrationHint": "Turned off, nobody can create new accounts and the sign-up page disappears.",
+      "playback": "Playback",
+      "fallback": "Fallback account",
+      "fallbackPlaceholder": "Lyra username",
+      "fallbackHint": "A Lyra user with Google linked (ideally a dedicated account) that plays songs for people who did not link theirs. Needed on servers where YouTube blocks requests without an account.",
+      "fallbackStatus": {
+        "off": "No fallback account: people without Google linked must link it to listen.",
+        "ready": "Ready: the account exists and has Google linked.",
+        "unknown_user": "There is no user with that name.",
+        "not_linked": "That user has no Google account linked; link it from their profile."
+      },
+      "mail": "Email",
+      "mailHint": "For verification and password reset emails. Changes apply right away.",
+      "mailTransport": "This server is set not to send real email ({{transport}}). Set MAIL_TRANSPORT to smtp in the .env file to use these settings.",
+      "mailFrom": "Sender",
+      "smtpHost": "SMTP server",
+      "smtpPort": "Port",
+      "smtpUser": "SMTP user",
+      "smtpPassword": "SMTP password",
+      "passwordKept": "Saved (type to change it)",
+      "passwordNone": "No password",
+      "testMail": "Send me a test email",
+      "testSent": "Sent: check your inbox.",
+      "testFailed": "Could not send it: {{reason}}",
+      "saveFirst": "Save your changes before testing.",
+      "save": "Save changes",
+      "saved": "Settings saved"
     }
   },
   "announcements": {

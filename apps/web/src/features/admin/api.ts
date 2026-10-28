@@ -1,8 +1,8 @@
 import { queryOptions } from '@tanstack/react-query';
 import { z } from 'zod';
 
-import { AdminUser, Announcement } from '@lyra/shared';
-import type { CreateAnnouncementInput } from '@lyra/shared';
+import { AdminSettingsView, AdminUser, Announcement, MailFailure } from '@lyra/shared';
+import type { CreateAnnouncementInput, UpdateSettingsInput } from '@lyra/shared';
 
 import { NoContent, api, unwrap } from '../../lib/api.ts';
 
@@ -31,3 +31,31 @@ export const publishAnnouncement = (input: CreateAnnouncementInput) =>
 
 export const endAnnouncement = (id: string) =>
   api('DELETE', `/admin/announcements/${encodeURIComponent(id)}`, NoContent);
+
+export const adminSettingsQuery = queryOptions({
+  queryKey: ['admin', 'settings'],
+  queryFn: async () => unwrap(await api('GET', '/admin/settings', AdminSettingsView)),
+});
+
+export const updateSettings = (input: UpdateSettingsInput) =>
+  api('PATCH', '/admin/settings', AdminSettingsView, input);
+
+/** Sends a test mail to the admin; resolves to the SMTP server's complaint when it fails. */
+export async function sendTestMail(): Promise<{ isSent: boolean; reason: string | null }> {
+  try {
+    const response = await fetch('/api/admin/settings/test-mail', {
+      method: 'POST',
+      credentials: 'same-origin',
+    });
+
+    if (response.ok) {
+      return { isSent: true, reason: null };
+    }
+
+    const failure = MailFailure.safeParse(await response.json().catch(() => null));
+
+    return { isSent: false, reason: failure.success ? failure.data.reason : null };
+  } catch {
+    return { isSent: false, reason: null };
+  }
+}

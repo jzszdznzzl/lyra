@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useDocumentTitle } from '../../lib/use-document-title.ts';
 import { Page } from '../../ui/page.tsx';
 import { AnnouncementsTab } from './announcements-tab.tsx';
+import { SettingsTab } from './settings-tab.tsx';
 import { UsersTab } from './users-tab.tsx';
 
 interface AdminTab {
@@ -20,6 +21,7 @@ export function AdminPage() {
   const tabs: AdminTab[] = [
     { id: 'users', label: t('admin.tabs.users'), content: <UsersTab /> },
     { id: 'announcements', label: t('admin.tabs.announcements'), content: <AnnouncementsTab /> },
+    { id: 'settings', label: t('admin.tabs.settings'), content: <SettingsTab /> },
   ];
   const [selected, setSelected] = useState(tabs[0]?.id ?? null);
   const current = tabs.find((tab) => tab.id === selected) ?? tabs[0];

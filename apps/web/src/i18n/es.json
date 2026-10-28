@@ -433,7 +433,8 @@
     "title": "Administración",
     "tabs": {
       "users": "Usuarios",
-      "announcements": "Comunicados"
+      "announcements": "Comunicados",
+      "settings": "Ajustes"
     },
     "users": {
       "title_one": "{{count}} usuario",
@@ -470,6 +471,37 @@
       "endsIn": "termina {{date}}",
       "ended": "terminó {{date}}",
       "end": "Terminar ahora"
+    },
+    "settings": {
+      "accounts": "Cuentas",
+      "registration": "Registro abierto",
+      "registrationHint": "Si lo apagas, nadie puede crear cuentas nuevas y la página de registro desaparece.",
+      "playback": "Reproducción",
+      "fallback": "Cuenta de respaldo",
+      "fallbackPlaceholder": "usuario de Lyra",
+      "fallbackHint": "Un usuario de Lyra con Google vinculado (mejor una cuenta dedicada) que reproduce canciones para quienes no vincularon la suya. Hace falta en servidores donde YouTube bloquea las peticiones sin cuenta.",
+      "fallbackStatus": {
+        "off": "Sin cuenta de respaldo: quien no vinculó Google tendrá que hacerlo para escuchar.",
+        "ready": "Lista: la cuenta existe y tiene Google vinculado.",
+        "unknown_user": "No existe ningún usuario con ese nombre.",
+        "not_linked": "Ese usuario no tiene Google vinculado; vincúlalo desde su perfil."
+      },
+      "mail": "Correo",
+      "mailHint": "Para los correos de verificación y de cambio de contraseña. Los cambios se aplican al instante.",
+      "mailTransport": "Este servidor está configurado para no enviar correos de verdad ({{transport}}). Cambia MAIL_TRANSPORT a smtp en el archivo .env para usar estos datos.",
+      "mailFrom": "Remitente",
+      "smtpHost": "Servidor SMTP",
+      "smtpPort": "Puerto",
+      "smtpUser": "Usuario SMTP",
+      "smtpPassword": "Contraseña SMTP",
+      "passwordKept": "Guardada (escribe para cambiarla)",
+      "passwordNone": "Sin contraseña",
+      "testMail": "Enviarme un correo de prueba",
+      "testSent": "Enviado: revisa tu bandeja de entrada.",
+      "testFailed": "No se pudo enviar: {{reason}}",
+      "saveFirst": "Guarda los cambios antes de probar.",
+      "save": "Guardar cambios",
+      "saved": "Ajustes guardados"
     }
   },
   "announcements": {

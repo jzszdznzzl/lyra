@@ -240,7 +240,8 @@ describe('password reset', () => {
 describe('closed registration', () => {
   test('refuses sign-ups and says so in the public config', async () => {
     const closed = createTestContext();
-    const closedApp = createApp({ ...closed, env: { ...closed.env, REGISTRATION_ENABLED: false } });
+    closed.settings.update({ isRegistrationEnabled: false });
+    const closedApp = createApp(closed);
     const client = new TestClient(closedApp);
 
     expect((await client.request('GET', '/config')).body).toEqual({ isRegistrationEnabled: false });

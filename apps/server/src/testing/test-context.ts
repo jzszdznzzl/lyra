@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import { loadEnv } from '../config/env.ts';
 import { IN_MEMORY, openDatabase } from '../db/index.ts';
 import { MemoryMailer } from '../mail/index.ts';
+import { SettingsStore } from '../settings/settings.ts';
 import type { App } from '../app.ts';
 import type { AppContext } from '../context.ts';
 
@@ -26,11 +27,16 @@ export function createTestContext(): TestContext {
     MAIL_FROM: 'Lyra <noreply@lyra.test>',
   });
 
+  const db = openDatabase(IN_MEMORY);
+  const secretKey = Buffer.from(env.SECRET_KEY, 'base64');
+  const clock = () => now;
+
   return {
-    db: openDatabase(IN_MEMORY),
+    db,
     env,
     mailer: new MemoryMailer(),
-    secretKey: Buffer.from(env.SECRET_KEY, 'base64'),
+    settings: new SettingsStore(db, env, secretKey, clock),
+    secretKey,
     dataDir: mkdtempSync(join(tmpdir(), 'lyra-test-')),
     now: () => now,
     advance: (ms) => {

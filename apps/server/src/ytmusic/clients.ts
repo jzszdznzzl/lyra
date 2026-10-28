@@ -27,11 +27,11 @@ export async function accountClient(ctx: AppContext, pool: InnertubePool, user: 
 }
 
 /**
- * The client of STREAM_FALLBACK_USERNAME's Google account, which plays songs for users without
+ * The client of the fallback account (panel setting, or STREAM_FALLBACK_USERNAME), which plays songs for users without
  * their own; null when unset, unknown or not linked.
  */
 export async function fallbackClient(ctx: AppContext, pool: InnertubePool) {
-  const username = ctx.env.STREAM_FALLBACK_USERNAME;
+  const username = ctx.settings.current.streamFallbackUsername;
 
   if (!username) {
     return null;

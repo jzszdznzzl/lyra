@@ -49,7 +49,7 @@ export function authRoutes(ctx: AppContext, options: AuthRoutesOptions) {
     .post(
       '/register',
       async ({ body, request, server, status }) => {
-        if (!ctx.env.REGISTRATION_ENABLED) {
+        if (!ctx.settings.current.isRegistrationEnabled) {
           return status(403, { error: AuthError.RegistrationClosed });
         }
 

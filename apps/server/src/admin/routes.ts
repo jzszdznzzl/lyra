@@ -1,7 +1,7 @@
 import { Elysia } from 'elysia';
 import { z } from 'zod';
 
-import { AuthError, CreateAnnouncementInput } from '@lyra/shared';
+import { AdminError, AuthError, CreateAnnouncementInput, UpdateSettingsInput } from '@lyra/shared';
 
 import {
   createAnnouncement,
@@ -11,6 +11,7 @@ import {
 import { authErrorStatus } from '../http-errors.ts';
 import { INVALID_BODY } from '../query.ts';
 import { adminPlugin } from './plugin.ts';
+import { settingsView, testMail } from './settings.ts';
 import { listUsers, removeUser, setSuspended, signOutEverywhere } from './users.ts';
 import type { AppContext } from '../context.ts';
 
@@ -142,6 +143,39 @@ export function adminRoutes(ctx: AppContext, options: AdminRoutesOptions) {
           }
 
           onAnnouncementsChanged();
+
+          return status(204);
+        },
+        { isAdmin: true },
+      )
+      // --- Settings ---
+      .get('/settings', () => settingsView(ctx), { isAdmin: true })
+      .patch(
+        '/settings',
+        async ({ body, status }) => {
+          const input = UpdateSettingsInput.safeParse(body);
+
+          if (!input.success) {
+            return status(422, INVALID_BODY);
+          }
+
+          ctx.settings.update(input.data);
+
+          return settingsView(ctx);
+        },
+        { isAdmin: true },
+      )
+      .post(
+        '/settings/test-mail',
+        async ({ user, status }) => {
+          try {
+            await ctx.mailer.send(testMail(user));
+          } catch (error) {
+            // The reason (wrong password, unknown host…) is what the admin needs to fix it.
+            const reason = error instanceof Error ? error.message.split('\n')[0] : String(error);
+
+            return status(502, { error: AdminError.MailFailed, reason });
+          }
 
           return status(204);
         },

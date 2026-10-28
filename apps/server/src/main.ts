@@ -10,6 +10,7 @@ import { createMailer } from './mail/index.ts';
 import { ImageRegistry } from './images/registry.ts';
 import { LinkPreviews } from './previews/previews.ts';
 import { originGuard } from './security.ts';
+import { SettingsStore } from './settings/settings.ts';
 import { InnertubePool } from './ytmusic/innertube.ts';
 import { webStatic } from './web-static.ts';
 import type { AppContext } from './context.ts';
@@ -18,12 +19,19 @@ const env = loadEnv();
 
 await mkdir(env.DATA_DIR, { recursive: true });
 
+// src/main.ts and dist/main.mjs both sit one level below the package root, next to drizzle/.
+const db = openDatabase(
+  join(env.DATA_DIR, 'lyra.db'),
+  new URL('../drizzle', import.meta.url).pathname,
+);
+const secretKey = Buffer.from(env.SECRET_KEY, 'base64');
+const settings = new SettingsStore(db, env, secretKey, Date.now);
 const ctx: AppContext = {
-  // src/main.ts and dist/main.mjs both sit one level below the package root, next to drizzle/.
-  db: openDatabase(join(env.DATA_DIR, 'lyra.db'), new URL('../drizzle', import.meta.url).pathname),
+  db,
   env,
-  mailer: createMailer(env),
-  secretKey: Buffer.from(env.SECRET_KEY, 'base64'),
+  mailer: createMailer(env, settings),
+  settings,
+  secretKey,
   dataDir: env.DATA_DIR,
   now: Date.now,
 };
