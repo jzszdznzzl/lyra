@@ -105,7 +105,9 @@
       "title": "Lo que escuchas",
       "history": "Guardar en mi historial de YouTube",
       "historyHint": "Las canciones que escuchas al menos 30 segundos se añaden a tu historial, así YouTube Music ajusta tu inicio y tus recomendaciones.",
-      "historyNeedsGoogle": "Vincula tu cuenta de Google para usarlo."
+      "historyNeedsGoogle": "Vincula tu cuenta de Google para usarlo.",
+      "copied": "Copiado",
+      "copyFailed": "No se pudo copiar"
     },
     "password": {
       "title": "Contraseña",
@@ -131,6 +133,21 @@
       "lastSeen": "Activa {{date}}",
       "revoke": "Cerrar sesión",
       "revokeOthers": "Cerrar sesión en los demás dispositivos"
+    },
+    "tokens": {
+      "title": "Tokens personales",
+      "body": "Permiten que otras apps (un plugin de Discord, un script) vean lo que estás escuchando. Trátalos como una contraseña.",
+      "name": "Nombre",
+      "namePlaceholder": "Discord en mi PC",
+      "create": "Crear token",
+      "createdOnce": "Copia tu token ahora: no lo volverás a ver.",
+      "copy": "Copiar",
+      "empty": "Aún no tienes tokens.",
+      "lastUsed": "Último uso {{date}}",
+      "neverUsed": "Creado {{date}}, sin usar",
+      "revoke": "Revocar",
+      "howTo": "Úsalo así:",
+      "events": "Para enterarte al instante de cada cambio, sin preguntar cada pocos segundos, conéctate a {{path}} (Server-Sent Events)."
     },
     "signOut": "Cerrar sesión",
     "delete": {
@@ -166,7 +183,8 @@
     "not_signed_in": "Google no terminó de iniciar sesión. Inténtalo de nuevo.",
     "browser_unavailable": "El navegador de inicio de sesión no pudo arrancar en el servidor.",
     "browser_busy": "Hay otro inicio de sesión en curso. Inténtalo en un minuto.",
-    "registration_closed": "No se pueden crear cuentas nuevas en este Lyra."
+    "registration_closed": "No se pueden crear cuentas nuevas en este Lyra.",
+    "too_many_tokens": "Ya tienes el máximo de tokens. Revoca alguno para crear otro."
   },
   "search": {
     "placeholder": "Canciones, álbumes, artistas, vídeos",

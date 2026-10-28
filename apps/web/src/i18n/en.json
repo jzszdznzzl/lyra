@@ -105,7 +105,9 @@
       "title": "What you listen to",
       "history": "Save to my YouTube history",
       "historyHint": "Songs you play for at least 30 seconds are added to your history, so YouTube Music can tune your home page and recommendations.",
-      "historyNeedsGoogle": "Link your Google account to use it."
+      "historyNeedsGoogle": "Link your Google account to use it.",
+      "copied": "Copied",
+      "copyFailed": "Could not copy"
     },
     "password": {
       "title": "Password",
@@ -131,6 +133,21 @@
       "lastSeen": "Active {{date}}",
       "revoke": "Sign out",
       "revokeOthers": "Sign out of all other devices"
+    },
+    "tokens": {
+      "title": "Personal tokens",
+      "body": "Let other apps (a Discord plugin, a script) see what you are listening to. Treat them like a password.",
+      "name": "Name",
+      "namePlaceholder": "Discord on my PC",
+      "create": "Create token",
+      "createdOnce": "Copy your token now: you will not see it again.",
+      "copy": "Copy",
+      "empty": "You have no tokens yet.",
+      "lastUsed": "Last used {{date}}",
+      "neverUsed": "Created {{date}}, never used",
+      "revoke": "Revoke",
+      "howTo": "Use it like this:",
+      "events": "To hear about every change right away, without asking every few seconds, connect to {{path}} (Server-Sent Events)."
     },
     "signOut": "Sign out",
     "delete": {
@@ -166,7 +183,8 @@
     "not_signed_in": "Google didn't finish signing in. Try again.",
     "browser_unavailable": "The sign-in browser couldn't start on the server.",
     "browser_busy": "Another sign-in is in progress. Try again in a minute.",
-    "registration_closed": "New accounts are closed on this Lyra."
+    "registration_closed": "New accounts are closed on this Lyra.",
+    "too_many_tokens": "You already have the most tokens allowed. Revoke one to create another."
   },
   "search": {
     "placeholder": "Songs, albums, artists, videos",

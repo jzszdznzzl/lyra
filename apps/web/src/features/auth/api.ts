@@ -2,6 +2,8 @@ import { queryOptions } from '@tanstack/react-query';
 import { z } from 'zod';
 
 import {
+  ApiTokenInfo,
+  CreatedApiToken,
   PasskeyInfo,
   PublicConfig,
   PasskeyLoginStart,
@@ -91,6 +93,11 @@ export const passkeysQuery = queryOptions({
   queryFn: async () => unwrap(await api('GET', '/passkeys', z.array(PasskeyInfo))),
 });
 
+export const apiTokensQuery = queryOptions({
+  queryKey: ['api-tokens'],
+  queryFn: async () => unwrap(await api('GET', '/tokens', z.array(ApiTokenInfo))),
+});
+
 export const register = (input: RegisterInput) => api('POST', '/auth/register', Registered, input);
 
 export const login = (input: LoginInput) => api('POST', '/auth/login', UserProfile, input);
@@ -162,3 +169,8 @@ export const renamePasskey = (id: string, name: string) =>
 
 export const deletePasskey = (id: string) =>
   api('DELETE', `/passkeys/${encodeURIComponent(id)}`, NoContent);
+
+export const createApiToken = (name: string) => api('POST', '/tokens', CreatedApiToken, { name });
+
+export const revokeApiToken = (id: string) =>
+  api('DELETE', `/tokens/${encodeURIComponent(id)}`, NoContent);

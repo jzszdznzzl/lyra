@@ -16,6 +16,7 @@ export const AuthError = Object.freeze({
   NotFound: 'not_found',
   InvalidImage: 'invalid_image',
   RegistrationClosed: 'registration_closed',
+  TooManyTokens: 'too_many_tokens',
 } as const);
 
 export type AuthError = (typeof AuthError)[keyof typeof AuthError];

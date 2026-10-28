@@ -13,6 +13,7 @@ interface Member {
 }
 
 interface Room {
+  userId: string;
   members: Map<string, Member>;
   activeDeviceId: string | null;
   state: PlaybackState | null;
@@ -21,6 +22,14 @@ interface Room {
   // The active device while away, still listed so others can show where music plays.
   away: Member | null;
 }
+
+/** What a user's room is playing, as of now, for anything outside Connect that shows it. */
+export interface RoomActivity {
+  state: PlaybackState;
+  device: Device | null;
+}
+
+export type ActivityListener = (userId: string, activity: RoomActivity | null) => void;
 
 // A reload takes a second or two; a phone switching networks a bit longer.
 export const ACTIVE_GRACE_MS = 15_000;
@@ -33,6 +42,7 @@ export class ConnectHub {
   #rooms = new Map<string, Room>();
   #now: () => number;
   #graceMs: number;
+  #onActivity: ActivityListener | null = null;
 
   constructor(now: () => number = Date.now, graceMs = ACTIVE_GRACE_MS) {
     this.#now = now;
@@ -44,6 +54,7 @@ export class ConnectHub {
 
     if (!room) {
       room = {
+        userId,
         members: new Map(),
         activeDeviceId: null,
         state: null,
@@ -77,6 +88,23 @@ export class ConnectHub {
     for (const member of room.members.values()) {
       member.socket.send(message);
     }
+
+    this.#onActivity?.(room.userId, this.#activity(room));
+  }
+
+  #activity(room: Room): RoomActivity | null {
+    // A paused song keeps the time it stopped, which is when it was last heard.
+    const state = room.state?.isPlaying ? this.#liveState(room, true) : room.state;
+
+    if (!state) {
+      return null;
+    }
+
+    const active = room.activeDeviceId
+      ? (room.members.get(room.activeDeviceId) ?? room.away)
+      : null;
+
+    return { state, device: active?.device ?? null };
   }
 
   /** The state as of now, so a device taking over starts where the old one was. */
@@ -135,6 +163,17 @@ export class ConnectHub {
     room.state = state;
     target.socket.send({ type: 'takeover', state });
     this.#broadcast(room);
+  }
+
+  /** Called whenever a room changes: a new song, play, pause, a seek or another device. */
+  onActivity(listener: ActivityListener) {
+    this.#onActivity = listener;
+  }
+
+  activity(userId: string) {
+    const room = this.#rooms.get(userId);
+
+    return room ? this.#activity(room) : null;
   }
 
   join(userId: string, socket: ConnectSocket, device: Device) {

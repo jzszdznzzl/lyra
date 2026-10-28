@@ -4,12 +4,10 @@ import { ClientMessage } from '@lyra/shared';
 import type { ServerMessage } from '@lyra/shared';
 
 import { authPlugin } from '../auth/plugin.ts';
-import { ConnectHub } from './hub.ts';
 import type { AppContext } from '../context.ts';
+import type { ConnectHub } from './hub.ts';
 
-export function connectRoutes(ctx: AppContext) {
-  const hub = new ConnectHub(ctx.now);
-
+export function connectRoutes(ctx: AppContext, hub: ConnectHub) {
   return new Elysia().use(authPlugin(ctx)).ws('/connect', {
     isSignedIn: true,
     // Phones park background tabs; a generous timeout avoids dropping them between beats.

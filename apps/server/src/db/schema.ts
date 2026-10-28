@@ -90,3 +90,29 @@ export const images = sqliteTable('images', {
   url: text('url').notNull(),
   createdAt: timestamp('created_at').notNull(),
 });
+
+export const apiTokens = sqliteTable(
+  'api_tokens',
+  {
+    id: text('id').primaryKey(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(),
+    // Only the SHA-256 is stored, like session tokens.
+    tokenHash: text('token_hash').notNull().unique(),
+    scopes: text('scopes', { mode: 'json' }).$type<string[]>().notNull(),
+    createdAt: timestamp('created_at').notNull(),
+    lastUsedAt: timestamp('last_used_at'),
+  },
+  (table) => [index('api_tokens_user_id_idx').on(table.userId)],
+);
+
+// The last song each user heard, so the widget still has something to show after a restart.
+export const lastPlayed = sqliteTable('last_played', {
+  userId: text('user_id')
+    .primaryKey()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  track: text('track', { mode: 'json' }).$type<unknown>().notNull(),
+  playedAt: timestamp('played_at').notNull(),
+});
