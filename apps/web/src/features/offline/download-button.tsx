@@ -27,8 +27,8 @@ export function DownloadAllButton({ tracks }: { tracks: Track[] }) {
         title={t('offline.removeAll')}
         onClick={() => void remove(tracks.map((track) => track.id))}
       >
-        <CheckCircle2 className="size-4 text-emerald-400" />
-        {t('offline.allDownloaded')}
+        <CheckCircle2 className="size-4 text-success" />
+        <span className="hidden sm:inline">{t('offline.allDownloaded')}</span>
       </Button>
     );
   }
@@ -37,12 +37,16 @@ export function DownloadAllButton({ tracks }: { tracks: Track[] }) {
     <Button
       variant={ButtonVariant.Secondary}
       isBusy={isBusy}
+      aria-label={t('offline.downloadAll')}
       onClick={() => download(tracks, quality)}
     >
       {isBusy ? null : <Download className="size-4" />}
-      {isBusy
-        ? t('offline.downloadingAll', { done, total: tracks.length })
-        : t('offline.downloadAll')}
+      {/* Phones get the icon alone, so Play, Shuffle and Download fit on one line. */}
+      <span className={isBusy ? '' : 'hidden sm:inline'}>
+        {isBusy
+          ? t('offline.downloadingAll', { done, total: tracks.length })
+          : t('offline.downloadAll')}
+      </span>
     </Button>
   );
 }
@@ -64,7 +68,7 @@ export function DownloadBadge({ id }: { id: string }) {
   return isDownloaded ? (
     <CheckCircle2
       aria-label={t('offline.downloaded')}
-      className="size-3.5 shrink-0 fill-emerald-400 text-bg"
+      className="size-3.5 shrink-0 fill-success text-bg"
     />
   ) : null;
 }

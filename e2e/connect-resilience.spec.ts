@@ -25,7 +25,7 @@ test.describe('connect resilience', () => {
     const phone = await browser.newPage({ storageState: await page.context().storageState() });
     await phone.goto('/');
     const phoneBar = phone.locator('footer');
-    await expect(phoneBar).toContainText('Playing on', { timeout: 5000 });
+    await expect(phoneBar.getByTitle(/^Playing on/)).toBeVisible({ timeout: 5000 });
     await expect(phoneBar).toContainText('Get Lucky');
     await expect(phoneBar.getByRole('button', { name: 'Pause' })).toBeVisible();
     await phone.close();
@@ -49,16 +49,16 @@ test.describe('connect resilience', () => {
     const pcBar = page.locator('footer');
     const phoneBar = phone.locator('footer');
     await expect(pcBar.getByRole('button', { name: 'Pause' })).toBeVisible({ timeout: 30_000 });
-    await expect(phoneBar).toContainText('Playing on', { timeout: 15_000 });
+    await expect(phoneBar.getByTitle(/^Playing on/)).toBeVisible({ timeout: 15_000 });
     await page.waitForTimeout(4000);
 
     await page.reload();
 
     // The phone keeps showing the PC as the player instead of grabbing playback itself.
-    await expect(phoneBar).toContainText('Playing on', { timeout: 15_000 });
+    await expect(phoneBar.getByTitle(/^Playing on/)).toBeVisible({ timeout: 15_000 });
     // The reloaded PC picks the song back up (paused if the browser blocks autoplay).
     await expect(pcBar).toContainText('Get Lucky', { timeout: 15_000 });
-    await expect(pcBar).not.toContainText('Playing on');
+    await expect(pcBar.getByTitle(/^Playing on/)).toHaveCount(0, { timeout: 5000 });
     const elapsed = pcBar.locator('span.w-10').first();
     await expect
       .poll(async () => (await elapsed.textContent()) ?? '0:00', { timeout: 15_000 })

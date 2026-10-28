@@ -19,14 +19,15 @@ import { RegisterPage } from '../features/auth/register-page.tsx';
 import { ResetPasswordPage } from '../features/auth/reset-password-page.tsx';
 import { VerifyEmailPage } from '../features/auth/verify-email-page.tsx';
 import { HomePage } from '../features/home/home-page.tsx';
-import { PlaceholderPage } from '../features/home/placeholder-page.tsx';
 import { AlbumPage } from '../features/music/album-page.tsx';
 import { ArtistPage } from '../features/music/artist-page.tsx';
+import { ExplorePage } from '../features/music/explore-page.tsx';
 import { LikedPage, PlaylistPage } from '../features/music/playlist-page.tsx';
 import { SearchPage } from '../features/music/search-page.tsx';
 import { DownloadsPage } from '../features/offline/downloads-page.tsx';
 import { ProfilePage } from '../features/profile/profile-page.tsx';
 import { AppLayout } from './app-layout.tsx';
+import { CrashPage, NotFoundPage } from './route-states.tsx';
 
 interface RouterContext {
   queryClient: QueryClient;
@@ -143,7 +144,7 @@ const likedRoute = createRoute({
 const exploreRoute = createRoute({
   getParentRoute: () => appRoute,
   path: '/explore',
-  component: () => <PlaceholderPage title="nav.explore" />,
+  component: ExplorePage,
 });
 
 const downloadsRoute = createRoute({
@@ -187,6 +188,8 @@ export function createAppRouter(queryClient: QueryClient) {
     defaultPreload: 'intent',
     // Going back returns to the same scroll position; the app scrolls inside <main>.
     scrollRestoration: true,
+    defaultNotFoundComponent: NotFoundPage,
+    defaultErrorComponent: CrashPage,
   });
 }
 

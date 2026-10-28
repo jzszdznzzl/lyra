@@ -3,6 +3,8 @@ import { useNavigate } from '@tanstack/react-router';
 import { LogOut } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
+import { useDocumentTitle } from '../../lib/use-document-title.ts';
+
 import { Button, ButtonVariant } from '../../ui/button.tsx';
 import { logout, meQuery } from '../auth/api.ts';
 import { AppearanceSection } from './appearance-section.tsx';
@@ -17,6 +19,7 @@ export function ProfilePage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { data: me } = useSuspenseQuery(meQuery);
+  useDocumentTitle(t('profile.title'));
 
   async function signOut() {
     await logout();

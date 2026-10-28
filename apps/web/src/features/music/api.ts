@@ -23,6 +23,12 @@ export const homeQuery = queryOptions({
   staleTime: 10 * MINUTE_MS,
 });
 
+export const exploreQuery = queryOptions({
+  queryKey: ['music', 'explore'],
+  queryFn: async () => unwrap(await api('GET', '/music/explore', HomeFeed)),
+  staleTime: 30 * MINUTE_MS,
+});
+
 export const searchQuery = (q: string, filter: SearchFilter) =>
   queryOptions({
     queryKey: ['music', 'search', q, filter],

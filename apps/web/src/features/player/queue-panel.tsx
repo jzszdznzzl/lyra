@@ -59,7 +59,7 @@ export function QueuePanel() {
                 type="button"
                 aria-label={t('player.remove')}
                 onClick={() => removeFromQueue(position)}
-                className="p-1 text-muted hover:text-red-400"
+                className="p-1 text-muted hover:text-danger"
               >
                 <X className="size-4" />
               </button>

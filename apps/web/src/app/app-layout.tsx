@@ -21,7 +21,6 @@ import { MobilePlayer } from '../features/player/mobile-player.tsx';
 import { NowPlayingPanel } from '../features/player/now-playing-panel.tsx';
 import { ImmersiveView } from '../features/player/immersive-view.tsx';
 import { PlayerBar } from '../features/player/player-bar.tsx';
-import { useUiStore } from '../features/player/ui-store.ts';
 import { useCoverTheme } from '../features/player/use-cover-theme.ts';
 import { useMediaSession } from '../features/player/use-media-session.ts';
 import { changeLanguage } from '../i18n/index.ts';
@@ -30,6 +29,7 @@ import { Brand } from '../ui/brand.tsx';
 import { useInstallPrompt } from '../lib/use-install-prompt.ts';
 import { useOnline } from '../lib/use-online.ts';
 import { Toaster } from '../ui/toast.tsx';
+import { handleShortcut } from './shortcuts.ts';
 import { LibrarySidebar } from './library-sidebar.tsx';
 
 const NAV_ITEMS = [
@@ -57,31 +57,7 @@ export function AppLayout() {
     void useDownloads.getState().load();
   }, []);
   useEffect(() => {
-    // "F" toggles full screen, as in video players; never while typing.
-    const onKey = (event: KeyboardEvent) => {
-      const target = event.target;
-      const isTyping =
-        target instanceof HTMLElement &&
-        (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName));
-
-      if (
-        event.key.toLowerCase() !== 'f' ||
-        isTyping ||
-        event.ctrlKey ||
-        event.metaKey ||
-        event.altKey
-      ) {
-        return;
-      }
-
-      const ui = useUiStore.getState();
-
-      if (ui.immersive) {
-        ui.closeImmersive();
-      } else {
-        ui.openImmersive();
-      }
-    };
+    const onKey = (event: KeyboardEvent) => handleShortcut(event);
 
     window.addEventListener('keydown', onKey);
 
@@ -167,7 +143,7 @@ export function AppLayout() {
           </Link>
         </header>
         {isOnline ? null : (
-          <p className="mx-4 mt-3 flex items-center gap-2 rounded-xl border border-amber-400/30 bg-amber-400/10 px-3 py-2 text-sm text-amber-200 sm:mx-7">
+          <p className="mx-4 mt-3 flex items-center gap-2 rounded-xl border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning sm:mx-7">
             <WifiOff className="size-4 shrink-0" />
             {t('offline.banner')}
           </p>

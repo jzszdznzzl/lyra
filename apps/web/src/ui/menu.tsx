@@ -75,7 +75,7 @@ export function Menu({ anchor, items, onClose }: MenuProps) {
             onClose();
             item.onSelect();
           }}
-          className={`flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm hover:bg-surface-2 ${item.isDanger ? 'text-red-400' : ''}`}
+          className={`flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm hover:bg-surface-2 ${item.isDanger ? 'text-danger' : ''}`}
         >
           <span className="text-muted">{item.icon}</span>
           {item.label}

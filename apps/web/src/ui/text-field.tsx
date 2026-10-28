@@ -21,10 +21,10 @@ export function TextField({ label, hint, error, className = '', ...rest }: TextF
         {...rest}
         aria-invalid={error ? true : undefined}
         aria-describedby={describedBy}
-        className="h-11 rounded-xl border border-line bg-surface-2 px-4 text-[15px] text-text outline-none transition placeholder:text-muted/60 focus:border-accent focus:ring-2 focus:ring-accent/30 aria-invalid:border-red-400"
+        className="h-11 rounded-xl border border-line bg-surface-2 px-4 text-[15px] text-text outline-none transition placeholder:text-muted/60 focus:border-accent focus:ring-2 focus:ring-accent/30 aria-invalid:border-danger"
       />
       {error ? (
-        <p id={`${id}-error`} className="text-xs text-red-400">
+        <p id={`${id}-error`} className="text-xs text-danger">
           {error}
         </p>
       ) : hint ? (

@@ -21,7 +21,7 @@ test('two devices: remote pause, listen here and lyrics', async ({ page, browser
   await expect(pcBar.getByRole('button', { name: 'Pause' })).toBeVisible({ timeout: 30_000 });
 
   // The phone mirrors the PC and shows where music plays.
-  await expect(phoneBar).toContainText('Playing on', { timeout: 15_000 });
+  await expect(phoneBar.getByTitle(/^Playing on/)).toBeVisible({ timeout: 15_000 });
   await expect(phoneBar.getByRole('button', { name: 'Pause' })).toBeVisible();
 
   // Let it play long enough that resuming from 0:00 would be noticeable.
@@ -44,9 +44,9 @@ test('two devices: remote pause, listen here and lyrics', async ({ page, browser
   await phoneBar.getByRole('button', { name: 'Devices' }).click();
   await phone.screenshot({ path: 'test-results/screens/desktop-devices.png' });
   await phone.getByRole('button', { name: 'Listen here' }).click();
-  await expect(phoneBar).not.toContainText('Playing on', { timeout: 15_000 });
+  await expect(phoneBar.getByTitle(/^Playing on/)).toHaveCount(0, { timeout: 15_000 });
   await expect(phoneBar.getByRole('button', { name: 'Pause' })).toBeVisible({ timeout: 30_000 });
-  await expect(pcBar).toContainText('Playing on', { timeout: 15_000 });
+  await expect(pcBar.getByTitle(/^Playing on/)).toBeVisible({ timeout: 15_000 });
 
   // Playback continues where the PC paused, not from the start.
   const elapsed = phoneBar.locator('span.w-10').first();

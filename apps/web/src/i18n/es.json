@@ -337,5 +337,16 @@
     "failed": "Algunas canciones no se pudieron descargar.",
     "install": "Instalar Lyra",
     "installHint": "Añade Lyra a tu pantalla de inicio para usarla como app."
+  },
+  "common": {
+    "close": "Cerrar"
+  },
+  "states": {
+    "notFound": "Página no encontrada",
+    "notFoundBody": "Este enlace no lleva a ninguna parte de Lyra.",
+    "goHome": "Ir al inicio",
+    "crash": "Algo se rompió",
+    "crashBody": "Lyra tuvo un error inesperado en esta página.",
+    "reload": "Recargar"
   }
 }

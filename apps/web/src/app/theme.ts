@@ -35,3 +35,12 @@ export function applyTheme(theme: Theme) {
     // Storage can be blocked; the theme still applies to this tab.
   }
 }
+
+/** With "system", follow the OS switching between light and dark while the app is open. */
+export function followSystemTheme() {
+  window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', () => {
+    if (readStoredTheme() === Theme.System) {
+      applyTheme(Theme.System);
+    }
+  });
+}

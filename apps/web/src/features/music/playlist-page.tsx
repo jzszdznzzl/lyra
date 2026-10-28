@@ -2,10 +2,13 @@ import { useQuery } from '@tanstack/react-query';
 import { useParams } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 
+import { useDocumentTitle } from '../../lib/use-document-title.ts';
+
 import type { PlaylistPage as PlaylistData } from '@lyra/shared';
 
 import { PlaylistActions } from '../library/playlist-actions.tsx';
 import { likedQuery, playlistQuery } from './api.ts';
+import { Page } from '../../ui/page.tsx';
 import { CollectionHeader } from './collection-header.tsx';
 import { ErrorState, LoadingState } from './query-state.tsx';
 import { TrackList } from './track-list.tsx';
@@ -13,17 +16,26 @@ import type { UseQueryResult } from '@tanstack/react-query';
 
 function PlaylistView({ query, title }: { query: UseQueryResult<PlaylistData>; title?: string }) {
   const { t } = useTranslation();
+  useDocumentTitle(title ?? query.data?.title);
 
   if (query.isPending) {
-    return <LoadingState />;
+    return (
+      <Page>
+        <LoadingState />
+      </Page>
+    );
   }
 
   if (query.isError) {
-    return <ErrorState error={query.error} onRetry={() => void query.refetch()} />;
+    return (
+      <Page>
+        <ErrorState error={query.error} onRetry={() => void query.refetch()} />
+      </Page>
+    );
   }
 
   return (
-    <>
+    <Page>
       <CollectionHeader
         kind={t('music.playlist')}
         title={title ?? query.data.title}
@@ -40,7 +52,7 @@ function PlaylistView({ query, title }: { query: UseQueryResult<PlaylistData>; t
         tracks={query.data.tracks}
         playlist={{ id: query.data.id, isEditable: query.data.isEditable }}
       />
-    </>
+    </Page>
   );
 }
 

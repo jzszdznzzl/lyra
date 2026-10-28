@@ -2,6 +2,7 @@ import { X } from 'lucide-react';
 import { useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { createPortal } from 'react-dom';
+import { useTranslation } from 'react-i18next';
 
 import { useBackToClose } from '../lib/use-back-to-close.ts';
 
@@ -12,6 +13,7 @@ interface DialogProps {
 }
 
 export function Dialog({ title, onClose, children }: DialogProps) {
+  const { t } = useTranslation();
   useBackToClose(true, onClose);
 
   useEffect(() => {
@@ -44,7 +46,7 @@ export function Dialog({ title, onClose, children }: DialogProps) {
           <h2 className="text-lg font-bold">{title}</h2>
           <button
             type="button"
-            aria-label="Close"
+            aria-label={t('common.close')}
             onClick={onClose}
             className="rounded-full p-1.5 text-muted hover:bg-surface hover:text-text"
           >

@@ -118,7 +118,7 @@ export function DetailsSection({ me }: { me: UserProfile }) {
             {me.avatarUrl ? (
               <button
                 type="button"
-                className="mt-1 inline-flex items-center gap-1.5 self-start text-xs font-bold text-muted hover:text-red-400"
+                className="mt-1 inline-flex items-center gap-1.5 self-start text-xs font-bold text-muted hover:text-danger"
                 onClick={() => void remove()}
               >
                 <Trash2 className="size-3.5" />

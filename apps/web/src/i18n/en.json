@@ -337,5 +337,16 @@
     "failed": "Some songs could not be downloaded.",
     "install": "Install Lyra",
     "installHint": "Add Lyra to your home screen for a full-screen app."
+  },
+  "common": {
+    "close": "Close"
+  },
+  "states": {
+    "notFound": "Page not found",
+    "notFoundBody": "This link does not lead anywhere in Lyra.",
+    "goHome": "Go home",
+    "crash": "Something broke",
+    "crashBody": "Lyra hit an unexpected error on this page.",
+    "reload": "Reload"
   }
 }

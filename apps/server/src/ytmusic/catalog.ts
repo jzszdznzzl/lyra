@@ -7,6 +7,7 @@ import type {
   ArtistPage,
   HomeFeed,
   LibraryPlaylists,
+  MediaItem,
   PlaylistCard,
   PlaylistPage,
   Result,
@@ -56,6 +57,56 @@ export function getHome(yt: Innertube): Promise<Result<HomeFeed, MusicError>> {
   });
 }
 
+const ARTIST_ID = /^UC[\w-]{22}$/;
+const ALBUM_ID = /^MPRE/;
+
+/**
+ * The top result card (an artist or album) plus the songs under it. Those songs come without
+ * artists, since the card already names them, so the card's artist is filled in.
+ */
+function topResult(card: YTNodes.MusicCardShelf): MediaItem[] {
+  const payload: unknown = card.on_tap.payload;
+  const browseId =
+    typeof payload === 'object' &&
+    payload !== null &&
+    'browseId' in payload &&
+    typeof payload.browseId === 'string'
+      ? payload.browseId
+      : null;
+  const title = card.title.toString();
+  const thumbnail = bestThumbnail(card.thumbnail?.contents);
+  const subtitle = card.subtitle.toString();
+  const items: MediaItem[] = [];
+
+  if (browseId && ARTIST_ID.test(browseId)) {
+    items.push({ kind: MediaKind.Artist, id: browseId, title, subtitle, thumbnail });
+  } else if (browseId && ALBUM_ID.test(browseId)) {
+    items.push({ kind: MediaKind.Album, id: browseId, title, subtitle, thumbnail });
+  }
+
+  const artist = browseId && ARTIST_ID.test(browseId) ? { id: browseId, name: title } : null;
+
+  for (const item of toMediaItems(card.contents ?? [])) {
+    items.push(
+      artist &&
+        (item.kind === MediaKind.Song || item.kind === MediaKind.Video) &&
+        item.artists.length === 0
+        ? { ...item, artists: [artist] }
+        : item,
+    );
+  }
+
+  return items;
+}
+
+export function getExplore(yt: Innertube): Promise<Result<HomeFeed, MusicError>> {
+  return attempt(async () => {
+    const explore = await yt.music.getExplore();
+
+    return { shelves: toShelves(explore.sections) };
+  });
+}
+
 export function search(
   yt: Innertube,
   query: string,
@@ -63,9 +114,13 @@ export function search(
 ): Promise<Result<SearchResults, MusicError>> {
   return attempt(async () => {
     const results = await yt.music.search(query, { type: SEARCH_TYPES[filter] });
-    const nodes = (results.contents ?? []).flatMap((section) => section.contents ?? []);
+    const items = (results.contents ?? []).flatMap((section) =>
+      section.is(YTNodes.MusicCardShelf)
+        ? topResult(section)
+        : toMediaItems(section.contents ?? []),
+    );
 
-    return { items: toMediaItems(nodes) };
+    return { items };
   });
 }
 

@@ -70,7 +70,7 @@ export function GoogleSection({ me }: { me: UserProfile }) {
       description={t('profile.google.body')}
       aside={
         <span
-          className={`shrink-0 rounded-full px-3 py-1 text-xs font-bold ${me.isGoogleLinked ? 'bg-emerald-400/15 text-emerald-400' : 'bg-surface-2 text-muted'}`}
+          className={`shrink-0 rounded-full px-3 py-1 text-xs font-bold ${me.isGoogleLinked ? 'bg-success/15 text-success' : 'bg-surface-2 text-muted'}`}
         >
           {me.isGoogleLinked ? t('profile.google.linked') : t('profile.google.notLinked')}
         </span>

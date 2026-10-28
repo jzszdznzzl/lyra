@@ -2,11 +2,14 @@ import { useQuery } from '@tanstack/react-query';
 import { useParams } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 
+import { useDocumentTitle } from '../../lib/use-document-title.ts';
+
 import { MediaKind } from '@lyra/shared';
 import type { Track } from '@lyra/shared';
 
 import { usePlayerStore } from '../player/player-store.ts';
 import { artistQuery } from './api.ts';
+import { Page } from '../../ui/page.tsx';
 import { CollectionHeader } from './collection-header.tsx';
 import { ErrorState, LoadingState } from './query-state.tsx';
 import { Shelf } from './shelf.tsx';
@@ -16,14 +19,23 @@ export function ArtistPage() {
   const { t } = useTranslation();
   const { id } = useParams({ from: '/app/artist/$id' });
   const artist = useQuery(artistQuery(id));
+  useDocumentTitle(artist.data?.name);
   const playTracks = usePlayerStore((state) => state.playTracks);
 
   if (artist.isPending) {
-    return <LoadingState />;
+    return (
+      <Page>
+        <LoadingState />
+      </Page>
+    );
   }
 
   if (artist.isError) {
-    return <ErrorState error={artist.error} onRetry={() => void artist.refetch()} />;
+    return (
+      <Page>
+        <ErrorState error={artist.error} onRetry={() => void artist.refetch()} />
+      </Page>
+    );
   }
 
   // The first shelf of song rows is the artist's top songs; it reads better as a list.
@@ -35,7 +47,7 @@ export function ArtistPage() {
   const shelves = topSongs.length > 0 ? rest : artist.data.shelves;
 
   return (
-    <>
+    <Page>
       <CollectionHeader
         kind={t('music.artist')}
         title={artist.data.name}
@@ -57,6 +69,6 @@ export function ArtistPage() {
           onPlay={(track, tracks) => playTracks(tracks, Math.max(0, tracks.indexOf(track)))}
         />
       ))}
-    </>
+    </Page>
   );
 }

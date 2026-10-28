@@ -9,8 +9,8 @@ export const NoticeTone = Object.freeze({
 export type NoticeTone = (typeof NoticeTone)[keyof typeof NoticeTone];
 
 const TONE_CLASSES: Record<NoticeTone, string> = {
-  [NoticeTone.Error]: 'border-red-400/40 bg-red-400/10 text-red-300',
-  [NoticeTone.Success]: 'border-emerald-400/40 bg-emerald-400/10 text-emerald-300',
+  [NoticeTone.Error]: 'border-danger/40 bg-danger/10 text-danger',
+  [NoticeTone.Success]: 'border-success/40 bg-success/10 text-success',
   [NoticeTone.Info]: 'border-line bg-surface text-muted',
 };
 

@@ -44,7 +44,7 @@ export function SessionsSection() {
                 <p className="truncate font-bold">
                   {session.device}
                   {session.isCurrent ? (
-                    <span className="ml-2 rounded-full bg-emerald-400/15 px-2 py-0.5 text-xs text-emerald-400">
+                    <span className="ml-2 rounded-full bg-success/15 px-2 py-0.5 text-xs text-success">
                       {t('profile.sessions.current')}
                     </span>
                   ) : null}

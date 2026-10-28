@@ -100,12 +100,13 @@ export function DeviceButton({ isLabelled = false }: { isLabelled?: boolean }) {
       <button
         type="button"
         aria-label={t('connect.devices')}
+        title={isElsewhere ? t('connect.playingOn', { name: active.name }) : t('connect.devices')}
         onClick={() => setIsOpen(true)}
-        className={`flex min-w-0 items-center gap-1.5 rounded-lg p-1.5 text-xs font-bold hover:bg-surface ${isElsewhere ? 'text-emerald-400' : 'text-muted hover:text-text'}`}
+        className={`flex min-w-0 items-center gap-1.5 rounded-lg p-1.5 text-xs font-bold hover:bg-surface ${isElsewhere ? 'text-success' : 'text-muted hover:text-text'}`}
       >
         <MonitorSpeaker className="size-[18px] shrink-0" />
         {isLabelled && isElsewhere ? (
-          <span className="max-w-48 truncate">{t('connect.playingOn', { name: active.name })}</span>
+          <span className="max-w-40 truncate">{active.name}</span>
         ) : null}
       </button>
       {isOpen ? <DevicePicker onClose={() => setIsOpen(false)} /> : null}

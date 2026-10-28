@@ -5,7 +5,7 @@ import { createRoot } from 'react-dom/client';
 import { registerSW } from 'virtual:pwa-register';
 
 import { createAppRouter } from './app/router.tsx';
-import { applyTheme, readStoredTheme } from './app/theme.ts';
+import { applyTheme, followSystemTheme, readStoredTheme } from './app/theme.ts';
 import { initI18n } from './i18n/index.ts';
 
 import './styles.css';
@@ -19,6 +19,7 @@ async function start() {
   // New versions activate on the next load, so a deploy never breaks a song mid-play.
   registerSW({ immediate: true });
   applyTheme(readStoredTheme());
+  followSystemTheme();
   await initI18n();
 
   const container = document.getElementById('root');

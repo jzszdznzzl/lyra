@@ -57,6 +57,21 @@ function badgeList(badges: Helpers.SuperParsedResult | null) {
   return badges.is_array ? badges.array() : [badges.item()];
 }
 
+/** Some rows (search top results) only carry the length as text, e.g. "Song • 5:38". */
+function durationFromColumns(item: YTNodes.MusicResponsiveListItem) {
+  for (const column of item.flex_columns) {
+    for (const part of column.title.toString().split(' • ')) {
+      const seconds = parseDuration(part.trim());
+
+      if (seconds !== null) {
+        return seconds;
+      }
+    }
+  }
+
+  return null;
+}
+
 function fromListItem(item: YTNodes.MusicResponsiveListItem): MediaItem | null {
   const thumbnail = bestThumbnail(item.thumbnails);
   const subtitle = item.subtitle?.toString() ?? '';
@@ -75,7 +90,7 @@ function fromListItem(item: YTNodes.MusicResponsiveListItem): MediaItem | null {
         title: item.title ?? '',
         artists: toArtists(item.artists ?? item.authors),
         album: item.album ? { id: item.album.id ?? null, name: item.album.name } : null,
-        durationSeconds: item.duration?.seconds ?? null,
+        durationSeconds: item.duration?.seconds ?? durationFromColumns(item),
         thumbnail,
         isExplicit: isExplicit(item.badges),
       };

@@ -13,7 +13,7 @@ const VARIANT_CLASSES: Record<ButtonVariant, string> = {
   [ButtonVariant.Primary]: 'bg-accent text-white shadow-lg shadow-accent/30 hover:brightness-110',
   [ButtonVariant.Secondary]: 'bg-surface-2 text-text border border-line hover:bg-surface',
   [ButtonVariant.Ghost]: 'text-muted hover:text-text hover:bg-surface',
-  [ButtonVariant.Danger]: 'text-red-400 border border-red-400/30 hover:bg-red-400/10',
+  [ButtonVariant.Danger]: 'text-danger border border-danger/30 hover:bg-danger/10',
 };
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {

@@ -19,6 +19,7 @@ import { INVALID_QUERY, parseQuery } from '../query.ts';
 import {
   getAlbum,
   getArtist,
+  getExplore,
   getHome,
   getLibraryPlaylists,
   getLikedSongs,
@@ -82,6 +83,13 @@ export function musicRoutes(ctx: AppContext, pool: InnertubePool) {
       .get(
         '/home',
         async ({ user, status }) => respond(await getHome(await clientFor(user)), status),
+        {
+          isSignedIn: true,
+        },
+      )
+      .get(
+        '/explore',
+        async ({ user, status }) => respond(await getExplore(await clientFor(user)), status),
         {
           isSignedIn: true,
         },

@@ -72,7 +72,7 @@ export function CollectionHeader({
         <h1 className="text-3xl font-extrabold tracking-tight sm:text-5xl">{title}</h1>
         <p className="text-sm text-muted">{subtitle}</p>
         {tracks.length > 0 || actions ? (
-          <div className="mt-3 flex items-center gap-3">
+          <div className="mt-3 flex flex-wrap items-center justify-center gap-3 sm:justify-start">
             {tracks.length > 0 ? (
               <>
                 <Button onClick={() => playTracks(tracks, 0)}>

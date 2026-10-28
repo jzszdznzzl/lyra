@@ -77,7 +77,7 @@ export function MobilePlayer() {
             <span className="min-w-0">
               <span className="block truncate text-sm font-bold">{track.title}</span>
               <span
-                className={`block truncate text-xs ${playingElsewhere ? 'text-emerald-400' : 'text-muted'}`}
+                className={`block truncate text-xs ${playingElsewhere ? 'text-success' : 'text-muted'}`}
               >
                 {playingElsewhere
                   ? t('connect.playingOn', { name: playingElsewhere })

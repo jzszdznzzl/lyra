@@ -14,6 +14,9 @@
   --color-line: var(--line);
   --color-accent: var(--accent);
   --color-accent-2: var(--accent-2);
+  --color-danger: var(--danger);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
 }
 
 :root,
@@ -27,6 +30,9 @@
   --text: #f4f1f6;
   --muted: #a39cab;
   --line: rgb(255 255 255 / 0.08);
+  --danger: #f87171;
+  --success: #34d399;
+  --warning: #fcd34d;
   color-scheme: dark;
 }
 
@@ -37,7 +43,11 @@
   --surface-2: rgb(0 0 0 / 0.07);
   --text: #1b1720;
   --muted: #6d6575;
+  /* Darker shades: the bright ones above are unreadable on a light background. */
   --line: rgb(0 0 0 / 0.08);
+  --danger: #b91c1c;
+  --success: #047857;
+  --warning: #92400e;
   color-scheme: light;
 }
 

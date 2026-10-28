@@ -4,6 +4,8 @@ import { Search } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { useDocumentTitle } from '../../lib/use-document-title.ts';
+
 import { SearchFilter } from '@lyra/shared';
 
 import { ApiError, ApiFailure } from '../../lib/api.ts';
@@ -45,6 +47,7 @@ export function SearchPage() {
     enabled: isFocused && typed.trim() !== '' && typed !== q,
   });
   const results = useQuery(searchQuery(q, filter));
+  useDocumentTitle(q ? `${q} · ${t('nav.search')}` : t('nav.search'));
 
   function submit(query: string) {
     setDraft(query);

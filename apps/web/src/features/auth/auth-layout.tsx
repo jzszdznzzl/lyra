@@ -1,10 +1,12 @@
 import { Outlet } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 
+import { useDocumentTitle } from '../../lib/use-document-title.ts';
 import { Brand } from '../../ui/brand.tsx';
 
 export function AuthLayout() {
   const { t } = useTranslation();
+  useDocumentTitle(null);
 
   return (
     <div className="grid min-h-dvh place-items-center px-4 py-10">

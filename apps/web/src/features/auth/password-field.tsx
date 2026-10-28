@@ -7,13 +7,7 @@ import { TextField } from '../../ui/text-field.tsx';
 import { passwordScore } from './password-strength.ts';
 
 const SEGMENTS = [0, 1, 2, 3];
-const SCORE_COLORS = [
-  'bg-red-500',
-  'bg-red-400',
-  'bg-amber-400',
-  'bg-emerald-400',
-  'bg-emerald-400',
-];
+const SCORE_COLORS = ['bg-red-500', 'bg-danger', 'bg-warning', 'bg-success', 'bg-success'];
 const SCORE_LABELS = [
   'auth.strength.0',
   'auth.strength.1',
