@@ -26,7 +26,13 @@ export function createApp(ctx: AppContext, options: AppOptions = {}) {
   return new Elysia({ prefix: '/api' })
     .get('/health', () => ({ status: 'ok' }))
     .use(authRoutes(ctx, { challenges, isGoogleLinked: linked }))
-    .use(userRoutes(ctx, { challenges, isGoogleLinked: linked }))
+    .use(
+      userRoutes(ctx, {
+        challenges,
+        isGoogleLinked: linked,
+        onAccountDeleted: (userId) => pool.forget(userId),
+      }),
+    )
     .use(
       googleRoutes(ctx, {
         pool,

@@ -49,7 +49,7 @@ test('register, verify, add a passkey and sign back in with it', async ({
 
   await page.getByRole('link', { name: 'Profile' }).first().click();
   await expect(page.getByRole('heading', { name: 'Profile' })).toBeVisible();
-  await expect(page.getByText('This device')).toBeVisible();
+  await expect(page.getByText('This device', { exact: true })).toBeVisible();
 
   await page.getByRole('button', { name: 'Add a passkey' }).click();
   await expect(page.getByRole('button', { name: 'Rename' })).toBeVisible();

@@ -82,6 +82,12 @@ export const ChangePasswordInput = z.object({
 
 export type ChangePasswordInput = z.infer<typeof ChangePasswordInput>;
 
+export const DeleteAccountInput = z.object({
+  password: z.string().min(1).max(PASSWORD_MAX_LENGTH),
+});
+
+export type DeleteAccountInput = z.infer<typeof DeleteAccountInput>;
+
 export const UpdateProfileInput = z.object({
   name: DisplayName.exactOptional(),
   language: z.enum(Language).exactOptional(),

@@ -126,7 +126,15 @@
       "revoke": "Cerrar sesión",
       "revokeOthers": "Cerrar sesión en los demás dispositivos"
     },
-    "signOut": "Cerrar sesión"
+    "signOut": "Cerrar sesión",
+    "delete": {
+      "title": "Eliminar cuenta",
+      "body": "Elimina tu cuenta de Lyra, tus sesiones, passkeys y la vinculación con Google, además de las descargas de este dispositivo. Tu biblioteca de YT Music no se toca.",
+      "button": "Eliminar cuenta",
+      "confirmTitle": "¿Eliminar tu cuenta?",
+      "confirmBody": "No se puede deshacer. Escribe tu contraseña para confirmar.",
+      "confirm": "Eliminar para siempre"
+    }
   },
   "errors": {
     "invalid_credentials": "Correo, usuario o contraseña incorrectos.",

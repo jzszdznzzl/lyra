@@ -126,7 +126,15 @@
       "revoke": "Sign out",
       "revokeOthers": "Sign out of all other devices"
     },
-    "signOut": "Sign out"
+    "signOut": "Sign out",
+    "delete": {
+      "title": "Delete account",
+      "body": "Deletes your Lyra account, sessions, passkeys and Google link, plus the downloads on this device. Your YT Music library is not touched.",
+      "button": "Delete account",
+      "confirmTitle": "Delete your account?",
+      "confirmBody": "This cannot be undone. Enter your password to confirm.",
+      "confirm": "Delete forever"
+    }
   },
   "errors": {
     "invalid_credentials": "Wrong email, username or password.",

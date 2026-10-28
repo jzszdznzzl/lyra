@@ -6,6 +6,7 @@ import {
   AVATAR_MAX_BYTES,
   AuthError,
   ChangePasswordInput,
+  DeleteAccountInput,
   PasskeyRegistrationInput,
   RenamePasskeyInput,
   UpdateProfileInput,
@@ -20,7 +21,8 @@ import {
   renamePasskey,
   startPasskeyRegistration,
 } from '../auth/passkeys.ts';
-import { authPlugin } from '../auth/plugin.ts';
+import { verifyPassword } from '../auth/password-policy.ts';
+import { authPlugin, clearSessionCookie } from '../auth/plugin.ts';
 import { listSessions, revokeOtherSessions, revokeSession } from '../auth/sessions.ts';
 import { describeUserAgent } from '../common/index.ts';
 import { schema } from '../db/index.ts';
@@ -33,6 +35,8 @@ import type { AppContext } from '../context.ts';
 export interface UserRoutesOptions {
   challenges: ChallengeStore;
   isGoogleLinked: (userId: string) => Promise<boolean>;
+  // Lets other parts drop what they keep in memory for the user (e.g. YouTube clients).
+  onAccountDeleted: (userId: string) => void;
 }
 
 const AvatarUpload = z.object({ file: z.file().max(AVATAR_MAX_BYTES) });
@@ -40,7 +44,7 @@ const IdParams = z.object({ id: z.string().min(1).max(512) });
 const AvatarParams = z.object({ file: z.string().regex(/^[0-9a-f-]{36}\.webp$/) });
 
 export function userRoutes(ctx: AppContext, options: UserRoutesOptions) {
-  const { challenges, isGoogleLinked } = options;
+  const { challenges, isGoogleLinked, onAccountDeleted } = options;
 
   return (
     new Elysia()
@@ -93,6 +97,24 @@ export function userRoutes(ctx: AppContext, options: UserRoutesOptions) {
           return toUserProfile(updated ?? user, await isGoogleLinked(user.id));
         },
         { isSignedIn: true },
+      )
+      .delete(
+        '/me',
+        async ({ body, user, cookie, status }) => {
+          // Re-asking the password stops a borrowed, signed-in phone from wiping the account.
+          if (!(await verifyPassword(body.password, user.passwordHash))) {
+            return status(401, { error: AuthError.InvalidCredentials });
+          }
+
+          await deleteAvatar(ctx.dataDir, user.id);
+          // Sessions, passkeys, email tokens and the Google link go with it (ON DELETE CASCADE).
+          await ctx.db.delete(schema.users).where(eq(schema.users.id, user.id));
+          onAccountDeleted(user.id);
+          clearSessionCookie(cookie);
+
+          return status(204);
+        },
+        { isSignedIn: true, body: DeleteAccountInput },
       )
       .post(
         '/me/password',

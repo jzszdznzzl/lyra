@@ -109,6 +109,16 @@ export const finishPasskeyLogin = (challengeId: string, response: Authentication
 
 export const updateProfile = (input: UpdateProfileInput) => api('PATCH', '/me', UserProfile, input);
 
+export async function deleteAccount(password: string) {
+  const result = await api('DELETE', '/me', NoContent, { password });
+
+  if (!result.error) {
+    writeCachedProfile(null);
+  }
+
+  return result;
+}
+
 export const changePassword = (input: ChangePasswordInput) =>
   api('POST', '/me/password', NoContent, input);
 
