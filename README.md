@@ -9,6 +9,7 @@
 <br>
 A self-hosted PWA with crossfade, an equalizer, synced lyrics, offline downloads and Spotify Connect–style control across your devices.
 
+[![license](https://img.shields.io/badge/license-MIT-e0457b)](./LICENSE)
 ![bun](https://img.shields.io/badge/bun-%E2%89%A51.4-000000?logo=bun&logoColor=white)
 ![elysia](https://img.shields.io/badge/elysia-1.4-8b5cf6)
 ![react](https://img.shields.io/badge/react-19-149eca?logo=react&logoColor=white)
@@ -99,3 +100,7 @@ Setup, scripts and workflow are in [CONTRIBUTING.md](./CONTRIBUTING.md). The cod
 ## Contact
 
 me@jzszdznzzl.dev
+
+## License
+
+[MIT](./LICENSE) © José Daniel Cristaldo Vera

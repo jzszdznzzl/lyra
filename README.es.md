@@ -9,6 +9,7 @@
 <br>
 Una PWA autoalojada con crossfade, ecualizador, letras sincronizadas, descargas sin conexión y control de la reproducción entre tus dispositivos al estilo de Spotify Connect.
 
+[![licencia](https://img.shields.io/badge/licencia-MIT-e0457b)](./LICENSE)
 ![bun](https://img.shields.io/badge/bun-%E2%89%A51.4-000000?logo=bun&logoColor=white)
 ![elysia](https://img.shields.io/badge/elysia-1.4-8b5cf6)
 ![react](https://img.shields.io/badge/react-19-149eca?logo=react&logoColor=white)
@@ -99,3 +100,7 @@ La instalación, los scripts y el flujo de trabajo están en [CONTRIBUTING.md](.
 ## Contacto
 
 me@jzszdznzzl.dev
+
+## Licencia
+
+[MIT](./LICENSE) © José Daniel Cristaldo Vera
