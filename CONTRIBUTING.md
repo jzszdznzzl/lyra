@@ -32,6 +32,19 @@ The host machine has many ports in use, so lyra uses random high ports: the serv
 | `pnpm dev`       | Starts the server and the web app                 |
 | `pnpm build`     | Builds the server (tsdown) and the web app (Vite) |
 
+## Deployment
+
+Lyra runs on the host PC and is published at `https://lyra.jzszdznzzl.dev` through a named Cloudflare tunnel. Two systemd user services keep it up (the user has lingering enabled, so they start at boot):
+
+| Service               | What it runs                                                        |
+| --------------------- | ------------------------------------------------------------------- |
+| `lyra.service`        | `apps/server/dist/main.mjs`, serving the API and `apps/web/dist`    |
+| `lyra-tunnel.service` | `cloudflared tunnel run lyra` (config in `~/.cloudflared/lyra.yml`) |
+
+Production settings live in `~/.config/lyra/lyra.env` (not in the repo) and data in `~/.local/share/lyra`. `TRUST_PROXY=true` is set there because every request arrives through the tunnel; never set it when the port is reachable directly.
+
+After changing code, run `pnpm deploy:local` to rebuild and restart the server.
+
 ---
 
 ## Workflow

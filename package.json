@@ -18,7 +18,8 @@
     "build": "pnpm -r build",
     "test": "pnpm -r test",
     "test:e2e": "playwright test",
-    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test"
+    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test",
+    "deploy:local": "pnpm build && systemctl --user restart lyra.service"
   },
   "devDependencies": {
     "@playwright/test": "1.64.1",

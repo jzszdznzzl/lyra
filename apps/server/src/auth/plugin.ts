@@ -10,9 +10,14 @@ import type { ClientInfo } from './sessions.ts';
 
 const UNKNOWN_IP = 'unknown';
 
-export function clientInfo(request: Request, server: Server<unknown> | null): ClientInfo {
-  // Behind the Cloudflare tunnel every socket comes from cloudflared; the real address is here.
-  const forwarded = request.headers.get('cf-connecting-ip');
+export function clientInfo(
+  ctx: AppContext,
+  request: Request,
+  server: Server<unknown> | null,
+): ClientInfo {
+  // Behind the Cloudflare tunnel every socket comes from cloudflared and the real address is in
+  // this header. Without the tunnel anyone could send it, so it counts only when trusted.
+  const forwarded = ctx.env.TRUST_PROXY ? request.headers.get('cf-connecting-ip') : null;
 
   return {
     userAgent: request.headers.get('user-agent') ?? '',
@@ -50,7 +55,7 @@ export function authPlugin(ctx: AppContext) {
           return status(401, { error: AuthError.Unauthorized });
         }
 
-        const found = await findSession(ctx, token, clientInfo(request, server));
+        const found = await findSession(ctx, token, clientInfo(ctx, request, server));
 
         if (!found) {
           return status(401, { error: AuthError.Unauthorized });

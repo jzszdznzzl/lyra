@@ -9,7 +9,8 @@ export type Database = BunSQLiteDatabase<typeof schema>;
 
 export const IN_MEMORY = ':memory:';
 
-// `src/` and `dist/` both sit one level below the package root, next to `drizzle/`.
+// Resolved from this file, which is right for sources and tests; the bundled server passes
+// its own path, because bundling moves this code into dist/main.mjs.
 export const MIGRATIONS_FOLDER = new URL('../../drizzle', import.meta.url).pathname;
 
 export function openDatabase(path: string, migrationsFolder = MIGRATIONS_FOLDER): Database {

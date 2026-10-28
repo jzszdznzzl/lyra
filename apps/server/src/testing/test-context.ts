@@ -22,6 +22,7 @@ export function createTestContext(): TestContext {
     PUBLIC_URL: TEST_ORIGIN,
     SECRET_KEY: Buffer.alloc(32, 7).toString('base64'),
     MAIL_TRANSPORT: 'log',
+    TRUST_PROXY: 'true',
     MAIL_FROM: 'Lyra <noreply@lyra.test>',
   });
 

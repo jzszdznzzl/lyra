@@ -18,6 +18,10 @@ export const Env = z.object({
   SECRET_KEY: z.base64().refine((value) => Buffer.from(value, 'base64').length === 32, {
     message: 'SECRET_KEY must be 32 bytes encoded in base64',
   }),
+  // Set only when every request comes through Cloudflare (the tunnel); see clientInfo.
+  TRUST_PROXY: z.stringbool().default(false),
+  // Built web app to serve next to the API; unset in development, where Vite serves it.
+  WEB_DIST: z.string().min(1).optional(),
   MAIL_TRANSPORT: z.enum(MailTransport).default(MailTransport.Smtp),
   MAIL_FROM: z.string().min(1),
   SMTP_HOST: z.string().default(''),

@@ -49,7 +49,7 @@ export function authRoutes(ctx: AppContext, options: AuthRoutesOptions) {
     .post(
       '/register',
       async ({ body, request, server, status }) => {
-        if (!mailLimiter.hit(`register:${clientInfo(request, server).ip}`)) {
+        if (!mailLimiter.hit(`register:${clientInfo(ctx, request, server).ip}`)) {
           return status(429, { error: AuthError.TooManyRequests });
         }
 
@@ -72,7 +72,11 @@ export function authRoutes(ctx: AppContext, options: AuthRoutesOptions) {
           return status(authErrorStatus(result.error), { error: result.error });
         }
 
-        const { token } = await createSession(ctx, result.data.id, clientInfo(request, server));
+        const { token } = await createSession(
+          ctx,
+          result.data.id,
+          clientInfo(ctx, request, server),
+        );
         setSessionCookie(ctx, cookie, token);
 
         return toUserProfile(result.data, await isGoogleLinked(result.data.id));
@@ -82,7 +86,7 @@ export function authRoutes(ctx: AppContext, options: AuthRoutesOptions) {
     .post(
       '/resend-verification',
       async ({ body, request, server, status }) => {
-        const ip = clientInfo(request, server).ip;
+        const ip = clientInfo(ctx, request, server).ip;
 
         if (!mailLimiter.hit(`resend:${ip}`) || !mailLimiter.hit(`resend:${body.email}`)) {
           return status(429, { error: AuthError.TooManyRequests });
@@ -97,7 +101,7 @@ export function authRoutes(ctx: AppContext, options: AuthRoutesOptions) {
     .post(
       '/login',
       async ({ body, cookie, request, server, status }) => {
-        const client = clientInfo(request, server);
+        const client = clientInfo(ctx, request, server);
 
         if (!loginLimiter.hit(`login:${client.ip}`)) {
           return status(429, { error: AuthError.TooManyRequests });
@@ -129,7 +133,7 @@ export function authRoutes(ctx: AppContext, options: AuthRoutesOptions) {
     .post(
       '/forgot-password',
       async ({ body, request, server, status }) => {
-        const ip = clientInfo(request, server).ip;
+        const ip = clientInfo(ctx, request, server).ip;
 
         if (!mailLimiter.hit(`forgot:${ip}`) || !mailLimiter.hit(`forgot:${body.email}`)) {
           return status(429, { error: AuthError.TooManyRequests });
@@ -160,7 +164,7 @@ export function authRoutes(ctx: AppContext, options: AuthRoutesOptions) {
     .post(
       '/passkey/verify',
       async ({ body, cookie, request, server, status }) => {
-        const client = clientInfo(request, server);
+        const client = clientInfo(ctx, request, server);
 
         if (!loginLimiter.hit(`login:${client.ip}`)) {
           return status(429, { error: AuthError.TooManyRequests });
