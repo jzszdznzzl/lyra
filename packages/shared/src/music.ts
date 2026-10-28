@@ -161,3 +161,38 @@ export type UpNext = z.infer<typeof UpNext>;
 
 /** Response header with YouTube's loudness measure, so players can even out volume. */
 export const LOUDNESS_HEADER = 'x-lyra-loudness-db';
+
+export const PlaylistPrivacy = Object.freeze({
+  Private: 'PRIVATE',
+  Unlisted: 'UNLISTED',
+  Public: 'PUBLIC',
+} as const);
+
+export type PlaylistPrivacy = (typeof PlaylistPrivacy)[keyof typeof PlaylistPrivacy];
+
+const VideoId = z.string().regex(/^[\w-]{11}$/);
+
+export const MAX_TRACKS_PER_EDIT = 200;
+
+export const CreatePlaylistInput = z.object({
+  title: z.string().trim().min(1).max(150),
+  description: z.string().trim().max(5000).default(''),
+  privacy: z.enum(PlaylistPrivacy).default(PlaylistPrivacy.Private),
+  trackIds: z.array(VideoId).max(MAX_TRACKS_PER_EDIT).default([]),
+});
+
+export type CreatePlaylistInput = z.infer<typeof CreatePlaylistInput>;
+
+export const RenamePlaylistInput = z.object({ title: z.string().trim().min(1).max(150) });
+
+export type RenamePlaylistInput = z.infer<typeof RenamePlaylistInput>;
+
+export const PlaylistTracksInput = z.object({
+  trackIds: z.array(VideoId).min(1).max(MAX_TRACKS_PER_EDIT),
+});
+
+export type PlaylistTracksInput = z.infer<typeof PlaylistTracksInput>;
+
+export const PlaylistCreated = z.object({ id: z.string() });
+
+export type PlaylistCreated = z.infer<typeof PlaylistCreated>;

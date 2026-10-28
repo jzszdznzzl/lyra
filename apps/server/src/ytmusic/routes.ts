@@ -2,7 +2,14 @@ import { Elysia } from 'elysia';
 import { z } from 'zod';
 import type { Innertube } from 'youtubei.js';
 
-import { MusicError, SearchQuery, err } from '@lyra/shared';
+import {
+  CreatePlaylistInput,
+  MusicError,
+  PlaylistTracksInput,
+  RenamePlaylistInput,
+  SearchQuery,
+  err,
+} from '@lyra/shared';
 import type { Result } from '@lyra/shared';
 
 import { authPlugin } from '../auth/plugin.ts';
@@ -18,6 +25,15 @@ import {
   getUpNext,
 } from './catalog.ts';
 import { accountClient, musicClient } from './clients.ts';
+import {
+  addTracks,
+  createPlaylist,
+  deletePlaylist,
+  likeTrack,
+  removeTracks,
+  renamePlaylist,
+  unlikeTrack,
+} from './library.ts';
 import type { User } from '../auth/sessions.ts';
 import type { AppContext } from '../context.ts';
 import type { InnertubePool } from './innertube.ts';
@@ -31,6 +47,7 @@ const MUSIC_ERROR_STATUS = {
 } as const satisfies Record<MusicError, number>;
 
 const IdParams = z.object({ id: z.string().regex(/^[\w-]{2,64}$/) });
+const VideoParams = z.object({ id: z.string().regex(/^[\w-]{11}$/) });
 const SuggestionQuery = z.object({ q: z.string().trim().min(1).max(200) });
 
 export function musicRoutes(ctx: AppContext, pool: InnertubePool) {
@@ -55,61 +72,117 @@ export function musicRoutes(ctx: AppContext, pool: InnertubePool) {
       : result.data;
   }
 
-  return new Elysia({ prefix: '/music' })
-    .use(authPlugin(ctx))
-    .get(
-      '/home',
-      async ({ user, status }) => respond(await getHome(await clientFor(user)), status),
-      {
-        isSignedIn: true,
-      },
-    )
-    .get(
-      '/search',
-      async ({ user, query, status }) =>
-        respond(await search(await clientFor(user), query.q, query.filter), status),
-      { isSignedIn: true, query: SearchQuery },
-    )
-    .get(
-      '/suggestions',
-      async ({ user, query, status }) =>
-        respond(await getSuggestions(await clientFor(user), query.q), status),
-      { isSignedIn: true, query: SuggestionQuery },
-    )
-    .get(
-      '/albums/:id',
-      async ({ user, params, status }) =>
-        respond(await getAlbum(await clientFor(user), params.id), status),
-      { isSignedIn: true, params: IdParams },
-    )
-    .get(
-      '/artists/:id',
-      async ({ user, params, status }) =>
-        respond(await getArtist(await clientFor(user), params.id), status),
-      { isSignedIn: true, params: IdParams },
-    )
-    .get(
-      '/playlists/:id',
-      async ({ user, params, status }) =>
-        respond(await getPlaylist(await clientFor(user), params.id), status),
-      { isSignedIn: true, params: IdParams },
-    )
-    .get(
-      '/library/playlists',
-      async ({ user, status }) => respond(await withAccount(user, getLibraryPlaylists), status),
-      { isSignedIn: true },
-    )
-    .get(
-      '/up-next/:id',
-      async ({ user, params, status }) =>
-        respond(await getUpNext(await clientFor(user), params.id), status),
-      { isSignedIn: true, params: IdParams },
-    )
-    .get(
-      '/liked',
-      async ({ user, status }) => respond(await withAccount(user, getLikedSongs), status),
-      {
-        isSignedIn: true,
-      },
-    );
+  return (
+    new Elysia({ prefix: '/music' })
+      .use(authPlugin(ctx))
+      .get(
+        '/home',
+        async ({ user, status }) => respond(await getHome(await clientFor(user)), status),
+        {
+          isSignedIn: true,
+        },
+      )
+      .get(
+        '/search',
+        async ({ user, query, status }) =>
+          respond(await search(await clientFor(user), query.q, query.filter), status),
+        { isSignedIn: true, query: SearchQuery },
+      )
+      .get(
+        '/suggestions',
+        async ({ user, query, status }) =>
+          respond(await getSuggestions(await clientFor(user), query.q), status),
+        { isSignedIn: true, query: SuggestionQuery },
+      )
+      .get(
+        '/albums/:id',
+        async ({ user, params, status }) =>
+          respond(await getAlbum(await clientFor(user), params.id), status),
+        { isSignedIn: true, params: IdParams },
+      )
+      .get(
+        '/artists/:id',
+        async ({ user, params, status }) =>
+          respond(await getArtist(await clientFor(user), params.id), status),
+        { isSignedIn: true, params: IdParams },
+      )
+      .get(
+        '/playlists/:id',
+        async ({ user, params, status }) =>
+          respond(await getPlaylist(await clientFor(user), params.id), status),
+        { isSignedIn: true, params: IdParams },
+      )
+      .get(
+        '/library/playlists',
+        async ({ user, status }) => respond(await withAccount(user, getLibraryPlaylists), status),
+        { isSignedIn: true },
+      )
+      .get(
+        '/up-next/:id',
+        async ({ user, params, status }) =>
+          respond(await getUpNext(await clientFor(user), params.id), status),
+        { isSignedIn: true, params: IdParams },
+      )
+      .get(
+        '/liked',
+        async ({ user, status }) => respond(await withAccount(user, getLikedSongs), status),
+        {
+          isSignedIn: true,
+        },
+      )
+      // --- Writes: they all act on the linked YT Music account ---
+      .put(
+        '/likes/:id',
+        async ({ user, params, status }) =>
+          respond(await withAccount(user, (yt) => likeTrack(yt, params.id)), status) ?? status(204),
+        { isSignedIn: true, params: VideoParams },
+      )
+      .delete(
+        '/likes/:id',
+        async ({ user, params, status }) =>
+          respond(await withAccount(user, (yt) => unlikeTrack(yt, params.id)), status) ??
+          status(204),
+        { isSignedIn: true, params: VideoParams },
+      )
+      .post(
+        '/playlists',
+        async ({ user, body, status }) =>
+          respond(await withAccount(user, (yt) => createPlaylist(yt, body)), status),
+        { isSignedIn: true, body: CreatePlaylistInput },
+      )
+      .patch(
+        '/playlists/:id',
+        async ({ user, params, body, status }) =>
+          respond(
+            await withAccount(user, (yt) => renamePlaylist(yt, params.id, body.title)),
+            status,
+          ) ?? status(204),
+        { isSignedIn: true, params: IdParams, body: RenamePlaylistInput },
+      )
+      .delete(
+        '/playlists/:id',
+        async ({ user, params, status }) =>
+          respond(await withAccount(user, (yt) => deletePlaylist(yt, params.id)), status) ??
+          status(204),
+        { isSignedIn: true, params: IdParams },
+      )
+      .post(
+        '/playlists/:id/tracks',
+        async ({ user, params, body, status }) =>
+          respond(
+            await withAccount(user, (yt) => addTracks(yt, params.id, body.trackIds)),
+            status,
+          ) ?? status(204),
+        { isSignedIn: true, params: IdParams, body: PlaylistTracksInput },
+      )
+      .delete(
+        '/playlists/:id/tracks',
+        async ({ user, params, body, status }) =>
+          respond(
+            await withAccount(user, (yt) => removeTracks(yt, params.id, body.trackIds)),
+            status,
+          ) ?? status(204),
+        { isSignedIn: true, params: IdParams, body: PlaylistTracksInput },
+      )
+  );
 }

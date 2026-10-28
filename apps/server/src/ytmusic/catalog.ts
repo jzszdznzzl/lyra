@@ -117,7 +117,8 @@ export function getPlaylist(yt: Innertube, id: string): Promise<Result<PlaylistP
   return attempt(async () => {
     let page = await yt.music.getPlaylist(id);
     const header = describeHeader(page.header);
-    const isEditable = page.header?.is(YTNodes.MusicEditablePlaylistDetailHeader) ?? false;
+    // The editable header is not always the one youtubei.js picks; it is still in the memo.
+    const isEditable = page.page.contents_memo?.has('MusicEditablePlaylistDetailHeader') ?? false;
     const tracks: Track[] = toTracks(page.items);
 
     while (page.has_continuation && tracks.length < MAX_PLAYLIST_TRACKS) {
