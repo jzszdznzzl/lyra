@@ -1,0 +1,12 @@
+{
+  "app": {
+    "name": "Lyra"
+  },
+  "home": {
+    "greeting": {
+      "morning": "Buenos días",
+      "afternoon": "Buenas tardes",
+      "evening": "Buenas noches"
+    }
+  }
+}

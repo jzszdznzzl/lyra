@@ -1,0 +1,62 @@
+@import 'tailwindcss';
+
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
+/* Colors come from CSS variables so the accent can follow the cover art at runtime. */
+@theme inline {
+  --font-sans: 'Manrope', system-ui, sans-serif;
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-panel: var(--panel);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-2: var(--accent-2);
+}
+
+:root,
+[data-theme='dark'] {
+  --accent: #e0457b;
+  --accent-2: #f39c4a;
+  --bg: #0b0a0f;
+  --panel: rgb(10 9 14 / 0.55);
+  --surface: rgb(255 255 255 / 0.05);
+  --surface-2: rgb(255 255 255 / 0.09);
+  --text: #f4f1f6;
+  --muted: #a39cab;
+  --line: rgb(255 255 255 / 0.08);
+  color-scheme: dark;
+}
+
+[data-theme='light'] {
+  --bg: #f7f3f5;
+  --panel: rgb(255 255 255 / 0.6);
+  --surface: rgb(0 0 0 / 0.04);
+  --surface-2: rgb(0 0 0 / 0.07);
+  --text: #1b1720;
+  --muted: #6d6575;
+  --line: rgb(0 0 0 / 0.08);
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  font-family: var(--font-sans);
+  color: var(--text);
+  background:
+    radial-gradient(
+      1100px 520px at 55% -10%,
+      color-mix(in srgb, var(--accent) 45%, transparent),
+      transparent 70%
+    ),
+    radial-gradient(
+      700px 400px at 95% 10%,
+      color-mix(in srgb, var(--accent-2) 22%, transparent),
+      transparent 70%
+    ),
+    var(--bg);
+  background-attachment: fixed;
+}

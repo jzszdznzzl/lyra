@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Lyra mockup — mobile</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root { --accent: #e0457b; --accent-2: #f39c4a; --bg: #0b0a0f; --text: #f4f1f6; --muted: #a39cab; --line: rgba(255,255,255,.1); }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { width: 1300px; height: 900px; background: #1a1820; font-family: Manrope, system-ui, sans-serif; color: var(--text); display: flex; gap: 40px; align-items: center; justify-content: center; }
+  .phone { width: 390px; height: 820px; border-radius: 44px; border: 10px solid #000; overflow: hidden; position: relative; box-shadow: 0 30px 80px rgba(0,0,0,.6); }
+  .screen { position: absolute; inset: 0; padding: 54px 24px 28px; display: flex; flex-direction: column; }
+  .np { background: radial-gradient(500px 420px at 50% 20%, rgba(224,69,123,.75), transparent 70%), radial-gradient(400px 300px at 90% 60%, rgba(243,156,74,.35), transparent 70%), var(--bg); }
+  .hdr { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--muted); font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+  .hdr b { color: var(--text); letter-spacing: 0; text-transform: none; font-size: 13px; display: block; text-align: center; }
+  .cover { margin: 34px 0 30px; aspect-ratio: 1; border-radius: 20px; background: radial-gradient(circle at 30% 30%, #ffb36b, #e0457b 45%, #3b1240 90%); box-shadow: 0 30px 60px rgba(224,69,123,.4); }
+  .meta { display: flex; align-items: center; justify-content: space-between; }
+  .meta h3 { font-size: 24px; font-weight: 800; letter-spacing: -.02em; }
+  .meta p { color: var(--muted); font-size: 15px; margin-top: 3px; }
+  .heart { color: var(--accent); font-size: 26px; }
+  .bar { margin-top: 26px; height: 4px; border-radius: 2px; background: rgba(255,255,255,.2); position: relative; }
+  .bar i { position: absolute; inset: 0 62% 0 0; background: var(--text); border-radius: 2px; }
+  .bar i::after { content: ""; position: absolute; right: -7px; top: -5px; width: 14px; height: 14px; border-radius: 50%; background: var(--text); }
+  .times { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-top: 8px; }
+  .ctrls { display: flex; align-items: center; justify-content: space-between; margin-top: 18px; font-size: 26px; color: var(--text); }
+  .ctrls .s { font-size: 20px; color: var(--muted); }
+  .play { width: 70px; height: 70px; border-radius: 50%; background: var(--text); display: grid; place-items: center; }
+  .play::before { content: ""; width: 16px; height: 22px; border-left: 6px solid var(--bg); border-right: 6px solid var(--bg); }
+  .bottom { margin-top: auto; display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+  .devpill { color: #4ade80; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+  .icons { display: flex; gap: 18px; color: var(--muted); font-size: 18px; }
+  /* device sheet */
+  .sheet-bg { background: var(--bg); }
+  .dim { position: absolute; inset: 0; background: radial-gradient(500px 420px at 50% 20%, rgba(224,69,123,.35), transparent 70%), var(--bg); filter: brightness(.45); }
+  .sheet { position: absolute; left: 0; right: 0; bottom: 0; background: #17151d; border-radius: 26px 26px 0 0; padding: 14px 22px 30px; border-top: 1px solid var(--line); }
+  .grab { width: 40px; height: 5px; border-radius: 3px; background: rgba(255,255,255,.25); margin: 0 auto 18px; }
+  .sheet h4 { font-size: 20px; font-weight: 800; letter-spacing: -.02em; }
+  .sheet .sub { color: var(--muted); font-size: 13px; margin: 4px 0 18px; }
+  .cur { background: linear-gradient(135deg, rgba(224,69,123,.25), rgba(243,156,74,.15)); border: 1px solid rgba(224,69,123,.4); border-radius: 16px; padding: 16px; }
+  .cur small { color: var(--accent-2); font-weight: 700; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; }
+  .cur b { display: block; font-size: 17px; margin-top: 4px; }
+  .vol { display: flex; align-items: center; gap: 10px; margin-top: 14px; font-size: 14px; color: var(--muted); }
+  .vol .t { flex: 1; height: 6px; border-radius: 3px; background: rgba(255,255,255,.15); position: relative; }
+  .vol .t i { position: absolute; inset: 0 35% 0 0; border-radius: 3px; background: linear-gradient(90deg, var(--accent-2), var(--accent)); }
+  .d { display: flex; align-items: center; gap: 14px; padding: 14px 4px; border-bottom: 1px solid var(--line); }
+  .d .ic { width: 40px; height: 40px; border-radius: 12px; background: rgba(255,255,255,.07); display: grid; place-items: center; font-size: 18px; }
+  .d b { font-size: 15px; display: block; }
+  .d small { color: var(--muted); font-size: 12.5px; }
+  .btn { margin-left: auto; padding: 8px 14px; border-radius: 999px; background: var(--text); color: var(--bg); font-weight: 800; font-size: 13px; }
+  .label { position: absolute; top: -34px; left: 0; right: 0; text-align: center; color: #8a8494; font-size: 14px; font-weight: 600; }
+  .wrap { position: relative; }
+  /* light theme variant */
+  .light { --bg: #f7f3f5; --text: #1b1720; --muted: #6d6575; --line: rgba(0,0,0,.08); }
+  .light.np { background: radial-gradient(500px 420px at 50% 20%, rgba(224,69,123,.35), transparent 70%), radial-gradient(400px 300px at 90% 60%, rgba(243,156,74,.25), transparent 70%), var(--bg); color: var(--text); }
+  .light .play { background: var(--text); }
+  .light .bar { background: rgba(0,0,0,.12); }
+  .light .devpill { color: #15803d; }
+</style>
+</head>
+<body>
+  <div class="wrap"><div class="label">Now playing · dark</div>
+  <div class="phone"><div class="screen np">
+    <div class="hdr"><span>⌄</span><div>Playing from playlist<b>Late night drive</b></div><span>⋯</span></div>
+    <div class="cover"></div>
+    <div class="meta"><div><h3>Midnight Static</h3><p>Aurel</p></div><span class="heart">♥</span></div>
+    <div class="bar"><i></i></div>
+    <div class="times"><span>1:32</span><span>-2:33</span></div>
+    <div class="ctrls"><span class="s">⤨</span><span>⏮</span><div class="play"></div><span>⏭</span><span class="s">↻</span></div>
+    <div class="bottom"><span class="devpill">⇵ Playing on This PC</span><span class="icons"><span>▶︎▭</span><span>☰</span></span></div>
+  </div></div></div>
+
+  <div class="wrap"><div class="label">Device picker (Connect)</div>
+  <div class="phone"><div class="screen sheet-bg">
+    <div class="dim"></div>
+    <div class="sheet">
+      <div class="grab"></div>
+      <h4>Listening on</h4>
+      <div class="sub">Control playback on any of your devices</div>
+      <div class="cur"><small>Current device</small><b>This PC · Chrome</b>
+        <div class="vol">🔈<div class="t"><i></i></div>65%</div></div>
+      <div class="d"><div class="ic">📱</div><div><b>Pixel 9</b><small>This device · Lyra app</small></div><span class="btn">Listen here</span></div>
+      <div class="d"><div class="ic">💻</div><div><b>Laptop · Firefox</b><small>Idle · 3 min ago</small></div></div>
+    </div>
+  </div></div></div>
+
+  <div class="wrap"><div class="label">Now playing · light</div>
+  <div class="phone"><div class="screen np light">
+    <div class="hdr"><span>⌄</span><div>Playing from playlist<b>Late night drive</b></div><span>⋯</span></div>
+    <div class="cover"></div>
+    <div class="meta"><div><h3>Midnight Static</h3><p>Aurel</p></div><span class="heart">♥</span></div>
+    <div class="bar"><i></i></div>
+    <div class="times"><span>1:32</span><span>-2:33</span></div>
+    <div class="ctrls"><span class="s">⤨</span><span>⏮</span><div class="play"></div><span>⏭</span><span class="s">↻</span></div>
+    <div class="bottom"><span class="devpill">⇵ Playing on This PC</span><span class="icons"><span>▶︎▭</span><span>☰</span></span></div>
+  </div></div></div>
+</body>
+</html>

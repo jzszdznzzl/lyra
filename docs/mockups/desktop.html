@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Lyra mockup — desktop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --accent: #e0457b;
+    --accent-2: #f39c4a;
+    --bg: #0b0a0f;
+    --surface: rgba(255,255,255,0.05);
+    --surface-2: rgba(255,255,255,0.09);
+    --text: #f4f1f6;
+    --muted: #a39cab;
+    --line: rgba(255,255,255,0.08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    width: 1440px; height: 900px; overflow: hidden;
+    font-family: Manrope, system-ui, sans-serif; color: var(--text);
+    background:
+      radial-gradient(1100px 520px at 55% -10%, rgba(224,69,123,0.45), transparent 70%),
+      radial-gradient(700px 400px at 95% 10%, rgba(243,156,74,0.22), transparent 70%),
+      var(--bg);
+    display: grid; grid-template-columns: 260px 1fr 320px; grid-template-rows: 1fr 96px;
+    gap: 8px; padding: 8px;
+  }
+  .panel { background: rgba(10,9,14,0.55); backdrop-filter: blur(30px); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+  /* sidebar */
+  aside.side { padding: 20px 14px; display: flex; flex-direction: column; gap: 6px; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 22px; letter-spacing: -0.02em; padding: 0 8px 18px; }
+  .logo { width: 30px; height: 30px; border-radius: 9px; background: conic-gradient(from 200deg, var(--accent), var(--accent-2), var(--accent)); display: grid; place-items: center; }
+  .logo::after { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--bg); }
+  .nav a { display: flex; align-items: center; gap: 12px; padding: 10px 10px; border-radius: 10px; color: var(--muted); text-decoration: none; font-weight: 600; font-size: 14px; }
+  .nav a.on { background: var(--surface-2); color: var(--text); }
+  .ico { width: 18px; height: 18px; border-radius: 5px; border: 2px solid currentColor; opacity: .8; }
+  .sec { font-size: 11px; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); padding: 22px 10px 8px; display: flex; justify-content: space-between; }
+  .pl { display: flex; align-items: center; gap: 10px; padding: 7px 10px; border-radius: 10px; font-size: 13px; }
+  .pl:hover { background: var(--surface); }
+  .pl .c { width: 38px; height: 38px; border-radius: 8px; flex: none; }
+  .pl small { display: block; color: var(--muted); font-size: 11.5px; margin-top: 2px; }
+  /* main */
+  main { padding: 22px 28px; overflow: hidden; }
+  .top { display: flex; align-items: center; gap: 14px; margin-bottom: 26px; }
+  .search { flex: 1; max-width: 460px; height: 42px; border-radius: 21px; background: var(--surface-2); border: 1px solid var(--line); display: flex; align-items: center; padding: 0 18px; color: var(--muted); font-size: 14px; gap: 10px; }
+  .chip { padding: 8px 14px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); font-size: 13px; font-weight: 600; color: var(--muted); }
+  .chip.on { background: var(--text); color: var(--bg); }
+  .avatar { margin-left: auto; width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg,#6d5dfc,#3ec6c1); border: 2px solid rgba(255,255,255,.2); }
+  h1 { font-size: 34px; letter-spacing: -0.03em; font-weight: 800; margin-bottom: 18px; }
+  h2 { font-size: 19px; font-weight: 700; letter-spacing: -0.01em; margin: 28px 0 14px; display: flex; justify-content: space-between; align-items: baseline; }
+  h2 span { font-size: 12px; color: var(--muted); font-weight: 600; }
+  .quick { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .q { display: flex; align-items: center; gap: 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; font-weight: 700; font-size: 13.5px; height: 60px; }
+  .q .c { width: 60px; height: 60px; flex: none; }
+  .row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 18px; }
+  .card .c { aspect-ratio: 1; border-radius: 12px; margin-bottom: 10px; position: relative; box-shadow: 0 12px 30px rgba(0,0,0,.35); }
+  .card b { font-size: 14px; display: block; }
+  .card small { color: var(--muted); font-size: 12.5px; }
+  .card.hover .c::after { content: ""; position: absolute; right: 10px; bottom: 10px; width: 44px; height: 44px; border-radius: 50%; background: var(--accent); box-shadow: 0 8px 20px rgba(224,69,123,.5); }
+  /* right panel */
+  aside.right { padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+  .tabs { display: flex; gap: 6px; }
+  .tabs .chip { font-size: 12px; padding: 6px 12px; }
+  .np-cover { aspect-ratio: 1; border-radius: 14px; background: radial-gradient(circle at 30% 30%, #ffb36b, #e0457b 45%, #3b1240 90%); position: relative; box-shadow: 0 20px 50px rgba(224,69,123,.35); }
+  .np-cover::after { content: "VIDEO"; position: absolute; left: 12px; top: 12px; font-size: 10px; font-weight: 800; letter-spacing: .1em; padding: 5px 8px; border-radius: 6px; background: rgba(0,0,0,.45); }
+  .np-title { font-size: 20px; font-weight: 800; letter-spacing: -0.02em; }
+  .np-artist { color: var(--muted); font-size: 13.5px; margin-top: 2px; }
+  .qhead { font-size: 12px; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); margin-top: 6px; display: flex; justify-content: space-between; }
+  .qi { display: flex; align-items: center; gap: 10px; font-size: 13px; padding: 6px; border-radius: 8px; }
+  .qi .c { width: 40px; height: 40px; border-radius: 6px; flex: none; }
+  .qi small { display: block; color: var(--muted); font-size: 11.5px; }
+  .qi .grip { margin-left: auto; color: var(--muted); letter-spacing: -2px; }
+  /* player bar */
+  footer { grid-column: 1 / -1; display: grid; grid-template-columns: 320px 1fr 380px; align-items: center; padding: 0 20px; }
+  .now { display: flex; align-items: center; gap: 14px; }
+  .now .c { width: 58px; height: 58px; border-radius: 10px; background: radial-gradient(circle at 30% 30%, #ffb36b, #e0457b 45%, #3b1240 90%); }
+  .now b { font-size: 14.5px; display: block; }
+  .now small { color: var(--muted); font-size: 12.5px; }
+  .heart { width: 18px; height: 18px; margin-left: 8px; color: var(--accent); font-size: 18px; }
+  .center { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .ctrls { display: flex; align-items: center; gap: 22px; color: var(--muted); font-size: 18px; }
+  .play { width: 44px; height: 44px; border-radius: 50%; background: var(--text); display: grid; place-items: center; }
+  .play::before { content: ""; width: 12px; height: 14px; border-left: 4px solid var(--bg); border-right: 4px solid var(--bg); }
+  .prog { width: 100%; max-width: 560px; display: flex; align-items: center; gap: 10px; font-size: 11.5px; color: var(--muted); }
+  .bar { flex: 1; height: 4px; border-radius: 2px; background: rgba(255,255,255,.15); position: relative; }
+  .bar i { position: absolute; inset: 0 62% 0 0; border-radius: 2px; background: linear-gradient(90deg, var(--accent-2), var(--accent)); }
+  .bar i::after { content: ""; position: absolute; right: -6px; top: -4px; width: 12px; height: 12px; border-radius: 50%; background: var(--text); }
+  .xf { position: absolute; right: 0; top: -3px; bottom: -3px; width: 7%; border-radius: 3px; background: repeating-linear-gradient(90deg, rgba(243,156,74,.5) 0 2px, transparent 2px 4px); }
+  .tools { display: flex; align-items: center; gap: 12px; justify-content: flex-end; color: var(--muted); font-size: 12px; font-weight: 600; }
+  .pill { white-space: nowrap; padding: 6px 10px; border-radius: 8px; background: var(--surface); border: 1px solid var(--line); }
+  .pill.acc { color: var(--accent); border-color: rgba(224,69,123,.4); }
+  .vol { width: 90px; height: 4px; border-radius: 2px; background: rgba(255,255,255,.15); position: relative; }
+  .vol i { position: absolute; inset: 0 30% 0 0; background: var(--text); border-radius: 2px; }
+  .device-banner { grid-column: 1 / -1; }
+  .g1 { background: linear-gradient(135deg,#5b5bf7,#a855f7); }
+  .g2 { background: linear-gradient(135deg,#14b8a6,#0f766e); }
+  .g3 { background: linear-gradient(135deg,#f59e0b,#b45309); }
+  .g4 { background: linear-gradient(135deg,#ef4444,#7f1d1d); }
+  .g5 { background: linear-gradient(135deg,#22c55e,#14532d); }
+  .g6 { background: linear-gradient(135deg,#0ea5e9,#1e3a8a); }
+  .g7 { background: linear-gradient(160deg,#f472b6,#4c1d95); }
+  .g8 { background: linear-gradient(135deg,#e5e7eb,#6b7280); }
+  .g9 { background: linear-gradient(135deg,#fde68a,#f97316 60%,#7c2d12); }
+  .liked { background: linear-gradient(135deg,#4f46e5,#c4b5fd); display:grid; place-items:center; }
+  .liked::after { content:"♥"; color:white; font-size:16px; }
+  .connect { background: rgba(224,69,123,.14); border: 1px solid rgba(224,69,123,.35); border-radius: 12px; padding: 12px; font-size: 12.5px; }
+  .connect b { color: var(--accent); }
+  .dev { display: flex; align-items: center; gap: 10px; padding: 7px 0; color: var(--muted); }
+  .dev.on { color: var(--text); font-weight: 700; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+  .dev.on .dot { background: #4ade80; box-shadow: 0 0 10px #4ade80; }
+</style>
+</head>
+<body>
+  <aside class="side panel">
+    <div class="brand"><div class="logo"></div>lyra</div>
+    <nav class="nav">
+      <a class="on" href="#"><span class="ico"></span>Home</a>
+      <a href="#"><span class="ico"></span>Search</a>
+      <a href="#"><span class="ico"></span>Explore</a>
+      <a href="#"><span class="ico"></span>Downloads</a>
+    </nav>
+    <div class="sec">Your library <span>＋</span></div>
+    <div class="pl"><div class="c liked"></div><div>Liked songs<small>Playlist · 1,284 songs</small></div></div>
+    <div class="pl"><div class="c g7"></div><div>Late night drive<small>Playlist · 48 songs</small></div></div>
+    <div class="pl"><div class="c g2"></div><div>Focus — lo-fi<small>Playlist · 112 songs</small></div></div>
+    <div class="pl"><div class="c g3"></div><div>Gym rotation<small>Playlist · 64 songs</small></div></div>
+    <div class="pl"><div class="c g6"></div><div>Neon Harbor<small>Album · Vela Sound</small></div></div>
+    <div class="pl"><div class="c g4"></div><div>Rojo Vivo<small>Artist</small></div></div>
+    <div class="pl"><div class="c g5"></div><div>Sunday mornings<small>Playlist · 31 songs</small></div></div>
+  </aside>
+
+  <main class="panel">
+    <div class="top">
+      <div class="search">⌕ &nbsp;Songs, albums, artists, videos</div>
+      <div class="chip on">All</div><div class="chip">Music</div><div class="chip">Videos</div>
+      <div class="avatar"></div>
+    </div>
+    <h1>Good evening</h1>
+    <div class="quick">
+      <div class="q"><div class="c liked"></div>Liked songs</div>
+      <div class="q"><div class="c g7"></div>Late night drive</div>
+      <div class="q"><div class="c g2"></div>Focus — lo-fi</div>
+      <div class="q"><div class="c g9"></div>Midnight Static</div>
+      <div class="q"><div class="c g6"></div>Neon Harbor</div>
+      <div class="q"><div class="c g3"></div>Gym rotation</div>
+    </div>
+    <h2>Quick picks <span>Show all</span></h2>
+    <div class="row">
+      <div class="card hover"><div class="c g1"></div><b>Glass Rivers</b><small>Mira Okafor</small></div>
+      <div class="card"><div class="c g4"></div><b>Fuego Lento</b><small>Rojo Vivo</small></div>
+      <div class="card"><div class="c g6"></div><b>Tidewater</b><small>Vela Sound</small></div>
+      <div class="card"><div class="c g5"></div><b>Green Hours</b><small>The Fernweh</small></div>
+      <div class="card"><div class="c g8"></div><b>Paper Moon</b><small>Hollis &amp; June</small></div>
+    </div>
+    <h2>Music videos for you <span>Show all</span></h2>
+    <div class="row">
+      <div class="card"><div class="c g9" style="aspect-ratio:16/9"></div><b>Midnight Static (Official Video)</b><small>Aurel</small></div>
+      <div class="card"><div class="c g2" style="aspect-ratio:16/9"></div><b>Satellites</b><small>Kodama</small></div>
+      <div class="card"><div class="c g7" style="aspect-ratio:16/9"></div><b>Slow Bloom</b><small>Ivy Lane</small></div>
+      <div class="card"><div class="c g3" style="aspect-ratio:16/9"></div><b>Copper Sun</b><small>Dune Club</small></div>
+      <div class="card"><div class="c g1" style="aspect-ratio:16/9"></div><b>Afterglow</b><small>Mira Okafor</small></div>
+    </div>
+  </main>
+
+  <aside class="right panel">
+    <div class="tabs"><div class="chip on">Now playing</div><div class="chip">Lyrics</div><div class="chip">Queue</div></div>
+    <div class="np-cover"></div>
+    <div><div class="np-title">Midnight Static</div><div class="np-artist">Aurel · Low Frequency Hearts</div></div>
+    <div class="connect">
+      <div class="dev on"><span class="dot"></span>This PC · Chrome <b style="margin-left:auto">Playing</b></div>
+      <div class="dev"><span class="dot"></span>Pixel 9 · Lyra app</div>
+    </div>
+    <div class="qhead">Next in queue <span>Clear</span></div>
+    <div class="qi"><div class="c g1"></div><div>Glass Rivers<small>Mira Okafor</small></div><span class="grip">⋮⋮</span></div>
+    <div class="qi"><div class="c g6"></div><div>Tidewater<small>Vela Sound</small></div><span class="grip">⋮⋮</span></div>
+  </aside>
+
+  <footer class="panel">
+    <div class="now"><div class="c"></div><div><b>Midnight Static</b><small>Aurel</small></div><span class="heart">♥</span></div>
+    <div class="center">
+      <div class="ctrls"><span>⤨</span><span>⏮</span><div class="play"></div><span>⏭</span><span>↻</span></div>
+      <div class="prog">1:32<div class="bar"><i></i><span class="xf"></span></div>4:05</div>
+    </div>
+    <div class="tools">
+      <span class="pill acc">MAX · 256k</span>
+      <span class="pill">Crossfade 6s</span>
+      <span class="pill">EQ</span>
+      <span class="pill">⇵ This PC</span>
+      <span>🔊</span><div class="vol"><i></i></div>
+    </div>
+  </footer>
+</body>
+</html>

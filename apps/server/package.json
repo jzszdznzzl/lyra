@@ -1,0 +1,21 @@
+{
+  "name": "@lyra/server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun --watch src/main.ts",
+    "start": "bun dist/main.mjs",
+    "typecheck": "tsc --noEmit",
+    "build": "tsdown",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@lyra/shared": "workspace:*",
+    "elysia": "1.4.30",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "tsdown": "0.23.2"
+  }
+}
