@@ -6,16 +6,22 @@ import { LOUDNESS_HEADER, MusicError, StreamQuery, StreamType } from '@lyra/shar
 import { authPlugin } from '../auth/plugin.ts';
 import { sessionRateLimit } from '../security.ts';
 import { INVALID_QUERY, parseQuery } from '../query.ts';
-import { musicClient } from '../ytmusic/clients.ts';
+import { fallbackClient, musicClient } from '../ytmusic/clients.ts';
 import { PoTokenMinter } from '../ytmusic/po-token.ts';
 import { chunkedBody, parseRange } from './ranges.ts';
 import { StreamResolver } from './resolver.ts';
+import { StreamAccounts } from './stream-accounts.ts';
 import type { StreamSelection } from './resolver.ts';
 import type { AppContext } from '../context.ts';
 import type { InnertubePool } from '../ytmusic/innertube.ts';
 
 const VideoParams = z.object({ id: z.string().regex(/^[\w-]{11}$/) });
 const HTTP_FORBIDDEN = 403;
+const ERROR_STATUS: Partial<Record<MusicError, number>> = {
+  [MusicError.Unavailable]: 404,
+  [MusicError.GoogleNotLinked]: 403,
+  [MusicError.GoogleSessionExpired]: 403,
+};
 
 /**
  * Proxies YouTube audio. googlevideo URLs only work from the IP that deciphered them, and they
@@ -23,6 +29,10 @@ const HTTP_FORBIDDEN = 403;
  */
 export function streamRoutes(ctx: AppContext, pool: InnertubePool) {
   const resolver = new StreamResolver(ctx.now, new PoTokenMinter(ctx.now));
+  const accounts = new StreamAccounts(
+    ctx.now,
+    async () => (await fallbackClient(ctx, pool))?.yt ?? null,
+  );
 
   return new Elysia({ prefix: '/stream' })
     .use(authPlugin(ctx))
@@ -45,17 +55,19 @@ export function streamRoutes(ctx: AppContext, pool: InnertubePool) {
               }
             : { type: StreamType.Video, height: query.height };
         const yt = await musicClient(ctx, pool, user);
+        const own = { yt, cacheKey: user.id, isSignedIn: yt.session.logged_in };
         // One retry: a cached URL can be revoked early, which googlevideo answers with 403.
         for (let attempt = 0; attempt < 2; attempt += 1) {
-          const resolved = await resolver.resolve(yt, user.id, params.id, selection);
+          const resolved = await accounts.resolve(own, (client) =>
+            resolver.resolve(client.yt, client.cacheKey, params.id, selection),
+          );
 
           if (resolved.error) {
-            return status(resolved.error === MusicError.Unavailable ? 404 : 502, {
-              error: resolved.error,
-            });
+            return status(ERROR_STATUS[resolved.error] ?? 502, { error: resolved.error });
           }
 
-          const { url, itag, contentLength, mimeType, loudnessDb } = resolved.data;
+          const { client, stream } = resolved.data;
+          const { url, itag, contentLength, mimeType, loudnessDb } = stream;
           const range = parseRange(request.headers.get('range'), contentLength);
 
           if (!range) {
@@ -72,7 +84,7 @@ export function streamRoutes(ctx: AppContext, pool: InnertubePool) {
           }).catch(() => null);
 
           if (probe?.status === HTTP_FORBIDDEN) {
-            resolver.forget(user.id, params.id, selection);
+            resolver.forget(client.cacheKey, params.id, selection);
             continue;
           }
 
@@ -93,8 +105,8 @@ export function streamRoutes(ctx: AppContext, pool: InnertubePool) {
 
           // A URL revoked mid-song gets a fresh one; it must be the same file for bytes to line up.
           const refreshUrl = async () => {
-            resolver.forget(user.id, params.id, selection);
-            const fresh = await resolver.resolve(yt, user.id, params.id, selection);
+            resolver.forget(client.cacheKey, params.id, selection);
+            const fresh = await resolver.resolve(client.yt, client.cacheKey, params.id, selection);
 
             return fresh.data?.itag === itag && fresh.data.contentLength === contentLength
               ? fresh.data.url

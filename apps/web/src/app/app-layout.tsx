@@ -19,6 +19,7 @@ import { CreatePlaylistDialog } from '../features/library/playlist-dialogs.tsx';
 import { useDownloads } from '../features/offline/downloads.ts';
 import { MobilePlayer } from '../features/player/mobile-player.tsx';
 import { NowPlayingPanel } from '../features/player/now-playing-panel.tsx';
+import { GoogleRequiredDialog } from '../features/player/google-required-dialog.tsx';
 import { ImmersiveView } from '../features/player/immersive-view.tsx';
 import { PlayerBar } from '../features/player/player-bar.tsx';
 import { useCoverTheme } from '../features/player/use-cover-theme.ts';
@@ -155,6 +156,7 @@ export function AppLayout() {
       <MobilePlayer />
       <Toaster />
       <ImmersiveView />
+      <GoogleRequiredDialog />
       {isCreating ? <CreatePlaylistDialog onClose={() => setIsCreating(false)} /> : null}
       <nav className="flex justify-around rounded-2xl border border-line bg-panel py-2 backdrop-blur-2xl md:hidden">
         {NAV_ITEMS.map(({ to, icon: Icon, label }) => (

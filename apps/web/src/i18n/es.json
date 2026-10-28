@@ -278,6 +278,13 @@
       "electronic": "Electrónica",
       "acoustic": "Acústica",
       "custom": "Personalizado"
+    },
+    "googleRequired": {
+      "title": "Vincula tu cuenta de Google",
+      "notLinked": "Este servidor solo puede reproducir canciones con una cuenta de Google vinculada, porque YouTube bloquea las peticiones anónimas que salen de él. Vincúlala en tu perfil: Lyra solo guarda la sesión.",
+      "expired": "Tu sesión de Google caducó y YouTube ya no deja reproducir con ella. Vuelve a vincular tu cuenta desde tu perfil.",
+      "link": "Ir a vincular Google",
+      "later": "Ahora no"
     }
   },
   "library": {

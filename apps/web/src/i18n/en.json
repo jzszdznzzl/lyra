@@ -278,6 +278,13 @@
       "electronic": "Electronic",
       "acoustic": "Acoustic",
       "custom": "Custom"
+    },
+    "googleRequired": {
+      "title": "Link your Google account",
+      "notLinked": "This server can only play songs with a linked Google account, because YouTube blocks anonymous requests coming from it. Link it from your profile: Lyra keeps only the session.",
+      "expired": "Your Google session expired and YouTube no longer plays with it. Link your account again from your profile.",
+      "link": "Link Google",
+      "later": "Not now"
     }
   },
   "library": {

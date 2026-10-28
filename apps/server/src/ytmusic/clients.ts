@@ -1,5 +1,8 @@
+import { eq } from 'drizzle-orm';
+
 import { DEFAULT_LANGUAGE, Language } from '@lyra/shared';
 
+import { schema } from '../db/index.ts';
 import { getGoogleCookie } from '../google/accounts.ts';
 import type { User } from '../auth/sessions.ts';
 import type { AppContext } from '../context.ts';
@@ -21,4 +24,31 @@ export async function accountClient(ctx: AppContext, pool: InnertubePool, user: 
   const cookie = await getGoogleCookie(ctx, user.id);
 
   return cookie ? pool.get({ userId: user.id, cookie, language: languageOf(user) }) : null;
+}
+
+/**
+ * The client of STREAM_FALLBACK_USERNAME's Google account, which plays songs for users without
+ * their own; null when unset, unknown or not linked.
+ */
+export async function fallbackClient(ctx: AppContext, pool: InnertubePool) {
+  const username = ctx.env.STREAM_FALLBACK_USERNAME;
+
+  if (!username) {
+    return null;
+  }
+
+  const [row] = await ctx.db
+    .select({ id: schema.users.id })
+    .from(schema.users)
+    .where(eq(schema.users.username, username));
+  const cookie = row ? await getGoogleCookie(ctx, row.id) : null;
+
+  if (!row || !cookie) {
+    return null;
+  }
+
+  return {
+    userId: row.id,
+    yt: await pool.get({ userId: row.id, cookie, language: DEFAULT_LANGUAGE }),
+  };
 }

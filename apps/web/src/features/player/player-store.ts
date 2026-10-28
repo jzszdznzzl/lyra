@@ -1,6 +1,13 @@
 import { create } from 'zustand';
 
-import { MAX_SHARED_QUEUE, MediaKind, UpNext, VideoMatch, currentPositionMs } from '@lyra/shared';
+import {
+  MAX_SHARED_QUEUE,
+  MediaKind,
+  MusicError,
+  UpNext,
+  VideoMatch,
+  currentPositionMs,
+} from '@lyra/shared';
 import type { Command, PlaybackState, Track } from '@lyra/shared';
 
 import { AudioEngine } from '../../audio/engine.ts';
@@ -13,7 +20,7 @@ import {
   removeAt,
   shuffleQueue,
 } from '../../audio/queue.ts';
-import { audioStreamUrl } from '../../audio/stream-url.ts';
+import { audioStreamUrl, streamFailure } from '../../audio/stream-url.ts';
 import { api } from '../../lib/api.ts';
 import { effectiveQuality, loadSettings, saveSettings } from './settings.ts';
 import type { PlayerSettings } from './settings.ts';
@@ -48,6 +55,9 @@ interface PlayerState {
   // Shows the music video instead of the cover; the audio engine keeps playing either way.
   isVideoMode: boolean;
   isFindingVideo: boolean;
+  // Set when YouTube needs this user's Google account; skipping would only fail song after song.
+  googleBlock: MusicError | null;
+  dismissGoogleBlock: () => void;
   playTracks: (tracks: Track[], startIndex: number) => void;
   togglePlay: () => void;
   next: () => void;
@@ -84,6 +94,10 @@ const SHARED_HISTORY = 100;
 const MAX_FAILURES_IN_A_ROW = 3;
 // Playing this long proves the stream works, so earlier failures stop counting.
 const HEALTHY_PLAYBACK_SECONDS = 5;
+const GOOGLE_ERRORS: readonly MusicError[] = [
+  MusicError.GoogleNotLinked,
+  MusicError.GoogleSessionExpired,
+];
 
 export function streamUrl(track: Track, settings: PlayerSettings) {
   return audioStreamUrl(track.id, effectiveQuality(settings).quality);
@@ -111,7 +125,9 @@ export const usePlayerStore = create<PlayerState>()((set, get) => {
       maybeCrossfade(position, duration);
     },
     onEnded: () => advance(false, false),
-    onError: () => recover(),
+    onError: () => {
+      void recover();
+    },
     onPlayingChange: (isPlaying) => {
       if (!get().remote) {
         set({ status: isPlaying ? PlaybackStatus.Playing : PlaybackStatus.Paused });
@@ -169,11 +185,28 @@ export const usePlayerStore = create<PlayerState>()((set, get) => {
     }
   }
 
-  /** A dropped connection resumes the song once; a song YouTube refuses is skipped. */
-  function recover() {
-    const { queue, index } = get();
+  /**
+   * A dropped connection resumes the song once; a song YouTube refuses is skipped; a missing
+   * Google account stops playback and tells the user.
+   */
+  async function recover() {
+    const { queue, index, settings } = get();
     const track = queue[index];
     const position = engine.position;
+    const reason = track ? await streamFailure(streamUrl(track, settings)) : null;
+
+    // The user moved on while the server was asked.
+    if (get().index !== index || get().queue !== queue) {
+      return;
+    }
+
+    if (reason && GOOGLE_ERRORS.includes(reason)) {
+      failuresInARow = 0;
+      engine.pause(0);
+      set({ status: PlaybackStatus.Paused, googleBlock: reason });
+
+      return;
+    }
 
     if (track && position > 0 && retriedTrackId !== track.id) {
       retriedTrackId = track.id;
@@ -425,6 +458,8 @@ export const usePlayerStore = create<PlayerState>()((set, get) => {
     remote: null,
     isVideoMode: false,
     isFindingVideo: false,
+    googleBlock: null,
+    dismissGoogleBlock: () => set({ googleBlock: null }),
     playTracks: (tracks, index) =>
       act({ type: 'playTracks', tracks: tracks.slice(0, MAX_SHARED_QUEUE), index }),
     togglePlay: () => act({ type: get().status === PlaybackStatus.Playing ? 'pause' : 'play' }),

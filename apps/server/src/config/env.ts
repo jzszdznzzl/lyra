@@ -26,6 +26,9 @@ export const Env = z.object({
   WEB_DIST: z.string().min(1).optional(),
   // Chrome or Chromium installed on the system, for hosts where Playwright's own build fails.
   BROWSER_EXECUTABLE: z.string().min(1).optional(),
+  // A Lyra user whose linked Google account fetches audio for users without one. Only playback
+  // uses it, never likes, playlists or the library.
+  STREAM_FALLBACK_USERNAME: z.string().min(1).optional(),
   MAIL_TRANSPORT: z.enum(MailTransport).default(MailTransport.Smtp),
   MAIL_FROM: z.string().min(1),
   SMTP_HOST: z.string().default(''),

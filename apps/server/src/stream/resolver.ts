@@ -19,6 +19,8 @@ export interface ResolvedStream {
   expiresAt: number;
 }
 
+// YouTube's answer when it wants a signed-in session, e.g. its bot check on datacenter IPs.
+const LOGIN_REQUIRED = 'LOGIN_REQUIRED';
 // Leave a margin so a song that starts near expiry still finishes.
 const EXPIRY_MARGIN_MS = 10 * 60 * 1000;
 const DEFAULT_LIFETIME_MS = 60 * 60 * 1000;
@@ -29,11 +31,15 @@ const DEFAULT_LIFETIME_MS = 60 * 60 * 1000;
  * streams after the first MiB unless the URL carries a PO token bound to the video.
  */
 async function fetchPlayableInfo(yt: Innertube, videoId: string, poTokens: PoTokenMinter) {
-  if (!yt.session.logged_in) {
+  const isSignedIn = yt.session.logged_in;
+  const statuses: string[] = [];
+
+  if (!isSignedIn) {
     const info = await yt.getBasicInfo(videoId, { client: 'VISIONOS' }).catch(() => null);
+    statuses.push(info?.playability_status?.status ?? '');
 
     if (info?.playability_status?.status === 'OK' && info.streaming_data) {
-      return { info, poToken: null };
+      return ok({ info, poToken: null });
     }
   }
 
@@ -41,10 +47,18 @@ async function fetchPlayableInfo(yt: Innertube, videoId: string, poTokens: PoTok
   const info = await yt
     .getBasicInfo(videoId, { client: 'YTMUSIC', ...(poToken ? { po_token: poToken } : {}) })
     .catch(() => null);
+  statuses.push(info?.playability_status?.status ?? '');
 
-  return info?.playability_status?.status === 'OK' && info.streaming_data
-    ? { info, poToken }
-    : null;
+  if (info?.playability_status?.status === 'OK' && info.streaming_data) {
+    return ok({ info, poToken });
+  }
+
+  // Every client asking for a sign-in means the session is the problem, not the song.
+  if (statuses.every((status) => status === LOGIN_REQUIRED)) {
+    return err(isSignedIn ? MusicError.GoogleSessionExpired : MusicError.GoogleNotLinked);
+  }
+
+  return err(MusicError.Unavailable);
 }
 
 function selectionKey(selection: StreamSelection) {
@@ -80,11 +94,11 @@ export class StreamResolver {
     try {
       const playable = await fetchPlayableInfo(yt, videoId, this.#poTokens);
 
-      if (!playable) {
-        return err(MusicError.Unavailable);
+      if (playable.error) {
+        return err(playable.error);
       }
 
-      const { info, poToken } = playable;
+      const { info, poToken } = playable.data;
 
       const adaptive = info.streaming_data?.adaptive_formats ?? [];
       const picked =
