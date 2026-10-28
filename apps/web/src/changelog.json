@@ -1,5 +1,21 @@
 [
   {
+    "id": "2026-10-28-polish",
+    "date": "2026-10-28",
+    "changes": {
+      "es": [
+        "Animaciones al cambiar de página, al abrir ventanas y menús, y una pantalla de carga. Puedes apagarlas en Perfil → Apariencia.",
+        "Puedes desactivar las letras sincronizadas desde los ajustes de audio o debajo de la letra.",
+        "En el móvil, el logo de arriba ya no queda encima del contenido al hacer scroll."
+      ],
+      "en": [
+        "Animations when changing pages and opening windows and menus, plus a loading screen. Turn them off in Profile → Appearance.",
+        "You can turn off synced lyrics from the audio settings or under the lyrics.",
+        "On phones, the logo at the top no longer sits on top of the content while scrolling."
+      ]
+    }
+  },
+  {
     "id": "2026-10-28-admin",
     "date": "2026-10-28",
     "changes": {
