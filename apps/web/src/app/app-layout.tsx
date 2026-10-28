@@ -5,6 +5,11 @@ import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { meQuery } from '../features/auth/api.ts';
+import { MobilePlayer } from '../features/player/mobile-player.tsx';
+import { NowPlayingPanel } from '../features/player/now-playing-panel.tsx';
+import { PlayerBar } from '../features/player/player-bar.tsx';
+import { useCoverTheme } from '../features/player/use-cover-theme.ts';
+import { useMediaSession } from '../features/player/use-media-session.ts';
 import { changeLanguage } from '../i18n/index.ts';
 import { Avatar } from '../ui/avatar.tsx';
 import { Brand } from '../ui/brand.tsx';
@@ -21,6 +26,9 @@ export function AppLayout() {
   const { t, i18n } = useTranslation();
   const { data: me } = useSuspenseQuery(meQuery);
 
+  useMediaSession();
+  useCoverTheme();
+
   // The account's language follows the user to every device.
   useEffect(() => {
     if (me && me.language !== i18n.language) {
@@ -33,7 +41,7 @@ export function AppLayout() {
   }
 
   return (
-    <div className="grid min-h-dvh grid-rows-[1fr_auto] gap-2 p-2 md:h-dvh md:grid-cols-[260px_1fr] md:grid-rows-1">
+    <div className="grid h-dvh grid-rows-[1fr_auto_auto] gap-2 p-2 md:grid-cols-[260px_minmax(0,1fr)] md:grid-rows-[minmax(0,1fr)_auto] xl:grid-cols-[260px_minmax(0,1fr)_320px]">
       <aside className="hidden flex-col gap-1.5 rounded-2xl border border-line bg-panel p-4 backdrop-blur-2xl md:flex">
         <div className="px-2 pb-5">
           <Brand />
@@ -64,6 +72,9 @@ export function AppLayout() {
         </header>
         <Outlet />
       </main>
+      <NowPlayingPanel />
+      <PlayerBar />
+      <MobilePlayer />
       <nav className="flex justify-around rounded-2xl border border-line bg-panel py-2 backdrop-blur-2xl md:hidden">
         {NAV_ITEMS.map(({ to, icon: Icon, label }) => (
           <Link

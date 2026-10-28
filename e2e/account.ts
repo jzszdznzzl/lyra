@@ -1,3 +1,6 @@
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { expect } from '@playwright/test';
 import type { Page, TestInfo } from '@playwright/test';
 
@@ -23,4 +26,33 @@ export async function signUp(page: Page, info: TestInfo) {
   ).toBeVisible();
 
   return { id, email };
+}
+
+/**
+ * Signs in with one shared account per project, created on first use. Registering per test
+ * would trip the server's sign-up rate limit, which is working as intended.
+ */
+export async function signIn(page: Page, info: TestInfo) {
+  const statePath = join(process.env['E2E_DATA_DIR'] ?? '', `auth-${info.project.name}.json`);
+
+  if (existsSync(statePath)) {
+    const state: unknown = JSON.parse(readFileSync(statePath, 'utf8'));
+    const cookies =
+      typeof state === 'object' &&
+      state !== null &&
+      'cookies' in state &&
+      Array.isArray(state.cookies)
+        ? state.cookies
+        : [];
+    await page.context().addCookies(cookies);
+    await page.goto('/');
+    await expect(
+      page.getByRole('heading', { name: /Good (morning|afternoon|evening)/ }),
+    ).toBeVisible();
+
+    return;
+  }
+
+  await signUp(page, info);
+  await page.context().storageState({ path: statePath });
 }

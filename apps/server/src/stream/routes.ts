@@ -1,0 +1,83 @@
+import { Elysia } from 'elysia';
+import { z } from 'zod';
+
+import { LOUDNESS_HEADER, MusicError, StreamQuery } from '@lyra/shared';
+
+import { authPlugin } from '../auth/plugin.ts';
+import { musicClient } from '../ytmusic/clients.ts';
+import { chunkedBody, parseRange } from './ranges.ts';
+import { StreamResolver } from './resolver.ts';
+import type { AppContext } from '../context.ts';
+import type { InnertubePool } from '../ytmusic/innertube.ts';
+
+const VideoParams = z.object({ id: z.string().regex(/^[\w-]{11}$/) });
+const HTTP_FORBIDDEN = 403;
+
+/**
+ * Proxies YouTube audio. googlevideo URLs only work from the IP that deciphered them, and they
+ * send no CORS headers, which Web Audio (equalizer, crossfade) needs.
+ */
+export function streamRoutes(ctx: AppContext, pool: InnertubePool) {
+  const resolver = new StreamResolver(ctx.now);
+
+  return new Elysia({ prefix: '/stream' }).use(authPlugin(ctx)).get(
+    '/:id',
+    async ({ params, query, request, user, status }) => {
+      const yt = await musicClient(ctx, pool, user);
+      // One retry: a cached URL can be revoked early, which googlevideo answers with 403.
+      for (let attempt = 0; attempt < 2; attempt += 1) {
+        const resolved = await resolver.resolve(yt, user.id, params.id, query.quality);
+
+        if (resolved.error) {
+          return status(resolved.error === MusicError.Unavailable ? 404 : 502, {
+            error: resolved.error,
+          });
+        }
+
+        const { url, contentLength, mimeType, loudnessDb } = resolved.data;
+        const range = parseRange(request.headers.get('range'), contentLength);
+
+        if (!range) {
+          return new Response(null, {
+            status: 416,
+            headers: { 'content-range': `bytes */${contentLength}` },
+          });
+        }
+
+        // Probing the first piece catches revoked URLs before any byte reaches the player.
+        const probe = await fetch(url, {
+          headers: { range: 'bytes=0-0' },
+          signal: request.signal,
+        }).catch(() => null);
+
+        if (probe?.status === HTTP_FORBIDDEN) {
+          resolver.forget(user.id, params.id, query.quality);
+          continue;
+        }
+
+        const headers = new Headers({
+          'content-type': mimeType.split(';')[0] ?? mimeType,
+          'content-length': String(range.end - range.start + 1),
+          'accept-ranges': 'bytes',
+          'cache-control': 'private, no-store',
+        });
+
+        if (request.headers.has('range')) {
+          headers.set('content-range', `bytes ${range.start}-${range.end}/${contentLength}`);
+        }
+
+        if (loudnessDb !== null) {
+          headers.set(LOUDNESS_HEADER, String(loudnessDb));
+        }
+
+        return new Response(chunkedBody(url, range, request.signal), {
+          status: request.headers.has('range') ? 206 : 200,
+          headers,
+        });
+      }
+
+      return status(502, { error: MusicError.Upstream });
+    },
+    { isSignedIn: true, params: VideoParams, query: StreamQuery },
+  );
+}

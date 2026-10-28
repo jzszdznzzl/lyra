@@ -4,6 +4,7 @@ import { ChallengeStore } from './auth/passkeys.ts';
 import { authRoutes } from './auth/routes.ts';
 import { isGoogleLinked } from './google/accounts.ts';
 import { googleRoutes } from './google/routes.ts';
+import { streamRoutes } from './stream/routes.ts';
 import { userRoutes } from './users/routes.ts';
 import { imageProxyRoutes } from './ytmusic/image-proxy.ts';
 import { InnertubePool } from './ytmusic/innertube.ts';
@@ -31,6 +32,7 @@ export function createApp(ctx: AppContext, options: AppOptions = {}) {
       }),
     )
     .use(musicRoutes(ctx, pool))
+    .use(streamRoutes(ctx, pool))
     .use(imageProxyRoutes(ctx));
 }
 

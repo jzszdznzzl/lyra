@@ -1,6 +1,7 @@
 import { X } from 'lucide-react';
 import { useEffect } from 'react';
 import type { ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 
 interface DialogProps {
   title: string;
@@ -21,7 +22,8 @@ export function Dialog({ title, onClose, children }: DialogProps) {
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose]);
 
-  return (
+  // Portaled to <body>: blurred ancestors (backdrop-filter) would otherwise trap `fixed`.
+  return createPortal(
     <div
       className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-3 backdrop-blur-sm"
       role="presentation"
@@ -47,6 +49,7 @@ export function Dialog({ title, onClose, children }: DialogProps) {
         </header>
         {children}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

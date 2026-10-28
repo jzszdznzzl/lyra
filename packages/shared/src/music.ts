@@ -141,3 +141,23 @@ export type PlaylistPage = z.infer<typeof PlaylistPage>;
 export const LibraryPlaylists = z.object({ playlists: z.array(PlaylistCard) });
 
 export type LibraryPlaylists = z.infer<typeof LibraryPlaylists>;
+
+export const AudioQuality = Object.freeze({
+  Low: 'low',
+  Normal: 'normal',
+  High: 'high',
+  Max: 'max',
+} as const);
+
+export type AudioQuality = (typeof AudioQuality)[keyof typeof AudioQuality];
+
+export const StreamQuery = z.object({ quality: z.enum(AudioQuality).default(AudioQuality.High) });
+
+export type StreamQuery = z.infer<typeof StreamQuery>;
+
+export const UpNext = z.object({ tracks: z.array(Track) });
+
+export type UpNext = z.infer<typeof UpNext>;
+
+/** Response header with YouTube's loudness measure, so players can even out volume. */
+export const LOUDNESS_HEADER = 'x-lyra-loudness-db';

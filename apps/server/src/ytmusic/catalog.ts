@@ -12,10 +12,11 @@ import type {
   Result,
   SearchResults,
   Track,
+  UpNext,
 } from '@lyra/shared';
 
 import { describeHeader } from './headers.ts';
-import { toMediaItems, toShelves, toTracks } from './mappers.ts';
+import { bestThumbnail, toMediaItems, toShelves, toTracks } from './mappers.ts';
 
 const SEARCH_TYPES = {
   [SearchFilter.All]: 'all',
@@ -143,5 +144,37 @@ export function getLibraryPlaylists(yt: Innertube): Promise<Result<LibraryPlayli
     );
 
     return { playlists };
+  });
+}
+
+/** What YT Music would play after this track: its radio, starting with the track itself. */
+export function getUpNext(yt: Innertube, videoId: string): Promise<Result<UpNext, MusicError>> {
+  return attempt(async () => {
+    const panel = await yt.music.getUpNext(videoId, true);
+    const tracks = panel.contents.flatMap((node): Track[] => {
+      const video = node.is(YTNodes.PlaylistPanelVideoWrapper) ? node.primary : node;
+
+      if (!video?.is(YTNodes.PlaylistPanelVideo)) {
+        return [];
+      }
+
+      return [
+        {
+          kind: MediaKind.Song,
+          id: video.video_id,
+          title: video.title.toString(),
+          artists: (video.artists ?? []).map((artist) => ({
+            id: artist.channel_id ?? null,
+            name: artist.name,
+          })),
+          album: video.album ? { id: video.album.id ?? null, name: video.album.name } : null,
+          durationSeconds: video.duration.seconds || null,
+          thumbnail: bestThumbnail(video.thumbnail),
+          isExplicit: false,
+        },
+      ];
+    });
+
+    return { tracks };
   });
 }

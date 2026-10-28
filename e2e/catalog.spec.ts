@@ -1,11 +1,11 @@
 import { expect, test } from '@playwright/test';
 
-import { signUp } from './account.ts';
+import { signIn } from './account.ts';
 
 // Talks to the real YT Music through the server, without a linked Google account.
 test('browse home, search and open an album', async ({ page }, info) => {
   test.setTimeout(90_000);
-  await signUp(page, info);
+  await signIn(page, info);
 
   await expect(page.locator('main section h2').first()).toBeVisible({ timeout: 30_000 });
   await expect

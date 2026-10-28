@@ -2,11 +2,10 @@ import { Elysia } from 'elysia';
 import { z } from 'zod';
 import type { Innertube } from 'youtubei.js';
 
-import { DEFAULT_LANGUAGE, Language, MusicError, SearchQuery, err } from '@lyra/shared';
+import { MusicError, SearchQuery, err } from '@lyra/shared';
 import type { Result } from '@lyra/shared';
 
 import { authPlugin } from '../auth/plugin.ts';
-import { getGoogleCookie } from '../google/accounts.ts';
 import {
   getAlbum,
   getArtist,
@@ -16,7 +15,9 @@ import {
   getPlaylist,
   getSuggestions,
   search,
+  getUpNext,
 } from './catalog.ts';
+import { accountClient, musicClient } from './clients.ts';
 import type { User } from '../auth/sessions.ts';
 import type { AppContext } from '../context.ts';
 import type { InnertubePool } from './innertube.ts';
@@ -33,29 +34,16 @@ const IdParams = z.object({ id: z.string().regex(/^[\w-]{2,64}$/) });
 const SuggestionQuery = z.object({ q: z.string().trim().min(1).max(200) });
 
 export function musicRoutes(ctx: AppContext, pool: InnertubePool) {
-  function languageOf(user: User) {
-    return Object.values(Language).find((value) => value === user.language) ?? DEFAULT_LANGUAGE;
-  }
-
-  /** The user's own YT Music session when linked, an anonymous one otherwise. */
-  async function clientFor(user: User) {
-    const cookie = await getGoogleCookie(ctx, user.id);
-
-    return pool.get({ userId: cookie ? user.id : null, cookie, language: languageOf(user) });
-  }
+  const clientFor = (user: User) => musicClient(ctx, pool, user);
 
   /** Library data only exists for a signed-in YT Music account. */
   async function withAccount<T>(
     user: User,
     task: (yt: Innertube) => Promise<Result<T, MusicError>>,
   ): Promise<Result<T, MusicError>> {
-    const cookie = await getGoogleCookie(ctx, user.id);
+    const yt = await accountClient(ctx, pool, user);
 
-    if (!cookie) {
-      return err(MusicError.GoogleNotLinked);
-    }
-
-    return task(await pool.get({ userId: user.id, cookie, language: languageOf(user) }));
+    return yt ? task(yt) : err(MusicError.GoogleNotLinked);
   }
 
   function respond<T>(
@@ -110,6 +98,12 @@ export function musicRoutes(ctx: AppContext, pool: InnertubePool) {
       '/library/playlists',
       async ({ user, status }) => respond(await withAccount(user, getLibraryPlaylists), status),
       { isSignedIn: true },
+    )
+    .get(
+      '/up-next/:id',
+      async ({ user, params, status }) =>
+        respond(await getUpNext(await clientFor(user), params.id), status),
+      { isSignedIn: true, params: IdParams },
     )
     .get(
       '/liked',
