@@ -1,6 +1,6 @@
 import vm from 'node:vm';
 import { join } from 'node:path';
-import { Innertube, Platform, UniversalCache } from 'youtubei.js';
+import { Innertube, Log, Platform, UniversalCache } from 'youtubei.js';
 
 import type { Language } from '@lyra/shared';
 
@@ -18,6 +18,8 @@ function installEvaluator() {
   }
 
   isEvaluatorInstalled = true;
+  // youtubei.js logs every unknown node YouTube adds; only real errors matter here.
+  Log.setLevel(Log.Level.ERROR);
   Platform.shim.eval = (data, env) => {
     const code = `(function () {\n${data.output}\nreturn process(env.n, env.sp, env.sig);\n})()`;
     const result: unknown = vm.runInNewContext(code, { env }, { timeout: EVAL_TIMEOUT_MS });

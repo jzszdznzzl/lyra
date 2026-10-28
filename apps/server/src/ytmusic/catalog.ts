@@ -1,4 +1,4 @@
-import { YTNodes } from 'youtubei.js';
+import { YTMusic, YTNodes } from 'youtubei.js';
 import type { Innertube } from 'youtubei.js';
 
 import { MediaKind, MusicError, SearchFilter, err, ok } from '@lyra/shared';
@@ -30,6 +30,9 @@ const SEARCH_TYPES = {
 // Liked songs can run into thousands; past this the page stops loading continuations.
 const MAX_PLAYLIST_TRACKS = 5000;
 const LIKED_MUSIC_ID = 'LM';
+const LIBRARY_PLAYLISTS_ID = 'FEmusic_liked_playlists';
+// Liked songs has its own entry; "Episodes for later" holds podcasts, not music.
+const HIDDEN_LIBRARY_PLAYLISTS = new Set(['VLLM', 'LM', 'VLSE', 'SE']);
 const BROWSE_PLAYLIST_PREFIX = 'VL';
 const HTTP_NOT_FOUND = /404|not found|does not exist/i;
 
@@ -137,10 +140,23 @@ export function getLikedSongs(yt: Innertube) {
 
 export function getLibraryPlaylists(yt: Innertube): Promise<Result<LibraryPlaylists, MusicError>> {
   return attempt(async () => {
-    const library = await yt.music.getLibrary();
+    // The library landing page is only a summary; this browse lists every saved playlist.
+    const response = await yt.actions.execute('/browse', {
+      browseId: LIBRARY_PLAYLISTS_ID,
+      client: 'YTMUSIC',
+    });
+    const library = new YTMusic.Library(response, yt.actions);
     const nodes = (library.contents ?? []).flatMap((section) => section.contents ?? []);
+    let page = library.has_continuation ? await library.getContinuation() : null;
+
+    while (page) {
+      nodes.push(...(page.contents.contents ?? []));
+      page = page.has_continuation ? await page.getContinuation() : null;
+    }
+
     const playlists = toMediaItems(nodes).filter(
-      (item): item is PlaylistCard => item.kind === MediaKind.Playlist,
+      (item): item is PlaylistCard =>
+        item.kind === MediaKind.Playlist && !HIDDEN_LIBRARY_PLAYLISTS.has(item.id),
     );
 
     return { playlists };
