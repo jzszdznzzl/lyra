@@ -7,6 +7,7 @@ import { useDocumentTitle } from '../../lib/use-document-title.ts';
 
 import { Button, ButtonVariant } from '../../ui/button.tsx';
 import { logout, meQuery } from '../auth/api.ts';
+import { AboutSection } from './about-section.tsx';
 import { ApiTokensSection } from './api-tokens-section.tsx';
 import { AppearanceSection } from './appearance-section.tsx';
 import { DeleteAccountSection } from './delete-account-section.tsx';
@@ -51,6 +52,7 @@ export function ProfilePage() {
       <PasskeysSection />
       <SessionsSection />
       <ApiTokensSection />
+      <AboutSection />
       <DeleteAccountSection />
     </div>
   );

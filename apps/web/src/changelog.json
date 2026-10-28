@@ -1,0 +1,44 @@
+[
+  {
+    "id": "2026-10-28-listening",
+    "date": "2026-10-28",
+    "changes": {
+      "es": [
+        "Lo que escuchas se guarda en tu historial de YouTube, así el inicio cambia según tus gustos. Puedes apagarlo en tu perfil.",
+        "Tokens personales: otras apps, como Discord, pueden mostrar lo que estás escuchando.",
+        "Tarjeta pública con tu canción actual para tu GitHub o tu web.",
+        "Los enlaces de canciones que compartes vuelven a mostrar título y portada.",
+        "Crear una playlist desde el reproductor ya no lo cierra.",
+        "La barra inferior se queda quieta al hacer scroll en el móvil.",
+        "Lyra ya no se rompe cuando el navegador intenta traducirla, y en tu primera visita usa el idioma de tu teléfono.",
+        "Nueva sección «Acerca de Lyra» con la versión y las novedades, y un aviso cuando hay una versión nueva."
+      ],
+      "en": [
+        "What you listen to is saved to your YouTube history, so your home page follows your taste. You can turn it off in your profile.",
+        "Personal tokens: other apps, like Discord, can show what you are listening to.",
+        "A public card with your current song for your GitHub or website.",
+        "Song links you share show their title and cover again.",
+        "Creating a playlist from the player no longer closes it.",
+        "The bottom bar stays put while scrolling on phones.",
+        "Lyra no longer breaks when the browser tries to translate it, and your first visit uses your phone's language.",
+        "New “About Lyra” section with the version and what's new, plus a notice when a new version is ready."
+      ]
+    }
+  },
+  {
+    "id": "2026-10-28-playback",
+    "date": "2026-10-28",
+    "changes": {
+      "es": [
+        "Las canciones ya no se cortan a los pocos segundos.",
+        "Sin Google vinculado, Lyra te avisa o usa una cuenta compartida para que puedas escuchar igual.",
+        "El inicio de sesión con Google ya no se queda trabado."
+      ],
+      "en": [
+        "Songs no longer stop a few seconds in.",
+        "Without a linked Google account, Lyra tells you or plays through a shared account so you can still listen.",
+        "Signing in with Google no longer gets stuck."
+      ]
+    }
+  }
+]

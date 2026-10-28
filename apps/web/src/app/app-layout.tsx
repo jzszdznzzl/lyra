@@ -32,6 +32,7 @@ import { useOnline } from '../lib/use-online.ts';
 import { Toaster } from '../ui/toast.tsx';
 import { handleShortcut } from './shortcuts.ts';
 import { LibrarySidebar } from './library-sidebar.tsx';
+import { UpdateBanner } from './update-banner.tsx';
 
 const NAV_ITEMS = [
   { to: '/', icon: Home, label: 'nav.home' },
@@ -158,6 +159,7 @@ export function AppLayout() {
       <PlayerBar />
       <MobilePlayer />
       <Toaster />
+      <UpdateBanner />
       <ImmersiveView />
       <GoogleRequiredDialog />
       {isCreating ? <CreatePlaylistDialog onClose={() => setIsCreating(false)} /> : null}

@@ -1,7 +1,11 @@
 {
   "app": {
     "name": "Lyra",
-    "tagline": "Your music, everywhere you are."
+    "tagline": "Your music, everywhere you are.",
+    "update": {
+      "ready": "A new version is ready",
+      "apply": "Update"
+    }
   },
   "nav": {
     "home": "Home",
@@ -164,6 +168,18 @@
       "confirmTitle": "Delete your account?",
       "confirmBody": "This cannot be undone. Enter your password to confirm.",
       "confirm": "Delete forever"
+    },
+    "about": {
+      "title": "About Lyra",
+      "check": "Check for updates",
+      "version": "Version",
+      "published": "Published",
+      "updatedHere": "Updated on this device",
+      "available": "A new version is out: {{version}}, published on {{date}}.",
+      "ready": "A new version is ready.",
+      "update": "Update now",
+      "upToDate": "You have the latest version.",
+      "whatsNew": "What's new"
     }
   },
   "errors": {
