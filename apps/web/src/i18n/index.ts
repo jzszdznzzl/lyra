@@ -13,18 +13,38 @@ export const resources = {
   [Language.Spanish]: { translation: es },
 } as const;
 
+/** The first of the browser's languages that Lyra speaks ("es-CL" → "es"). */
+export function browserLanguage(preferred: readonly string[] = navigator.languages) {
+  for (const tag of preferred) {
+    const match = Object.values(Language).find(
+      (language) => language === tag.toLowerCase().split('-')[0],
+    );
+
+    if (match) {
+      return match;
+    }
+  }
+
+  return null;
+}
+
 function readStoredLanguage(): Language {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     const match = Object.values(Language).find((language) => language === stored);
 
-    return match ?? DEFAULT_LANGUAGE;
+    // Before signing in, the browser's language: the page then never looks foreign to it.
+    return match ?? browserLanguage() ?? DEFAULT_LANGUAGE;
   } catch {
-    return DEFAULT_LANGUAGE;
+    return browserLanguage() ?? DEFAULT_LANGUAGE;
   }
 }
 
 export async function initI18n(language: Language = readStoredLanguage()) {
+  // Screen readers, hyphenation and the browser's translate offer all read <html lang>.
+  i18n.on('languageChanged', (current) => {
+    document.documentElement.lang = current;
+  });
   await i18n.use(initReactI18next).init({
     resources,
     lng: language,
