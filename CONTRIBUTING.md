@@ -34,14 +34,17 @@ The host machine has many ports in use, so lyra uses random high ports: the serv
 
 ## Deployment
 
-Lyra runs on the host PC and is published at `https://lyra.jzszdznzzl.dev` through a named Cloudflare tunnel. Two systemd user services keep it up (the user has lingering enabled, so they start at boot):
+Lyra runs on the host PC and is published at `https://lyra.jzszdznzzl.dev` through the existing `penguin` Cloudflare tunnel. That tunnel is managed from the Cloudflare dashboard; its public hostname `lyra.jzszdznzzl.dev` points to `http://localhost:47149`.
 
-| Service               | What it runs                                                        |
-| --------------------- | ------------------------------------------------------------------- |
-| `lyra.service`        | `apps/server/dist/main.mjs`, serving the API and `apps/web/dist`    |
-| `lyra-tunnel.service` | `cloudflared tunnel run lyra` (config in `~/.cloudflared/lyra.yml`) |
+The server runs under pm2 as `lyra` (pm2 itself starts at boot through its user service). pm2 launches Bun directly, because its Bun wrapper uses `require()` and cannot load the server's top-level `await`:
 
-Production settings live in `~/.config/lyra/lyra.env` (not in the repo) and data in `~/.local/share/lyra`. `TRUST_PROXY=true` is set there because every request arrives through the tunnel; never set it when the port is reachable directly.
+| File                            | Purpose                                     |
+| ------------------------------- | ------------------------------------------- |
+| `~/.config/lyra/ecosystem.json` | pm2 app definition                          |
+| `~/.config/lyra/lyra.env`       | Production settings (not in the repo)       |
+| `~/.local/share/lyra/`          | Database, avatars, YouTube cache and outbox |
+
+`TRUST_PROXY=true` is set because every request arrives through the tunnel; never set it when the port is reachable directly.
 
 After changing code, run `pnpm deploy:local` to rebuild and restart the server.
 
