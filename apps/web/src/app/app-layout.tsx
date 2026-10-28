@@ -36,6 +36,9 @@ import { handleShortcut } from './shortcuts.ts';
 import { LibrarySidebar } from './library-sidebar.tsx';
 import { UpdateBanner } from './update-banner.tsx';
 
+// Past this, the page has scrolled under the header.
+const SCROLLED_PX = 4;
+
 const NAV_ITEMS = [
   { to: '/', icon: Home, label: 'nav.home' },
   { to: '/search', icon: Search, label: 'nav.search' },
@@ -54,6 +57,7 @@ export function AppLayout() {
   const canGoBack = useCanGoBack();
   const isHome = useRouterState({ select: (state) => state.location.pathname === '/' });
   const queryClient = useQueryClient();
+  const [isScrolled, setIsScrolled] = useState(false);
 
   useMediaSession();
   useCoverTheme();
@@ -136,9 +140,15 @@ export function AppLayout() {
       </aside>
       <main
         data-scroll-restoration-id="main"
+        onScroll={(event) => setIsScrolled(event.currentTarget.scrollTop > SCROLLED_PX)}
         className="flex min-h-0 flex-col overflow-y-auto overscroll-contain rounded-2xl border border-line bg-panel backdrop-blur-2xl"
       >
-        <header className="sticky top-0 z-10 flex items-center justify-between px-4 pt-4 sm:px-7">
+        {/* Transparent at the top; once the page scrolls under it, it gets its own backdrop so
+            the logo and avatar never sit on top of the content. */}
+        <header
+          data-scrolled={isScrolled}
+          className="sticky top-0 z-10 -mb-3 flex items-center justify-between border-b border-transparent px-4 pt-4 pb-3 transition-[background-color,border-color] duration-200 data-[scrolled=true]:border-line data-[scrolled=true]:bg-bg/85 data-[scrolled=true]:backdrop-blur-xl sm:px-7"
+        >
           {canGoBack && !isHome ? (
             <button
               type="button"
