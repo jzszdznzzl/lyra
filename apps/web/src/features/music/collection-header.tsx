@@ -9,6 +9,7 @@ import { toCss } from '../../lib/palette.ts';
 import { useAccent } from '../../lib/use-accent.ts';
 import { Button, ButtonVariant } from '../../ui/button.tsx';
 import { Cover } from '../../ui/cover.tsx';
+import { DownloadAllButton } from '../offline/download-button.tsx';
 import { usePlayerStore } from '../player/player-store.ts';
 
 interface CollectionHeaderProps {
@@ -84,6 +85,7 @@ export function CollectionHeader({
                 </Button>
               </>
             ) : null}
+            {tracks.length > 0 ? <DownloadAllButton tracks={tracks} /> : null}
             {actions}
           </div>
         ) : null}

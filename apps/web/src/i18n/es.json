@@ -319,5 +319,22 @@
     "fullscreen": "Pantalla completa",
     "quality": "Calidad de vídeo",
     "exitFullscreen": "Salir de pantalla completa"
+  },
+  "offline": {
+    "download": "Descargar",
+    "downloading": "Descargando {{percent}}%",
+    "downloaded": "Descargada",
+    "removeDownload": "Quitar descarga",
+    "downloadAll": "Descargar",
+    "downloadingAll": "Descargando {{done}}/{{total}}",
+    "allDownloaded": "Descargado",
+    "removeAll": "Quitar descargas",
+    "title": "Descargas",
+    "empty": "Las canciones que descargues suenan sin conexión. Usa «Descargar» en cualquier canción, álbum o playlist.",
+    "storage": "{{used}} usados en este dispositivo",
+    "banner": "Estás sin conexión. Tus descargas siguen sonando.",
+    "failed": "Algunas canciones no se pudieron descargar.",
+    "install": "Instalar Lyra",
+    "installHint": "Añade Lyra a tu pantalla de inicio para usarla como app."
   }
 }

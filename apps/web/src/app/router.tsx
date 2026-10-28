@@ -24,6 +24,7 @@ import { AlbumPage } from '../features/music/album-page.tsx';
 import { ArtistPage } from '../features/music/artist-page.tsx';
 import { LikedPage, PlaylistPage } from '../features/music/playlist-page.tsx';
 import { SearchPage } from '../features/music/search-page.tsx';
+import { DownloadsPage } from '../features/offline/downloads-page.tsx';
 import { ProfilePage } from '../features/profile/profile-page.tsx';
 import { AppLayout } from './app-layout.tsx';
 
@@ -148,7 +149,7 @@ const exploreRoute = createRoute({
 const downloadsRoute = createRoute({
   getParentRoute: () => appRoute,
   path: '/downloads',
-  component: () => <PlaceholderPage title="nav.downloads" />,
+  component: DownloadsPage,
 });
 
 const profileRoute = createRoute({

@@ -5,7 +5,8 @@ import { useTranslation } from 'react-i18next';
 import { LyricsResponse, activeLineIndex } from '@lyra/shared';
 import type { Track } from '@lyra/shared';
 
-import { api, unwrap } from '../../lib/api.ts';
+import { ApiError, api, unwrap } from '../../lib/api.ts';
+import { offlineLyrics } from '../offline/downloads.ts';
 import { LoadingState } from '../music/query-state.tsx';
 import { usePlayerStore } from './player-store.ts';
 
@@ -21,14 +22,20 @@ function lyricsQuery(track: Track) {
 
   return {
     queryKey: ['lyrics', track.id],
-    queryFn: async () =>
-      unwrap(
-        await api(
-          'GET',
-          `/lyrics/${encodeURIComponent(track.id)}?${params.toString()}`,
-          LyricsResponse,
-        ),
-      ),
+    queryFn: async () => {
+      const result = await api(
+        'GET',
+        `/lyrics/${encodeURIComponent(track.id)}?${params.toString()}`,
+        LyricsResponse,
+      );
+
+      // Downloaded songs keep their lyrics for offline listening.
+      if (result.error === ApiError.Network) {
+        return (await offlineLyrics(track.id)) ?? unwrap(result);
+      }
+
+      return unwrap(result);
+    },
     staleTime: HOUR_MS,
   };
 }

@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 
 /** Stands in for sections that arrive in later phases, so navigation already works. */
-export function PlaceholderPage({ title }: { title: 'nav.explore' | 'nav.downloads' }) {
+export function PlaceholderPage({ title }: { title: 'nav.explore' }) {
   const { t } = useTranslation();
 
   return (

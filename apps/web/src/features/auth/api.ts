@@ -21,13 +21,50 @@ import { ApiError, NoContent, api, unwrap } from '../../lib/api.ts';
 
 const Registered = z.object({ email: z.string() });
 
+const PROFILE_KEY = 'lyra.profile';
+
+function readCachedProfile() {
+  try {
+    const stored: unknown = JSON.parse(localStorage.getItem(PROFILE_KEY) ?? 'null');
+
+    return UserProfile.safeParse(stored).data ?? null;
+  } catch {
+    return null;
+  }
+}
+
+function writeCachedProfile(profile: UserProfile | null) {
+  try {
+    if (profile) {
+      localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+    } else {
+      localStorage.removeItem(PROFILE_KEY);
+    }
+  } catch {
+    // Storage can be blocked; the app then simply needs the network to start.
+  }
+}
+
 export const meQuery = queryOptions({
   queryKey: ['me'],
   queryFn: async () => {
     const result = await api('GET', '/me', UserProfile);
 
+    // Offline, the last known profile keeps the app (and its downloads) usable.
+    if (result.error === ApiError.Network) {
+      return readCachedProfile() ?? unwrap(result);
+    }
+
     // Signed out is a normal state for this query, not a failure.
-    return result.error === ApiError.Unauthorized ? null : unwrap(result);
+    if (result.error === ApiError.Unauthorized) {
+      writeCachedProfile(null);
+
+      return null;
+    }
+
+    writeCachedProfile(result.data);
+
+    return unwrap(result);
   },
   staleTime: 5 * 60 * 1000,
 });
@@ -46,7 +83,12 @@ export const register = (input: RegisterInput) => api('POST', '/auth/register', 
 
 export const login = (input: LoginInput) => api('POST', '/auth/login', UserProfile, input);
 
-export const logout = () => api('POST', '/auth/logout', NoContent);
+export async function logout() {
+  // Otherwise an offline start would still show the signed-out account.
+  writeCachedProfile(null);
+
+  return api('POST', '/auth/logout', NoContent);
+}
 
 export const verifyEmail = (token: string) =>
   api('POST', '/auth/verify-email', UserProfile, { token });

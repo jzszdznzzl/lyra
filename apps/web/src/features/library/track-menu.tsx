@@ -1,7 +1,9 @@
 import { useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import {
+  CircleMinus,
   Disc3,
+  Download,
   Heart,
   ListEnd,
   ListPlus,
@@ -18,6 +20,7 @@ import type { Track } from '@lyra/shared';
 import { Menu } from '../../ui/menu.tsx';
 import type { MenuItem } from '../../ui/menu.tsx';
 import { meQuery } from '../auth/api.ts';
+import { useDownloads } from '../offline/downloads.ts';
 import { usePlayerStore } from '../player/player-store.ts';
 import { removeFromPlaylist } from './api.ts';
 import { AddToPlaylistDialog } from './playlist-dialogs.tsx';
@@ -43,6 +46,7 @@ export function TrackMenu({ track, playlist }: TrackMenuProps) {
   const [isPicking, setIsPicking] = useState(false);
   const { playNext, addToQueue } = usePlayerStore.getState();
   const hasLibrary = me?.isGoogleLinked ?? false;
+  const isDownloaded = useDownloads((state) => state.records.has(track.id));
   const albumId = track.album?.id ?? null;
   const artistId = track.artists.find((artist) => artist.id)?.id ?? null;
 
@@ -58,6 +62,21 @@ export function TrackMenu({ track, playlist }: TrackMenuProps) {
       onSelect: () => addToQueue([track]),
     },
   ];
+
+  items.push(
+    isDownloaded
+      ? {
+          label: t('offline.removeDownload'),
+          icon: <CircleMinus className="size-4" />,
+          onSelect: () => void useDownloads.getState().remove([track.id]),
+        }
+      : {
+          label: t('offline.download'),
+          icon: <Download className="size-4" />,
+          onSelect: () =>
+            useDownloads.getState().download([track], usePlayerStore.getState().settings.quality),
+        },
+  );
 
   if (hasLibrary) {
     items.push({

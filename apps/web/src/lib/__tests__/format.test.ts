@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { formatDuration, formatRelative } from '../format.ts';
+import { formatBytes, formatDuration, formatRelative } from '../format.ts';
 
 describe('formatRelative', () => {
   const now = Date.UTC(2026, 9, 27, 12);
@@ -22,5 +22,15 @@ describe('formatDuration', () => {
     [3723, '1:02:03'],
   ])('%i seconds', (seconds, text) => {
     expect(formatDuration(seconds)).toBe(text);
+  });
+});
+
+describe('formatBytes', () => {
+  test.each([
+    [512, '512 B'],
+    [1536, '1.5 KB'],
+    [5 * 1024 * 1024, '5.0 MB'],
+  ])('%i bytes', (bytes, text) => {
+    expect(formatBytes(bytes)).toBe(text);
   });
 });

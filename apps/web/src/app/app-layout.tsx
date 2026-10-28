@@ -1,12 +1,22 @@
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { Link, Outlet, useCanGoBack, useRouter, useRouterState } from '@tanstack/react-router';
-import { ChevronLeft, Compass, Download, Home, Plus, Search } from 'lucide-react';
+import {
+  ChevronLeft,
+  Compass,
+  Download,
+  Home,
+  MonitorDown,
+  Plus,
+  Search,
+  WifiOff,
+} from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { meQuery } from '../features/auth/api.ts';
 import { startConnect } from '../features/connect/connect-client.ts';
 import { CreatePlaylistDialog } from '../features/library/playlist-dialogs.tsx';
+import { useDownloads } from '../features/offline/downloads.ts';
 import { MobilePlayer } from '../features/player/mobile-player.tsx';
 import { NowPlayingPanel } from '../features/player/now-playing-panel.tsx';
 import { ImmersiveView } from '../features/player/immersive-view.tsx';
@@ -17,6 +27,8 @@ import { useMediaSession } from '../features/player/use-media-session.ts';
 import { changeLanguage } from '../i18n/index.ts';
 import { Avatar } from '../ui/avatar.tsx';
 import { Brand } from '../ui/brand.tsx';
+import { useInstallPrompt } from '../lib/use-install-prompt.ts';
+import { useOnline } from '../lib/use-online.ts';
 import { Toaster } from '../ui/toast.tsx';
 import { LibrarySidebar } from './library-sidebar.tsx';
 
@@ -32,6 +44,8 @@ export function AppLayout() {
   const { data: me } = useSuspenseQuery(meQuery);
 
   const [isCreating, setIsCreating] = useState(false);
+  const isOnline = useOnline();
+  const install = useInstallPrompt();
   const router = useRouter();
   const canGoBack = useCanGoBack();
   const isHome = useRouterState({ select: (state) => state.location.pathname === '/' });
@@ -39,6 +53,9 @@ export function AppLayout() {
   useMediaSession();
   useCoverTheme();
   useEffect(() => startConnect(), []);
+  useEffect(() => {
+    void useDownloads.getState().load();
+  }, []);
   useEffect(() => {
     // "F" toggles full screen, as in video players; never while typing.
     const onKey = (event: KeyboardEvent) => {
@@ -114,6 +131,17 @@ export function AppLayout() {
           ) : null}
         </div>
         <LibrarySidebar isGoogleLinked={me.isGoogleLinked} />
+        {install ? (
+          <button
+            type="button"
+            onClick={install}
+            title={t('offline.installHint')}
+            className="mt-auto flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold text-muted hover:bg-surface hover:text-text"
+          >
+            <MonitorDown className="size-[18px]" />
+            {t('offline.install')}
+          </button>
+        ) : null}
       </aside>
       <main
         data-scroll-restoration-id="main"
@@ -138,6 +166,12 @@ export function AppLayout() {
             <Avatar name={me.name} url={me.avatarUrl} />
           </Link>
         </header>
+        {isOnline ? null : (
+          <p className="mx-4 mt-3 flex items-center gap-2 rounded-xl border border-amber-400/30 bg-amber-400/10 px-3 py-2 text-sm text-amber-200 sm:mx-7">
+            <WifiOff className="size-4 shrink-0" />
+            {t('offline.banner')}
+          </p>
+        )}
         <Outlet />
       </main>
       <NowPlayingPanel />

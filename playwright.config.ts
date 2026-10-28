@@ -28,13 +28,11 @@ function freePort(taken: Set<number>) {
 }
 
 const taken = new Set<number>();
-const serverPort = process.env['E2E_SERVER_PORT'] ?? String(freePort(taken));
 const webPort = process.env['E2E_WEB_PORT'] ?? String(freePort(taken));
 const dataDir = process.env['E2E_DATA_DIR'] ?? mkdtempSync(join(tmpdir(), 'lyra-e2e-'));
 const baseURL = `http://localhost:${webPort}`;
 
 // Workers re-import this file; pinning the values keeps them on the same servers.
-process.env['E2E_SERVER_PORT'] = serverPort;
 process.env['E2E_WEB_PORT'] = webPort;
 process.env['E2E_DATA_DIR'] = dataDir;
 
@@ -47,25 +45,20 @@ export default defineConfig({
     { name: 'desktop', use: { ...devices['Desktop Chrome'] } },
     { name: 'mobile', use: { ...devices['Pixel 7'] } },
   ],
-  webServer: [
-    {
-      command: 'bun apps/server/src/main.ts',
-      url: `http://localhost:${serverPort}/api/health`,
-      env: {
-        PORT: serverPort,
-        PUBLIC_URL: baseURL,
-        DATA_DIR: dataDir,
-        SECRET_KEY: Buffer.alloc(32, 9).toString('base64'),
-        MAIL_TRANSPORT: 'file',
-        MAIL_FROM: 'Lyra <noreply@lyra.test>',
-      },
-      reuseExistingServer: false,
+  // The real production setup: the server serves a fresh build, service worker included.
+  webServer: {
+    command: `pnpm --filter @lyra/web exec vite build --outDir ${join(dataDir, 'web')} --emptyOutDir --logLevel error && bun apps/server/src/main.ts`,
+    url: `${baseURL}/api/health`,
+    env: {
+      PORT: webPort,
+      PUBLIC_URL: baseURL,
+      DATA_DIR: dataDir,
+      WEB_DIST: join(dataDir, 'web'),
+      SECRET_KEY: Buffer.alloc(32, 9).toString('base64'),
+      MAIL_TRANSPORT: 'file',
+      MAIL_FROM: 'Lyra <noreply@lyra.test>',
     },
-    {
-      command: 'pnpm --filter @lyra/web exec vite',
-      url: baseURL,
-      env: { PORT: serverPort, WEB_PORT: webPort },
-      reuseExistingServer: false,
-    },
-  ],
+    reuseExistingServer: false,
+    timeout: 120_000,
+  },
 });

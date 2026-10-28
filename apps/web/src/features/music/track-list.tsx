@@ -6,6 +6,7 @@ import type { Track } from '@lyra/shared';
 import { formatDuration } from '../../lib/format.ts';
 import { Cover } from '../../ui/cover.tsx';
 import { LikeButton } from '../library/like-button.tsx';
+import { DownloadBadge } from '../offline/download-button.tsx';
 import { TrackMenu } from '../library/track-menu.tsx';
 import type { PlaylistContext } from '../library/track-menu.tsx';
 import { usePlayerStore } from '../player/player-store.ts';
@@ -77,6 +78,7 @@ export function TrackList({
                   ) : null}
                   <ArtistLinks artists={track.artists} />
                 </p>
+                <DownloadBadge id={track.id} />
               </div>
               <p className="hidden truncate text-[13px] text-muted sm:block">{track.album?.name}</p>
               <span className="flex items-center gap-3 text-[13px] text-muted tabular-nums">

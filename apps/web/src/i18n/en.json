@@ -319,5 +319,22 @@
     "fullscreen": "Full screen",
     "quality": "Video quality",
     "exitFullscreen": "Exit full screen"
+  },
+  "offline": {
+    "download": "Download",
+    "downloading": "Downloading {{percent}}%",
+    "downloaded": "Downloaded",
+    "removeDownload": "Remove download",
+    "downloadAll": "Download",
+    "downloadingAll": "Downloading {{done}}/{{total}}",
+    "allDownloaded": "Downloaded",
+    "removeAll": "Remove downloads",
+    "title": "Downloads",
+    "empty": "Songs you download play without a connection. Use “Download” on any song, album or playlist.",
+    "storage": "{{used}} used on this device",
+    "banner": "You’re offline. Your downloads still play.",
+    "failed": "Some songs could not be downloaded.",
+    "install": "Install Lyra",
+    "installHint": "Add Lyra to your home screen for a full-screen app."
   }
 }
