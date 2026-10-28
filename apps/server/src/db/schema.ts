@@ -12,6 +12,9 @@ export const users = sqliteTable('users', {
   // Bumped on every upload so the avatar URL changes and caches refresh.
   avatarVersion: integer('avatar_version'),
   emailVerifiedAt: timestamp('email_verified_at'),
+  isYoutubeHistoryEnabled: integer('is_youtube_history_enabled', { mode: 'boolean' })
+    .notNull()
+    .default(true),
   createdAt: timestamp('created_at').notNull(),
 });
 

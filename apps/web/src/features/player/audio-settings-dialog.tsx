@@ -10,6 +10,7 @@ import {
   EqPreset,
 } from '../../audio/equalizer.ts';
 import { Dialog } from '../../ui/dialog.tsx';
+import { Toggle } from '../../ui/toggle.tsx';
 import { usePlayerStore } from './player-store.ts';
 import { MAX_CROSSFADE_SECONDS, MAX_FADE_MS, isOnMeteredNetwork } from './settings.ts';
 
@@ -17,30 +18,6 @@ const FADE_STEP_MS = 100;
 
 function bandLabel(frequency: number) {
   return frequency >= 1000 ? `${frequency / 1000}k` : String(frequency);
-}
-
-function Toggle({
-  label,
-  isOn,
-  onChange,
-}: {
-  label: string;
-  isOn: boolean;
-  onChange: (isOn: boolean) => void;
-}) {
-  return (
-    <label className="flex cursor-pointer items-center justify-between gap-4 text-sm">
-      {label}
-      <input
-        type="checkbox"
-        role="switch"
-        checked={isOn}
-        onChange={(event) => onChange(event.target.checked)}
-        className="peer sr-only"
-      />
-      <span className="relative h-6 w-11 shrink-0 rounded-full bg-surface-2 transition peer-checked:bg-accent peer-focus-visible:ring-2 peer-focus-visible:ring-accent/40 after:absolute after:top-0.5 after:left-0.5 after:size-5 after:rounded-full after:bg-white after:transition peer-checked:after:translate-x-5" />
-    </label>
-  );
 }
 
 export function AudioSettingsDialog({ onClose }: { onClose: () => void }) {

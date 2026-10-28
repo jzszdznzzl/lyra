@@ -21,7 +21,8 @@ import {
   shuffleQueue,
 } from '../../audio/queue.ts';
 import { audioStreamUrl, streamFailure } from '../../audio/stream-url.ts';
-import { api } from '../../lib/api.ts';
+import { NoContent, api } from '../../lib/api.ts';
+import { ListenTracker } from './listen-tracker.ts';
 import { effectiveQuality, loadSettings, saveSettings } from './settings.ts';
 import type { PlayerSettings } from './settings.ts';
 
@@ -109,6 +110,7 @@ export const usePlayerStore = create<PlayerState>()((set, get) => {
   let failuresInARow = 0;
   // The song already retried from where it broke, so a second failure skips it.
   let retriedTrackId: string | null = null;
+  const listens = new ListenTracker();
 
   const engine = new AudioEngine({
     onTime: (position, duration) => {
@@ -123,6 +125,13 @@ export const usePlayerStore = create<PlayerState>()((set, get) => {
 
       set({ position, duration });
       maybeCrossfade(position, duration);
+
+      const current = get().queue[get().index];
+
+      // The server adds it to YouTube history when the user has that on; failures do not matter.
+      if (current && listens.update(current.id, position, duration)) {
+        void api('POST', `/music/history/${encodeURIComponent(current.id)}`, NoContent);
+      }
     },
     onEnded: () => advance(false, false),
     onError: () => {

@@ -33,6 +33,7 @@ import {
 } from './catalog.ts';
 import { accountClient, musicClient } from './clients.ts';
 import {
+  addToHistory,
   addTracks,
   createPlaylist,
   deletePlaylist,
@@ -186,6 +187,22 @@ export function musicRoutes(ctx: AppContext, pool: InnertubePool, images: ImageR
         },
       )
       // --- Writes: they all act on the linked YT Music account ---
+      .post(
+        '/history/:id',
+        ({ user, params, status }) => {
+          // The player does not wait for YouTube: a lost entry only costs a recommendation.
+          if (user.isYoutubeHistoryEnabled) {
+            withAccount(user, (yt) => addToHistory(yt, params.id)).catch((error: unknown) => {
+              console.warn(
+                `[library] history: ${error instanceof Error ? error.message : String(error)}`,
+              );
+            });
+          }
+
+          return status(204);
+        },
+        { isSignedIn: true, params: VideoParams },
+      )
       .put(
         '/likes/:id',
         async ({ user, params, status }) =>

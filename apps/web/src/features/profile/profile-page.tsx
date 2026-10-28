@@ -11,6 +11,7 @@ import { AppearanceSection } from './appearance-section.tsx';
 import { DeleteAccountSection } from './delete-account-section.tsx';
 import { DetailsSection } from './details-section.tsx';
 import { GoogleSection } from './google-section.tsx';
+import { ListeningSection } from './listening-section.tsx';
 import { PasskeysSection } from './passkeys-section.tsx';
 import { PasswordSection } from './password-section.tsx';
 import { SessionsSection } from './sessions-section.tsx';
@@ -43,6 +44,7 @@ export function ProfilePage() {
       </div>
       <DetailsSection me={me} />
       <GoogleSection me={me} />
+      <ListeningSection me={me} />
       <AppearanceSection />
       <PasswordSection me={me} />
       <PasskeysSection />

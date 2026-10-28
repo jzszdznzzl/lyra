@@ -101,6 +101,12 @@
       "notLinked": "Sin vincular",
       "link": "Vincular cuenta de Google"
     },
+    "listening": {
+      "title": "Lo que escuchas",
+      "history": "Guardar en mi historial de YouTube",
+      "historyHint": "Las canciones que escuchas al menos 30 segundos se añaden a tu historial, así YouTube Music ajusta tu inicio y tus recomendaciones.",
+      "historyNeedsGoogle": "Vincula tu cuenta de Google para usarlo."
+    },
     "password": {
       "title": "Contraseña",
       "current": "Contraseña actual",

@@ -14,5 +14,6 @@ export function toUserProfile(user: User, isGoogleLinked: boolean): UserProfile 
     avatarUrl:
       user.avatarVersion === null ? null : `/api/avatars/${user.id}.webp?v=${user.avatarVersion}`,
     isGoogleLinked,
+    isYoutubeHistoryEnabled: user.isYoutubeHistoryEnabled,
   };
 }

@@ -101,6 +101,12 @@
       "notLinked": "Not linked",
       "link": "Link Google account"
     },
+    "listening": {
+      "title": "What you listen to",
+      "history": "Save to my YouTube history",
+      "historyHint": "Songs you play for at least 30 seconds are added to your history, so YouTube Music can tune your home page and recommendations.",
+      "historyNeedsGoogle": "Link your Google account to use it."
+    },
     "password": {
       "title": "Password",
       "current": "Current password",

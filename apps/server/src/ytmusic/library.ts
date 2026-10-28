@@ -135,3 +135,21 @@ export function removeTracks(yt: Innertube, id: string, trackIds: string[]) {
     return null;
   });
 }
+
+/**
+ * Adds a song to the account's YouTube history, as music.youtube.com does once a song plays:
+ * a ping to the stats URL that comes with the player response. History is what YouTube Music
+ * bases the home page and recommendations on.
+ */
+export function addToHistory(yt: Innertube, videoId: string) {
+  return write('add to history', async () => {
+    const info = await yt.music.getInfo(videoId);
+    const response = await info.addToWatchHistory();
+
+    if (!response.ok) {
+      throw new Error(`history ping answered ${response.status}`);
+    }
+
+    return null;
+  });
+}

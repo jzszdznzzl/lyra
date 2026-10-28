@@ -76,6 +76,7 @@ export async function register(
     language: input.language ?? DEFAULT_LANGUAGE,
     avatarVersion: null,
     emailVerifiedAt: null,
+    isYoutubeHistoryEnabled: true,
     createdAt: ctx.now(),
   };
 

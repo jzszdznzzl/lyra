@@ -92,6 +92,7 @@ export type DeleteAccountInput = z.infer<typeof DeleteAccountInput>;
 export const UpdateProfileInput = z.object({
   name: DisplayName.exactOptional(),
   language: z.enum(Language).exactOptional(),
+  isYoutubeHistoryEnabled: z.boolean().exactOptional(),
 });
 
 export type UpdateProfileInput = z.infer<typeof UpdateProfileInput>;
@@ -104,6 +105,8 @@ export const UserProfile = z.object({
   language: z.enum(Language),
   avatarUrl: z.string().nullable(),
   isGoogleLinked: z.boolean(),
+  // Songs played past a threshold are added to the linked YouTube account's history.
+  isYoutubeHistoryEnabled: z.boolean(),
 });
 
 export type UserProfile = z.infer<typeof UserProfile>;
