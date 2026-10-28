@@ -36,9 +36,18 @@ async function editPlaylist(yt: Innertube, id: string, actions: Record<string, s
   }
 }
 
+async function rate(yt: Innertube, endpoint: '/like/like' | '/like/removelike', videoId: string) {
+  // youtubei.js sends these with the web client, which YouTube now answers with 400.
+  const response = await yt.actions.execute(endpoint, { target: { videoId }, client: CLIENT });
+
+  if (!response.success) {
+    throw new Error(`${endpoint} answered ${response.status_code}`);
+  }
+}
+
 export function likeTrack(yt: Innertube, videoId: string) {
   return write('like', async () => {
-    await yt.interact.like(videoId);
+    await rate(yt, '/like/like', videoId);
 
     return null;
   });
@@ -46,7 +55,7 @@ export function likeTrack(yt: Innertube, videoId: string) {
 
 export function unlikeTrack(yt: Innertube, videoId: string) {
   return write('unlike', async () => {
-    await yt.interact.removeRating(videoId);
+    await rate(yt, '/like/removelike', videoId);
 
     return null;
   });

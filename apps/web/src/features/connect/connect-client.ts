@@ -21,6 +21,7 @@ export function startConnect() {
   let isStopped = false;
   let serverOffsetMs = 0;
   let reportTimer: ReturnType<typeof setTimeout> | null = null;
+  let retryTimer: ReturnType<typeof setTimeout> | null = null;
   let lastReported = { position: 0, at: 0 };
   let mirrored: PlaybackState | null = null;
 
@@ -113,6 +114,7 @@ export function startConnect() {
   }
 
   function connect() {
+    retryTimer = null;
     const protocol = location.protocol === 'https:' ? 'wss' : 'ws';
     const ws = new WebSocket(`${protocol}://${location.host}/api/connect`);
     socket = ws;
@@ -141,8 +143,8 @@ export function startConnect() {
     ws.addEventListener('close', () => {
       useConnectStore.setState({ isConnected: false });
 
-      if (!isStopped) {
-        setTimeout(connect, retryMs);
+      if (!isStopped && socket === ws) {
+        retryTimer = setTimeout(connect, retryMs);
         retryMs = Math.min(retryMs * 2, RECONNECT_MAX_MS);
       }
     });
@@ -188,9 +190,42 @@ export function startConnect() {
     transfer: (deviceId) => send({ type: 'transfer', deviceId, shouldPlay: true }),
   });
 
+  /**
+   * Android freezes background tabs, so a socket can come back silent or dead. On return to the
+   * foreground (or the network), reconnect at once or ask for a fresh sync.
+   */
+  function resync() {
+    if (isStopped || document.visibilityState !== 'visible') {
+      return;
+    }
+
+    if (socket?.readyState === WebSocket.OPEN) {
+      send({ type: 'hello', device });
+    } else if (socket?.readyState !== WebSocket.CONNECTING) {
+      if (retryTimer) {
+        clearTimeout(retryTimer);
+      }
+
+      retryMs = RECONNECT_MIN_MS;
+      connect();
+    }
+  }
+
+  document.addEventListener('visibilitychange', resync);
+  window.addEventListener('online', resync);
+  window.addEventListener('pageshow', resync);
+
   connect();
 
   return () => {
+    document.removeEventListener('visibilitychange', resync);
+    window.removeEventListener('online', resync);
+    window.removeEventListener('pageshow', resync);
+
+    if (retryTimer) {
+      clearTimeout(retryTimer);
+    }
+
     isStopped = true;
     unsubscribe();
     clearInterval(beat);

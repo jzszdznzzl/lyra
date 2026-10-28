@@ -1,11 +1,15 @@
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useSearch } from '@tanstack/react-router';
 import { Search } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { SearchFilter } from '@lyra/shared';
 
+import { ApiError, ApiFailure } from '../../lib/api.ts';
+import { useOnline } from '../../lib/use-online.ts';
+import { useDownloads } from '../offline/downloads.ts';
+import { searchDownloads } from '../offline/search-downloads.ts';
 import { usePlayerStore } from '../player/player-store.ts';
 import { searchQuery, suggestionsQuery } from './api.ts';
 import { isTrack } from './links.ts';
@@ -49,6 +53,21 @@ export function SearchPage() {
   }
 
   const items = results.data?.items ?? [];
+  const isOnline = useOnline();
+  const records = useDownloads((state) => state.records);
+  // React Query pauses requests offline, so without this the page would spin forever.
+  const isOffline =
+    !isOnline || (results.error instanceof ApiFailure && results.error.code === ApiError.Network);
+  const offlineResults = useMemo(
+    () =>
+      isOffline
+        ? searchDownloads(
+            [...records.values()].map((record) => record.track),
+            q,
+          )
+        : [],
+    [isOffline, records, q],
+  );
   const tracks = items.filter(isTrack);
   const cards = items.filter((item) => !isTrack(item));
 
@@ -104,7 +123,18 @@ export function SearchPage() {
           </button>
         ))}
       </div>
-      {q === '' ? null : results.isPending ? (
+      {q !== '' && isOffline ? (
+        <section className="flex flex-col gap-2">
+          <p className="text-xs font-bold tracking-wider text-muted uppercase">
+            {t('search.fromDownloads')}
+          </p>
+          {offlineResults.length === 0 ? (
+            <p className="text-muted">{t('search.empty', { query: q })}</p>
+          ) : (
+            <TrackList tracks={offlineResults} />
+          )}
+        </section>
+      ) : q === '' ? null : results.isPending ? (
         <LoadingState />
       ) : results.isError ? (
         <ErrorState error={results.error} onRetry={() => void results.refetch()} />

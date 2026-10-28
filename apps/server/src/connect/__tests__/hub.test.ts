@@ -45,7 +45,7 @@ let phone: ReturnType<typeof fakeSocket>;
 
 beforeEach(() => {
   now = 1_000_000;
-  hub = new ConnectHub(() => now);
+  hub = new ConnectHub(() => now, 0);
   pc = fakeSocket('s-pc');
   phone = fakeSocket('s-phone');
   hub.join('u', pc.socket, { id: 'device-pc', name: 'PC', kind: 'desktop' });
@@ -108,10 +108,12 @@ describe('ConnectHub', () => {
     expect(last(pc.inbox, 'sync')).toMatchObject({ activeDeviceId: 'device-phone' });
   });
 
-  test('when the active device leaves, playback stops where it was', () => {
+  test('when the active device leaves for good, playback stops where it was', async () => {
     hub.handle('u', 's-pc', { type: 'state', state: state() });
     now += 2000;
     hub.leave('u', 's-pc');
+    // Grace is 0 ms in these tests; the timer still runs on the next tick.
+    await Bun.sleep(1);
 
     expect(last(phone.inbox, 'sync')).toMatchObject({
       activeDeviceId: null,
@@ -123,5 +125,56 @@ describe('ConnectHub', () => {
     hub.handle('u', 's-phone', { type: 'command', command: { type: 'play' } });
 
     expect(last(phone.inbox, 'command')).toEqual({ type: 'command', command: { type: 'play' } });
+  });
+});
+
+describe('ConnectHub grace period', () => {
+  test('a reloading active device gets playback back instead of others taking it', () => {
+    const graceHub = new ConnectHub(() => now, 60_000);
+    const pcBefore = fakeSocket('pc-1');
+    const other = fakeSocket('phone-1');
+    graceHub.join('u', pcBefore.socket, { id: 'device-pc', name: 'PC', kind: 'desktop' });
+    graceHub.join('u', other.socket, { id: 'device-phone', name: 'Pixel', kind: 'mobile' });
+    graceHub.handle('u', 'pc-1', { type: 'state', state: state() });
+
+    graceHub.leave('u', 'pc-1');
+    const away = last(other.inbox, 'sync');
+    // Still listed, so the others can keep showing where the music plays.
+    expect(away?.type === 'sync' ? away.devices.map((device) => device.id) : []).toContain(
+      'device-pc',
+    );
+    expect(last(other.inbox, 'sync')).toMatchObject({
+      activeDeviceId: 'device-pc',
+      state: { isPlaying: true },
+    });
+
+    now += 3000;
+    const pcAfter = fakeSocket('pc-2');
+    graceHub.join('u', pcAfter.socket, { id: 'device-pc', name: 'PC', kind: 'desktop' });
+
+    expect(last(pcAfter.inbox, 'takeover')).toMatchObject({
+      state: { positionMs: 13_000, isPlaying: true },
+    });
+    expect(last(other.inbox, 'sync')).toMatchObject({ activeDeviceId: 'device-pc' });
+  });
+});
+
+describe('ConnectHub commands while the active device is away', () => {
+  test('the device that acts takes over instead of waiting for the grace period', () => {
+    const graceHub = new ConnectHub(() => now, 60_000);
+    const pc = fakeSocket('pc-1');
+    const phone2 = fakeSocket('phone-1');
+    graceHub.join('u', pc.socket, { id: 'device-pc', name: 'PC', kind: 'desktop' });
+    graceHub.join('u', phone2.socket, { id: 'device-phone', name: 'Pixel', kind: 'mobile' });
+    graceHub.handle('u', 'pc-1', { type: 'state', state: state() });
+    graceHub.leave('u', 'pc-1');
+
+    graceHub.handle('u', 'phone-1', { type: 'command', command: { type: 'play' } });
+
+    expect(last(phone2.inbox, 'sync')).toMatchObject({
+      activeDeviceId: null,
+      state: { isPlaying: false },
+    });
+    expect(last(phone2.inbox, 'command')).toEqual({ type: 'command', command: { type: 'play' } });
   });
 });

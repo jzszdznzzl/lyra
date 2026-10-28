@@ -59,6 +59,11 @@ test('a downloaded song plays with the network off', async ({ page, context }, i
     .poll(async () => seconds(await elapsed.textContent()), { timeout: 15_000 })
     .toBeGreaterThanOrEqual(120);
 
+  // Search falls back to the downloads.
+  await page.goto('/search?q=lucky&filter=all');
+  await expect(page.getByText('In your downloads')).toBeVisible({ timeout: 15_000 });
+  await expect(page.locator('main ol li').first()).toContainText(title);
+
   await context.setOffline(false);
 });
 

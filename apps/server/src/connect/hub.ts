@@ -16,7 +16,14 @@ interface Room {
   members: Map<string, Member>;
   activeDeviceId: string | null;
   state: PlaybackState | null;
+  // Set while the active device is away (a reload, a dropped connection) and may come back.
+  graceTimer: ReturnType<typeof setTimeout> | null;
+  // The active device while away, still listed so others can show where music plays.
+  away: Member | null;
 }
+
+// A reload takes a second or two; a phone switching networks a bit longer.
+export const ACTIVE_GRACE_MS = 15_000;
 
 /**
  * Spotify Connect–style rooms, one per user. Exactly one device plays (the active one); the
@@ -25,16 +32,24 @@ interface Room {
 export class ConnectHub {
   #rooms = new Map<string, Room>();
   #now: () => number;
+  #graceMs: number;
 
-  constructor(now: () => number = Date.now) {
+  constructor(now: () => number = Date.now, graceMs = ACTIVE_GRACE_MS) {
     this.#now = now;
+    this.#graceMs = graceMs;
   }
 
   #room(userId: string) {
     let room = this.#rooms.get(userId);
 
     if (!room) {
-      room = { members: new Map(), activeDeviceId: null, state: null };
+      room = {
+        members: new Map(),
+        activeDeviceId: null,
+        state: null,
+        graceTimer: null,
+        away: null,
+      };
       this.#rooms.set(userId, room);
     }
 
@@ -48,10 +63,12 @@ export class ConnectHub {
   #broadcast(room: Room) {
     const message: ServerMessage = {
       type: 'sync',
-      devices: [...room.members.values()].map(({ device, lastSeenAt }) => ({
-        ...device,
-        lastSeenAt,
-      })),
+      devices: [...room.members.values(), ...(room.away ? [room.away] : [])].map(
+        ({ device, lastSeenAt }) => ({
+          ...device,
+          lastSeenAt,
+        }),
+      ),
       activeDeviceId: room.activeDeviceId,
       state: room.state,
       serverTime: this.#now(),
@@ -104,6 +121,12 @@ export class ConnectHub {
       return;
     }
 
+    if (room.graceTimer) {
+      clearTimeout(room.graceTimer);
+      room.graceTimer = null;
+      room.away = null;
+    }
+
     if (room.activeDeviceId) {
       room.members.get(room.activeDeviceId)?.socket.send({ type: 'release' });
     }
@@ -124,6 +147,21 @@ export class ConnectHub {
     }
 
     room.members.set(device.id, { device, socket, lastSeenAt: this.#now() });
+
+    // The active device is back (e.g. after a reload): it carries on where it left.
+    if (room.graceTimer && room.activeDeviceId === device.id) {
+      clearTimeout(room.graceTimer);
+      room.graceTimer = null;
+      room.away = null;
+
+      const state = this.#liveState(room, room.state?.isPlaying ?? false);
+
+      if (state) {
+        room.state = state;
+        socket.send({ type: 'takeover', state });
+      }
+    }
+
     this.#broadcast(room);
   }
 
@@ -138,11 +176,21 @@ export class ConnectHub {
     room.members.delete(member.device.id);
 
     if (room.activeDeviceId === member.device.id) {
-      room.activeDeviceId = null;
-      room.state = this.#liveState(room, false);
+      // Others keep showing it as the player for a moment instead of grabbing playback.
+      room.away = member;
+      room.graceTimer = setTimeout(() => {
+        room.graceTimer = null;
+        room.away = null;
+
+        if (room.activeDeviceId === member.device.id && !room.members.has(member.device.id)) {
+          room.activeDeviceId = null;
+          room.state = this.#liveState(room, false);
+          this.#broadcast(room);
+        }
+      }, this.#graceMs);
     }
 
-    if (room.members.size === 0 && !room.state) {
+    if (room.members.size === 0 && !room.state && !room.graceTimer) {
       this.#rooms.delete(userId);
 
       return;
@@ -169,8 +217,24 @@ export class ConnectHub {
       case 'command': {
         const active = room.activeDeviceId ? room.members.get(room.activeDeviceId) : null;
 
+        if (active) {
+          active.socket.send({ type: 'command', command: message.command });
+          break;
+        }
+
+        // The active device is gone (closed, or still reconnecting): someone acting now should
+        // not wait for it, so the device that asked takes over from where playback was.
+        if (room.graceTimer) {
+          clearTimeout(room.graceTimer);
+          room.graceTimer = null;
+          room.away = null;
+          room.activeDeviceId = null;
+          room.state = this.#liveState(room, false);
+          this.#broadcast(room);
+        }
+
         // With nobody playing, the device that asked runs the command itself.
-        (active ?? member).socket.send({ type: 'command', command: message.command });
+        member.socket.send({ type: 'command', command: message.command });
         break;
       }
       case 'transfer': {

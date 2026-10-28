@@ -164,7 +164,8 @@
       "albums": "Albums",
       "artists": "Artists",
       "playlists": "Playlists"
-    }
+    },
+    "fromDownloads": "In your downloads"
   },
   "music": {
     "quickPicks": "Quick picks",
