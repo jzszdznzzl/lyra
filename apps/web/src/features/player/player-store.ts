@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
-import { UpNext } from '@lyra/shared';
-import type { Track } from '@lyra/shared';
+import { MAX_SHARED_QUEUE, UpNext, currentPositionMs } from '@lyra/shared';
+import type { Command, PlaybackState, Track } from '@lyra/shared';
 
 import { AudioEngine } from '../../audio/engine.ts';
 import {
@@ -26,16 +26,24 @@ export const PlaybackStatus = Object.freeze({
 
 export type PlaybackStatus = (typeof PlaybackStatus)[keyof typeof PlaybackStatus];
 
+/** Set by Connect while another device plays: actions become commands sent to it. */
+export interface RemoteControl {
+  send: (command: Command) => void;
+  volume: number;
+}
+
 interface PlayerState {
   queue: Track[];
   index: number;
   // The order before shuffling, so turning shuffle off restores it.
   unshuffled: Track[] | null;
+  isShuffled: boolean;
   repeat: RepeatMode;
   status: PlaybackStatus;
   position: number;
   duration: number;
   settings: PlayerSettings;
+  remote: RemoteControl | null;
   playTracks: (tracks: Track[], startIndex: number) => void;
   togglePlay: () => void;
   next: () => void;
@@ -48,12 +56,22 @@ interface PlayerState {
   playNext: (tracks: Track[]) => void;
   removeFromQueue: (index: number) => void;
   moveInQueue: (from: number, to: number) => void;
+  setVolume: (volume: number) => void;
   updateSettings: (patch: Partial<PlayerSettings>) => void;
+  // --- Used by Connect ---
+  runCommand: (command: Command) => void;
+  snapshot: () => PlaybackState;
+  takeover: (state: PlaybackState, serverNow: number) => void;
+  release: () => void;
+  mirror: (state: PlaybackState | null, remote: RemoteControl, serverNow: number) => void;
+  setLocal: () => void;
 }
 
 // Restarting the song is friendlier than going back once a few seconds have played.
 const RESTART_THRESHOLD_SECONDS = 3;
 const REPEAT_ORDER = [RepeatMode.Off, RepeatMode.All, RepeatMode.One] as const;
+// Context kept before the current track when the queue is too long to share whole.
+const SHARED_HISTORY = 100;
 
 export function streamUrl(track: Track, settings: PlayerSettings) {
   return `/api/stream/${encodeURIComponent(track.id)}?quality=${settings.quality}`;
@@ -65,18 +83,20 @@ export const usePlayerStore = create<PlayerState>()((set, get) => {
 
   const engine = new AudioEngine({
     onTime: (position, duration) => {
+      if (get().remote) {
+        return;
+      }
+
       set({ position, duration });
       maybeCrossfade(position, duration);
     },
-    onEnded: () => {
-      advance(false, false);
-    },
-    onError: () => {
-      // A song YouTube refuses should not stop the whole queue.
-      advance(false, false);
-    },
+    onEnded: () => advance(false, false),
+    // A song YouTube refuses should not stop the whole queue.
+    onError: () => advance(false, false),
     onPlayingChange: (isPlaying) => {
-      set({ status: isPlaying ? PlaybackStatus.Playing : PlaybackStatus.Paused });
+      if (!get().remote) {
+        set({ status: isPlaying ? PlaybackStatus.Playing : PlaybackStatus.Paused });
+      }
     },
   });
 
@@ -97,7 +117,7 @@ export const usePlayerStore = create<PlayerState>()((set, get) => {
       index,
       position: startAt,
       duration: track.durationSeconds ?? 0,
-      status: PlaybackStatus.Loading,
+      status: shouldPlay ? PlaybackStatus.Loading : PlaybackStatus.Paused,
     });
     engine.load(streamUrl(track, settings), startAt, shouldPlay, settings.fadeMs).catch(() => {
       // Autoplay can be blocked until the user interacts; the play button recovers.
@@ -173,32 +193,26 @@ export const usePlayerStore = create<PlayerState>()((set, get) => {
     advance(false, true);
   }
 
-  return {
-    queue: [],
-    index: 0,
-    unshuffled: null,
-    repeat: RepeatMode.Off,
-    status: PlaybackStatus.Idle,
-    position: 0,
-    duration: 0,
-    settings: initial,
-    playTracks: (tracks, startIndex) => {
-      set({ queue: tracks, unshuffled: null });
+  // --- Local implementations; every public action runs one of these or sends a command ---
+
+  const local = {
+    playTracks: (tracks: Track[], startIndex: number) => {
+      set({ queue: tracks, unshuffled: null, isShuffled: false });
       start(startIndex);
     },
-    togglePlay: () => {
-      const { status, settings, queue, index } = get();
+    play: () => {
+      const { status, queue, index, settings, position } = get();
 
-      if (status === PlaybackStatus.Playing) {
-        engine.pause(settings.fadeMs);
-        set({ status: PlaybackStatus.Paused });
-      } else if (status === PlaybackStatus.Idle && queue[index]) {
-        start(index, get().position);
+      if (status === PlaybackStatus.Idle && queue[index]) {
+        start(index, position);
       } else {
         engine.play(settings.fadeMs).catch(() => set({ status: PlaybackStatus.Paused }));
       }
     },
-    next: () => advance(true, false),
+    pause: () => {
+      engine.pause(get().settings.fadeMs);
+      set({ status: PlaybackStatus.Paused });
+    },
     previous: () => {
       const { queue, index, repeat } = get();
 
@@ -210,45 +224,215 @@ export const usePlayerStore = create<PlayerState>()((set, get) => {
 
       start(previousIndex({ queue, index }, repeat));
     },
-    seek: (seconds) => {
+    seek: (seconds: number) => {
       engine.seek(seconds);
       isCrossfading = false;
       set({ position: seconds });
     },
-    jumpTo: (index) => start(index),
     toggleShuffle: () => {
       const { queue, index, unshuffled } = get();
 
       if (unshuffled) {
         const current = queue[index];
         const restored = unshuffled.findIndex((track) => track.id === current?.id);
-        set({ queue: unshuffled, index: Math.max(0, restored), unshuffled: null });
+        set({
+          queue: unshuffled,
+          index: Math.max(0, restored),
+          unshuffled: null,
+          isShuffled: false,
+        });
       } else {
-        set({ ...shuffleQueue({ queue, index }), unshuffled: queue });
+        set({ ...shuffleQueue({ queue, index }), unshuffled: queue, isShuffled: true });
       }
     },
     cycleRepeat: () => {
       const position = REPEAT_ORDER.indexOf(get().repeat);
       set({ repeat: REPEAT_ORDER[(position + 1) % REPEAT_ORDER.length] ?? RepeatMode.Off });
     },
-    addToQueue: (tracks) => set({ queue: [...get().queue, ...tracks] }),
-    playNext: (tracks) => set(insertNext(get(), tracks)),
-    removeFromQueue: (position) => {
-      const { index } = get();
+    enqueue: (tracks: Track[], isNext: boolean) => {
+      set(isNext ? insertNext(get(), tracks) : { queue: [...get().queue, ...tracks] });
+    },
+    remove: (position: number) => {
+      if (position !== get().index) {
+        set(removeAt(get(), position));
+      }
+    },
+    setVolume: (volume: number) => {
+      const settings = { ...get().settings, volume };
+      set({ settings });
+      saveSettings(settings);
+      engine.setVolume(volume);
+    },
+  };
 
-      if (position === index) {
-        return;
+  function runCommand(command: Command) {
+    switch (command.type) {
+      case 'play': {
+        local.play();
+        break;
+      }
+      case 'pause': {
+        local.pause();
+        break;
+      }
+      case 'next': {
+        advance(true, false);
+        break;
+      }
+      case 'previous': {
+        local.previous();
+        break;
+      }
+      case 'seek': {
+        local.seek(command.positionMs / 1000);
+        break;
+      }
+      case 'volume': {
+        local.setVolume(command.volume);
+        break;
+      }
+      case 'jump': {
+        start(command.index);
+        break;
+      }
+      case 'playTracks': {
+        local.playTracks(command.tracks, command.index);
+        break;
+      }
+      case 'enqueue': {
+        local.enqueue(command.tracks, command.isNext);
+        break;
+      }
+      case 'remove': {
+        local.remove(command.index);
+        break;
+      }
+      case 'move': {
+        set(moveItem(get(), command.from, command.to));
+        break;
+      }
+      case 'shuffle': {
+        local.toggleShuffle();
+        break;
+      }
+      case 'repeat': {
+        local.cycleRepeat();
+        break;
+      }
+      default: {
+        break;
+      }
+    }
+  }
+
+  /** Sends to the playing device when there is one elsewhere; runs here otherwise. */
+  function act(command: Command) {
+    const { remote } = get();
+
+    if (remote) {
+      remote.send(command);
+    } else {
+      runCommand(command);
+    }
+  }
+
+  return {
+    queue: [],
+    index: 0,
+    unshuffled: null,
+    isShuffled: false,
+    repeat: RepeatMode.Off,
+    status: PlaybackStatus.Idle,
+    position: 0,
+    duration: 0,
+    settings: initial,
+    remote: null,
+    playTracks: (tracks, index) =>
+      act({ type: 'playTracks', tracks: tracks.slice(0, MAX_SHARED_QUEUE), index }),
+    togglePlay: () => act({ type: get().status === PlaybackStatus.Playing ? 'pause' : 'play' }),
+    next: () => act({ type: 'next' }),
+    previous: () => act({ type: 'previous' }),
+    seek: (seconds) => act({ type: 'seek', positionMs: Math.max(0, seconds * 1000) }),
+    jumpTo: (index) => act({ type: 'jump', index }),
+    toggleShuffle: () => act({ type: 'shuffle' }),
+    cycleRepeat: () => act({ type: 'repeat' }),
+    addToQueue: (tracks) => act({ type: 'enqueue', tracks, isNext: false }),
+    playNext: (tracks) => act({ type: 'enqueue', tracks, isNext: true }),
+    removeFromQueue: (index) => act({ type: 'remove', index }),
+    moveInQueue: (from, to) => act({ type: 'move', from, to }),
+    setVolume: (volume) => {
+      const { remote } = get();
+
+      if (remote) {
+        // Shown right away; the next sync confirms it.
+        set({ remote: { ...remote, volume } });
       }
 
-      set(removeAt(get(), position));
+      act({ type: 'volume', volume });
     },
-    moveInQueue: (from, to) => set(moveItem(get(), from, to)),
     updateSettings: (patch) => {
       const settings = { ...get().settings, ...patch };
       set({ settings });
       saveSettings(settings);
       engine.setVolume(settings.volume);
       engine.setEqualizer(settings.isEqEnabled, settings.eqGains);
+    },
+    runCommand,
+    snapshot: () => {
+      const { queue, index, status, settings, repeat, isShuffled } = get();
+      // Long queues are cut to a window around the current track.
+      const offset = Math.max(0, Math.min(index - SHARED_HISTORY, queue.length - MAX_SHARED_QUEUE));
+
+      return {
+        queue: queue.slice(offset, offset + MAX_SHARED_QUEUE),
+        index: index - offset,
+        positionMs: Math.round(engine.position * 1000),
+        updatedAt: Date.now(),
+        isPlaying: status === PlaybackStatus.Playing || status === PlaybackStatus.Loading,
+        volume: settings.volume,
+        repeat,
+        isShuffled,
+      };
+    },
+    takeover: (state, serverNow) => {
+      set({
+        remote: null,
+        queue: state.queue,
+        unshuffled: null,
+        isShuffled: state.isShuffled,
+        repeat: state.repeat,
+      });
+      start(state.index, currentPositionMs(state, serverNow) / 1000, state.isPlaying);
+    },
+    release: () => {
+      engine.stop();
+      isCrossfading = false;
+    },
+    mirror: (state, remote, serverNow) => {
+      engine.stop();
+
+      if (!state) {
+        set({ remote, status: PlaybackStatus.Idle });
+
+        return;
+      }
+
+      const track = state.queue[state.index];
+      set({
+        remote: { ...remote, volume: state.volume },
+        queue: state.queue,
+        index: state.index,
+        isShuffled: state.isShuffled,
+        repeat: state.repeat,
+        status: state.isPlaying ? PlaybackStatus.Playing : PlaybackStatus.Paused,
+        position: currentPositionMs(state, serverNow) / 1000,
+        duration: track?.durationSeconds ?? 0,
+      });
+    },
+    setLocal: () => {
+      if (get().remote) {
+        set({ remote: null, status: PlaybackStatus.Idle });
+      }
     },
   };
 });

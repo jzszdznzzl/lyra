@@ -13,6 +13,7 @@ import {
 import type { Result } from '@lyra/shared';
 
 import { authPlugin } from '../auth/plugin.ts';
+import { INVALID_QUERY, parseQuery } from '../query.ts';
 import {
   getAlbum,
   getArtist,
@@ -84,15 +85,25 @@ export function musicRoutes(ctx: AppContext, pool: InnertubePool) {
       )
       .get(
         '/search',
-        async ({ user, query, status }) =>
-          respond(await search(await clientFor(user), query.q, query.filter), status),
-        { isSignedIn: true, query: SearchQuery },
+        async ({ user, query: raw, status }) => {
+          const query = parseQuery(SearchQuery, raw);
+
+          return query
+            ? respond(await search(await clientFor(user), query.q, query.filter), status)
+            : status(422, INVALID_QUERY);
+        },
+        { isSignedIn: true },
       )
       .get(
         '/suggestions',
-        async ({ user, query, status }) =>
-          respond(await getSuggestions(await clientFor(user), query.q), status),
-        { isSignedIn: true, query: SuggestionQuery },
+        async ({ user, query: raw, status }) => {
+          const query = parseQuery(SuggestionQuery, raw);
+
+          return query
+            ? respond(await getSuggestions(await clientFor(user), query.q), status)
+            : status(422, INVALID_QUERY);
+        },
+        { isSignedIn: true },
       )
       .get(
         '/albums/:id',

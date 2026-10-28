@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { LOUDNESS_HEADER, MusicError, StreamQuery } from '@lyra/shared';
 
 import { authPlugin } from '../auth/plugin.ts';
+import { INVALID_QUERY, parseQuery } from '../query.ts';
 import { musicClient } from '../ytmusic/clients.ts';
 import { chunkedBody, parseRange } from './ranges.ts';
 import { StreamResolver } from './resolver.ts';
@@ -22,7 +23,13 @@ export function streamRoutes(ctx: AppContext, pool: InnertubePool) {
 
   return new Elysia({ prefix: '/stream' }).use(authPlugin(ctx)).get(
     '/:id',
-    async ({ params, query, request, user, status }) => {
+    async ({ params, query: raw, request, user, status }) => {
+      const query = parseQuery(StreamQuery, raw);
+
+      if (!query) {
+        return status(422, INVALID_QUERY);
+      }
+
       const yt = await musicClient(ctx, pool, user);
       // One retry: a cached URL can be revoked early, which googlevideo answers with 403.
       for (let attempt = 0; attempt < 2; attempt += 1) {
@@ -78,6 +85,6 @@ export function streamRoutes(ctx: AppContext, pool: InnertubePool) {
 
       return status(502, { error: MusicError.Upstream });
     },
-    { isSignedIn: true, params: VideoParams, query: StreamQuery },
+    { isSignedIn: true, params: VideoParams },
   );
 }

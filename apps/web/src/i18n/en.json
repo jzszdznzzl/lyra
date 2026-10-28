@@ -287,5 +287,24 @@
     "pickPlaylist": "Choose a playlist",
     "noPlaylists": "You have no playlists yet.",
     "needsGoogle": "Link Google in your profile to use your library."
+  },
+  "connect": {
+    "title": "Listening on",
+    "subtitle": "Control playback on any of your devices",
+    "current": "Current device",
+    "thisDevice": "This device",
+    "playing": "Playing",
+    "listenHere": "Listen here",
+    "playOn": "Play here",
+    "idle": "Idle",
+    "playingOn": "Playing on {{name}}",
+    "devices": "Devices",
+    "offline": "Reconnecting…"
+  },
+  "lyrics": {
+    "title": "Lyrics",
+    "none": "No lyrics for this song.",
+    "unsynced": "These lyrics are not synced.",
+    "source": "Lyrics from {{source}}"
   }
 }

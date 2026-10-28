@@ -8,8 +8,9 @@ const DEFAULT_RESTORE = 0.6;
 
 export function VolumeControl() {
   const { t } = useTranslation();
-  const volume = usePlayerStore((state) => state.settings.volume);
-  const updateSettings = usePlayerStore((state) => state.updateSettings);
+  // While another device plays, this slider is that device's volume.
+  const volume = usePlayerStore((state) => state.remote?.volume ?? state.settings.volume);
+  const setVolume = usePlayerStore((state) => state.setVolume);
   const beforeMute = useRef(DEFAULT_RESTORE);
   const Icon = volume === 0 ? VolumeX : volume < 0.5 ? Volume1 : Volume2;
 
@@ -21,9 +22,9 @@ export function VolumeControl() {
         onClick={() => {
           if (volume > 0) {
             beforeMute.current = volume;
-            updateSettings({ volume: 0 });
+            setVolume(0);
           } else {
-            updateSettings({ volume: beforeMute.current });
+            setVolume(beforeMute.current);
           }
         }}
         className="text-muted hover:text-text"
@@ -37,7 +38,7 @@ export function VolumeControl() {
         step={0.01}
         value={volume}
         aria-label={t('player.volume')}
-        onChange={(event) => updateSettings({ volume: Number(event.target.value) })}
+        onChange={(event) => setVolume(Number(event.target.value))}
         className="h-1 w-24 cursor-pointer accent-[var(--text)]"
       />
     </div>

@@ -2,6 +2,7 @@ import { Elysia } from 'elysia';
 import { z } from 'zod';
 
 import { authPlugin } from '../auth/plugin.ts';
+import { INVALID_QUERY, parseQuery } from '../query.ts';
 import type { AppContext } from '../context.ts';
 
 // Only YouTube's image CDNs; anything else would turn this into an open proxy.
@@ -21,7 +22,13 @@ const ImageQuery = z.object({ url: z.url({ protocol: /^https$/ }) });
 export function imageProxyRoutes(ctx: AppContext) {
   return new Elysia().use(authPlugin(ctx)).get(
     '/images',
-    async ({ query, status }) => {
+    async ({ query: raw, status }) => {
+      const query = parseQuery(ImageQuery, raw);
+
+      if (!query) {
+        return status(422, INVALID_QUERY);
+      }
+
       const url = new URL(query.url);
 
       if (!ALLOWED_HOSTS.has(url.hostname)) {
@@ -40,6 +47,6 @@ export function imageProxyRoutes(ctx: AppContext) {
         headers: { 'content-type': type, 'cache-control': CACHE_CONTROL },
       });
     },
-    { isSignedIn: true, query: ImageQuery },
+    { isSignedIn: true },
   );
 }

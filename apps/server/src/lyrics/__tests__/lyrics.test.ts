@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 
-import { findLrclibLyrics } from '../lyrics.ts';
+import { cleanTitle, findLrclibLyrics } from '../lyrics.ts';
 
 function fakeLrclib(routes: Record<string, unknown>) {
   return (async (input: string | URL | Request) => {
@@ -61,5 +61,16 @@ describe('findLrclibLyrics', () => {
 
   test('returns null when nothing matches', async () => {
     expect(await findLrclibLyrics(QUERY, fakeLrclib({ '/api/search': [] }))).toBeNull();
+  });
+});
+
+describe('cleanTitle', () => {
+  test.each([
+    ['Get Lucky (feat. Pharrell Williams and Nile Rodgers)', 'Get Lucky'],
+    ['Song [with Someone]', 'Song'],
+    ['Song - Remastered 2011', 'Song'],
+    ['Song (Live)', 'Song (Live)'],
+  ])('%s', (title, clean) => {
+    expect(cleanTitle(title)).toBe(clean);
   });
 });

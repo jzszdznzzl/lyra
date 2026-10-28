@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { Cover } from '../../ui/cover.tsx';
+import { DeviceButton } from '../connect/device-picker.tsx';
 import { LikeButton } from '../library/like-button.tsx';
 import { ArtistLinks } from '../music/artist-links.tsx';
 import { AudioSettingsDialog } from './audio-settings-dialog.tsx';
@@ -16,6 +17,8 @@ export function PlayerBar() {
   const { t } = useTranslation();
   const track = usePlayerStore(currentTrack);
   const settings = usePlayerStore((state) => state.settings);
+  // Local audio settings do not apply while another device plays.
+  const isRemote = usePlayerStore((state) => state.remote !== null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   return (
@@ -44,7 +47,7 @@ export function PlayerBar() {
         <button
           type="button"
           onClick={() => setIsSettingsOpen(true)}
-          className="hidden items-center gap-1.5 rounded-lg border border-line bg-surface px-2.5 py-1.5 whitespace-nowrap hover:text-text lg:flex"
+          className={`hidden items-center gap-1.5 rounded-lg border border-line bg-surface px-2.5 py-1.5 whitespace-nowrap hover:text-text ${isRemote ? '' : 'lg:flex'}`}
         >
           <span className="text-accent">{t(`player.settings.${settings.quality}`)}</span>
           {settings.crossfadeSeconds > 0 ? (
@@ -60,6 +63,7 @@ export function PlayerBar() {
         >
           <SlidersHorizontal className="size-[18px]" />
         </button>
+        <DeviceButton isLabelled />
         <VolumeControl />
       </div>
       {isSettingsOpen ? <AudioSettingsDialog onClose={() => setIsSettingsOpen(false)} /> : null}

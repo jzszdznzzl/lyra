@@ -8,7 +8,7 @@ export function TransportControls({ size = 'md' }: { size?: 'md' | 'lg' }) {
   const { t } = useTranslation();
   const status = usePlayerStore((state) => state.status);
   const repeat = usePlayerStore((state) => state.repeat);
-  const isShuffled = usePlayerStore((state) => state.unshuffled !== null);
+  const isShuffled = usePlayerStore((state) => state.isShuffled);
   const { togglePlay, next, previous, toggleShuffle, cycleRepeat } = usePlayerStore.getState();
   const isPlaying = status === PlaybackStatus.Playing;
   const isLoading = status === PlaybackStatus.Loading;

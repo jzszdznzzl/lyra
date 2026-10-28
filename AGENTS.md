@@ -288,6 +288,8 @@ if (cache.has(key)) {
 
 Elysia on Bun. Pass zod schemas directly to route validation, using Elysia's Standard Schema support.
 
+Exception: query strings. With a Standard Schema, Elysia splits every comma-separated query value into an array, so `?q=Hello, Goodbye` fails validation. Validate queries inside the handler with `parseQuery` from `apps/server/src/query.ts`.
+
 ### Error handling
 
 Expected failures are returned; unexpected failures are thrown.

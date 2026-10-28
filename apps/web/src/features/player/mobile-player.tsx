@@ -1,4 +1,4 @@
-import { ChevronDown, ListMusic, Pause, Play, SlidersHorizontal } from 'lucide-react';
+import { ChevronDown, ListMusic, MicVocal, Pause, Play, SlidersHorizontal } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -6,12 +6,15 @@ import { imageUrl } from '../../lib/image.ts';
 import { toCss } from '../../lib/palette.ts';
 import { useAccent } from '../../lib/use-accent.ts';
 import { Cover } from '../../ui/cover.tsx';
+import { DeviceButton } from '../connect/device-picker.tsx';
+import { activeDevice, useConnectStore } from '../connect/connect-store.ts';
 import { LikeButton } from '../library/like-button.tsx';
 import { TrackMenu } from '../library/track-menu.tsx';
 import { ArtistLinks } from '../music/artist-links.tsx';
 import { AudioSettingsDialog } from './audio-settings-dialog.tsx';
 import { PlaybackStatus, currentTrack, usePlayerStore } from './player-store.ts';
 import { ProgressBar } from './progress-bar.tsx';
+import { LyricsView } from './lyrics-view.tsx';
 import { QueuePanel } from './queue-panel.tsx';
 import { TransportControls } from './transport-controls.tsx';
 
@@ -25,7 +28,10 @@ export function MobilePlayer() {
   const togglePlay = usePlayerStore((state) => state.togglePlay);
   const accent = useAccent(imageUrl(track?.thumbnail ?? null));
   const [isOpen, setIsOpen] = useState(false);
-  const [isQueueOpen, setIsQueueOpen] = useState(false);
+  const [panel, setPanel] = useState<'cover' | 'queue' | 'lyrics'>('cover');
+  const active = useConnectStore(activeDevice);
+  const selfId = useConnectStore((state) => state.selfId);
+  const playingElsewhere = active && active.id !== selfId ? active.name : null;
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   if (!track) {
@@ -47,8 +53,12 @@ export function MobilePlayer() {
             <Cover src={track.thumbnail} alt="" className="size-11 shrink-0 rounded-lg" />
             <span className="min-w-0">
               <span className="block truncate text-sm font-bold">{track.title}</span>
-              <span className="block truncate text-xs text-muted">
-                {track.artists.map((artist) => artist.name).join(', ')}
+              <span
+                className={`block truncate text-xs ${playingElsewhere ? 'text-emerald-400' : 'text-muted'}`}
+              >
+                {playingElsewhere
+                  ? t('connect.playingOn', { name: playingElsewhere })
+                  : track.artists.map((artist) => artist.name).join(', ')}
               </span>
             </span>
           </button>
@@ -104,9 +114,13 @@ export function MobilePlayer() {
               <SlidersHorizontal className="size-5" />
             </button>
           </header>
-          {isQueueOpen ? (
+          {panel === 'queue' ? (
             <div className="mt-6 flex-1">
               <QueuePanel />
+            </div>
+          ) : panel === 'lyrics' ? (
+            <div className="mt-6 flex min-h-0 flex-1 flex-col">
+              <LyricsView track={track} />
             </div>
           ) : (
             <Cover
@@ -132,16 +146,28 @@ export function MobilePlayer() {
             <div className="mt-4">
               <TransportControls size="lg" />
             </div>
-            <div className="mt-6 flex justify-end">
-              <button
-                type="button"
-                aria-label={t('player.queue')}
-                aria-pressed={isQueueOpen}
-                onClick={() => setIsQueueOpen(!isQueueOpen)}
-                className="p-1 text-muted aria-pressed:text-accent"
-              >
-                <ListMusic className="size-5" />
-              </button>
+            <div className="mt-6 flex items-center justify-between gap-3">
+              <DeviceButton isLabelled />
+              <span className="flex gap-3">
+                <button
+                  type="button"
+                  aria-label={t('lyrics.title')}
+                  aria-pressed={panel === 'lyrics'}
+                  onClick={() => setPanel(panel === 'lyrics' ? 'cover' : 'lyrics')}
+                  className="p-1 text-muted aria-pressed:text-accent"
+                >
+                  <MicVocal className="size-5" />
+                </button>
+                <button
+                  type="button"
+                  aria-label={t('player.queue')}
+                  aria-pressed={panel === 'queue'}
+                  onClick={() => setPanel(panel === 'queue' ? 'cover' : 'queue')}
+                  className="p-1 text-muted aria-pressed:text-accent"
+                >
+                  <ListMusic className="size-5" />
+                </button>
+              </span>
             </div>
           </div>
         </div>

@@ -6,9 +6,10 @@ import { LikeButton } from '../library/like-button.tsx';
 import { TrackMenu } from '../library/track-menu.tsx';
 import { ArtistLinks } from '../music/artist-links.tsx';
 import { currentTrack, usePlayerStore } from './player-store.ts';
+import { LyricsView } from './lyrics-view.tsx';
 import { QueuePanel } from './queue-panel.tsx';
 
-const Tab = Object.freeze({ NowPlaying: 'now', Queue: 'queue' } as const);
+const Tab = Object.freeze({ NowPlaying: 'now', Lyrics: 'lyrics', Queue: 'queue' } as const);
 
 type Tab = (typeof Tab)[keyof typeof Tab];
 
@@ -17,6 +18,11 @@ export function NowPlayingPanel() {
   const { t } = useTranslation();
   const track = usePlayerStore(currentTrack);
   const [tab, setTab] = useState<Tab>(Tab.NowPlaying);
+  const TAB_LABELS: Record<Tab, string> = {
+    [Tab.NowPlaying]: t('player.nowPlaying'),
+    [Tab.Lyrics]: t('lyrics.title'),
+    [Tab.Queue]: t('player.queue'),
+  };
 
   return (
     <aside className="hidden min-h-0 flex-col gap-4 overflow-y-auto rounded-2xl border border-line bg-panel p-4 backdrop-blur-2xl xl:flex">
@@ -29,7 +35,7 @@ export function NowPlayingPanel() {
             onClick={() => setTab(option)}
             className="rounded-full border border-line px-3 py-1.5 text-xs font-semibold text-muted aria-pressed:bg-text aria-pressed:text-bg"
           >
-            {option === Tab.NowPlaying ? t('player.nowPlaying') : t('player.queue')}
+            {TAB_LABELS[option]}
           </button>
         ))}
       </div>
@@ -54,6 +60,8 @@ export function NowPlayingPanel() {
             </div>
             <QueuePanel />
           </>
+        ) : tab === Tab.Lyrics ? (
+          <LyricsView track={track} />
         ) : (
           <QueuePanel />
         )

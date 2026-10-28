@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { meQuery } from '../features/auth/api.ts';
+import { startConnect } from '../features/connect/connect-client.ts';
 import { CreatePlaylistDialog } from '../features/library/playlist-dialogs.tsx';
 import { MobilePlayer } from '../features/player/mobile-player.tsx';
 import { NowPlayingPanel } from '../features/player/now-playing-panel.tsx';
@@ -32,6 +33,7 @@ export function AppLayout() {
 
   useMediaSession();
   useCoverTheme();
+  useEffect(() => startConnect(), []);
 
   // The account's language follows the user to every device.
   useEffect(() => {

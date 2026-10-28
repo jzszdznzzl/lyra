@@ -55,9 +55,18 @@ async function lrclib(path: string, params: Record<string, string>, fetcher: typ
   return body;
 }
 
-/** Exact match first; otherwise the closest-length search result, preferring synced lyrics. */
-export async function findLrclibLyrics(query: LyricsQuery, fetcher: typeof fetch = fetch) {
-  const exact = LrclibRecord.safeParse(
+// "Song (feat. X)", "Song [with Y]", "Song - Remastered 2011": LRCLIB often files the bare title.
+const TITLE_NOISE = [
+  /\s*[([](?:feat\.?|ft\.?|with)\s[^)\]]*[)\]]/gi,
+  /\s+-\s+.*(?:remaster|version|edit|mix).*$/i,
+];
+
+export function cleanTitle(title: string) {
+  return TITLE_NOISE.reduce((text, pattern) => text.replace(pattern, ''), title).trim();
+}
+
+async function exactMatch(query: LyricsQuery, fetcher: typeof fetch) {
+  const record = LrclibRecord.safeParse(
     await lrclib(
       '/get',
       {
@@ -70,10 +79,10 @@ export async function findLrclibLyrics(query: LyricsQuery, fetcher: typeof fetch
     ),
   );
 
-  if (exact.success && (exact.data.syncedLyrics || exact.data.plainLyrics)) {
-    return toLyrics(exact.data);
-  }
+  return record.success ? toLyrics(record.data) : null;
+}
 
+async function searchMatch(query: LyricsQuery, fetcher: typeof fetch) {
   const results = z
     .array(LrclibRecord)
     .safeParse(
@@ -82,6 +91,7 @@ export async function findLrclibLyrics(query: LyricsQuery, fetcher: typeof fetch
   const candidates = (results.success ? results.data : []).filter(
     (record) =>
       !record.instrumental &&
+      (record.syncedLyrics || record.plainLyrics) &&
       (query.duration === 0 ||
         record.duration === null ||
         Math.abs(record.duration - query.duration) <= DURATION_TOLERANCE_SECONDS),
@@ -89,6 +99,35 @@ export async function findLrclibLyrics(query: LyricsQuery, fetcher: typeof fetch
   const best = candidates.find((record) => record.syncedLyrics) ?? candidates[0];
 
   return best ? toLyrics(best) : null;
+}
+
+/**
+ * Tries the title as YouTube gives it, then the bare title with the main artist; for each, an
+ * exact lookup and then a length-filtered search. Synced results win over plain ones.
+ */
+export async function findLrclibLyrics(query: LyricsQuery, fetcher: typeof fetch = fetch) {
+  const bare = {
+    ...query,
+    title: cleanTitle(query.title),
+    artist: query.artist.split(',')[0]?.trim() ?? query.artist,
+  };
+  const variants =
+    bare.title === query.title && bare.artist === query.artist ? [query] : [query, bare];
+  let plain: Lyrics | null = null;
+
+  for (const variant of variants) {
+    for (const lookup of [exactMatch, searchMatch]) {
+      const lyrics = await lookup(variant, fetcher);
+
+      if (lyrics?.isSynced) {
+        return lyrics;
+      }
+
+      plain ??= lyrics;
+    }
+  }
+
+  return plain;
 }
 
 async function youtubeLyrics(yt: Innertube, videoId: string): Promise<Lyrics | null> {

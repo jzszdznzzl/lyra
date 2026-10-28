@@ -174,7 +174,12 @@ export class AudioEngine {
     deck.audio.pause();
     deck.gain.gain.value = SILENCE;
     deck.audio.src = url;
-    deck.audio.currentTime = startAt;
+
+    // Seeking before the metadata arrives is not reliably kept, so wait for it when resuming.
+    if (startAt > 0) {
+      const audio = deck.audio;
+      audio.addEventListener('loadedmetadata', () => (audio.currentTime = startAt), { once: true });
+    }
 
     if (shouldPlay) {
       await this.play(fadeMs);
