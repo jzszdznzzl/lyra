@@ -150,6 +150,11 @@ export function AudioSettingsDialog({ onClose }: { onClose: () => void }) {
           isOn={settings.isAutoplayEnabled}
           onChange={(isAutoplayEnabled) => updateSettings({ isAutoplayEnabled })}
         />
+        <Toggle
+          label={t('player.settings.lyricsSync')}
+          isOn={settings.isLyricsSyncEnabled}
+          onChange={(isLyricsSyncEnabled) => updateSettings({ isLyricsSyncEnabled })}
+        />
       </section>
 
       <section className="flex flex-col gap-3">

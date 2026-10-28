@@ -28,6 +28,8 @@ export const PlayerSettings = z.object({
     .catch(EQ_FREQUENCIES.map(() => 0)),
   volume: z.number().min(0).max(1).catch(0.8),
   isAutoplayEnabled: z.boolean().catch(true),
+  // Off shows synced lyrics as plain text: no highlighted line, no scrolling along.
+  isLyricsSyncEnabled: z.boolean().catch(true),
   videoHeight: VideoHeightSetting.catch(DEFAULT_VIDEO_HEIGHT),
   // On mobile data (or with the browser's data saver) these replace the two above.
   isDataSaverEnabled: z.boolean().catch(true),

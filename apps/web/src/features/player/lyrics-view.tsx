@@ -46,9 +46,12 @@ export function LyricsView({ track, size = 'md' }: { track: Track; size?: 'md' |
   const query = useQuery(lyricsQuery(track));
   const positionMs = usePlayerStore((state) => state.position * 1000);
   const seek = usePlayerStore((state) => state.seek);
+  const isSyncEnabled = usePlayerStore((state) => state.settings.isLyricsSyncEnabled);
+  const updateSettings = usePlayerStore((state) => state.updateSettings);
   const container = useRef<HTMLDivElement>(null);
   const lyrics = query.data?.lyrics ?? null;
-  const active = lyrics?.isSynced ? activeLineIndex(lyrics.lines, positionMs) : -1;
+  const isSynced = (lyrics?.isSynced ?? false) && isSyncEnabled;
+  const active = lyrics && isSynced ? activeLineIndex(lyrics.lines, positionMs) : -1;
 
   useEffect(() => {
     // Keeps the sung line near the middle without dragging the whole page along.
@@ -84,23 +87,32 @@ export function LyricsView({ track, size = 'md' }: { track: Track; size?: 'md' |
           <p
             key={`${index}-${line.timeMs ?? 'x'}`}
             data-line={index}
-            onClick={timeMs === null ? undefined : () => seek(timeMs / 1000)}
+            onClick={timeMs === null || !isSynced ? undefined : () => seek(timeMs / 1000)}
             className={`leading-snug font-extrabold tracking-tight transition-colors ${size === 'lg' ? 'py-3 text-3xl sm:text-5xl' : 'py-1.5 text-xl'} ${
-              !lyrics.isSynced
+              !isSynced
                 ? 'text-text/80'
                 : index === active
                   ? 'text-text'
                   : index < active
                     ? 'text-text/35'
                     : 'text-text/45'
-            } ${timeMs === null ? '' : 'cursor-pointer hover:text-text/80'}`}
+            } ${timeMs === null || !isSynced ? '' : 'cursor-pointer hover:text-text/80'}`}
           >
             {line.text || '♪'}
           </p>
         );
       })}
-      <p className="mt-4 text-[11px] text-muted">
+      <p className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted">
         {t('lyrics.source', { source: lyrics.source === 'lrclib' ? 'LRCLIB' : 'YouTube Music' })}
+        {lyrics.isSynced ? (
+          <button
+            type="button"
+            onClick={() => updateSettings({ isLyricsSyncEnabled: !isSyncEnabled })}
+            className="font-bold underline-offset-2 hover:text-text hover:underline"
+          >
+            {t(isSyncEnabled ? 'lyrics.turnSyncOff' : 'lyrics.turnSyncOn')}
+          </button>
+        ) : null}
       </p>
     </div>
   );
