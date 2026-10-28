@@ -142,6 +142,63 @@
     "invalid_image": "Ese archivo no es una imagen que podamos usar.",
     "validation": "Revisa los campos marcados.",
     "network": "No se puede conectar con Lyra. Revisa tu conexión.",
-    "unexpected": "Algo salió mal. Inténtalo de nuevo."
+    "unexpected": "Algo salió mal. Inténtalo de nuevo.",
+    "google_not_linked": "Vincula tu cuenta de Google en tu perfil para ver esto.",
+    "google_session_expired": "Tu sesión de Google caducó. Vuelve a vincular la cuenta desde tu perfil.",
+    "unavailable": "Esto no está disponible.",
+    "upstream": "YT Music no respondió. Vuelve a intentarlo en un momento.",
+    "invalid_cookies": "Esas cookies no contienen una sesión de YouTube iniciada.",
+    "not_signed_in": "Google no terminó de iniciar sesión. Inténtalo de nuevo.",
+    "browser_unavailable": "El navegador de inicio de sesión no pudo arrancar en el servidor.",
+    "browser_busy": "Hay otro inicio de sesión en curso. Inténtalo en un minuto."
+  },
+  "search": {
+    "placeholder": "Canciones, álbumes, artistas, vídeos",
+    "empty": "No hay resultados para «{{query}}».",
+    "prompt": "Busca en YT Music",
+    "filters": {
+      "all": "Todo",
+      "songs": "Canciones",
+      "videos": "Vídeos",
+      "albums": "Álbumes",
+      "artists": "Artistas",
+      "playlists": "Playlists"
+    }
+  },
+  "music": {
+    "quickPicks": "Selección rápida",
+    "likedSongs": "Canciones que te gustan",
+    "songs_one": "{{count}} canción",
+    "songs_other": "{{count}} canciones",
+    "play": "Reproducir",
+    "shuffle": "Aleatorio",
+    "explicit": "Explícito",
+    "album": "Álbum",
+    "artist": "Artista",
+    "playlist": "Playlist",
+    "video": "Vídeo",
+    "song": "Canción",
+    "linkToSeeLibrary": "Vincula Google para ver tus playlists.",
+    "loadFailed": "No se pudo cargar esta página.",
+    "retry": "Reintentar"
+  },
+  "google": {
+    "browser": {
+      "title": "Iniciar sesión con Google",
+      "body": "Un navegador seguro se ejecuta en tu servidor de Lyra. Inicia sesión como en YouTube; Lyra solo guarda la sesión.",
+      "start": "Iniciar sesión con Google",
+      "connecting": "Arrancando el navegador…",
+      "typeHere": "Escribe aquí y pulsa Enter",
+      "cancel": "Cancelar"
+    },
+    "cookies": {
+      "title": "Pegar cookies",
+      "body": "En un ordenador, abre music.youtube.com con tu sesión iniciada, abre DevTools → Red, haz clic en cualquier petición a music.youtube.com y copia la cabecera «cookie» completa.",
+      "label": "Cabecera cookie",
+      "submit": "Vincular con cookies"
+    },
+    "or": "o",
+    "unlink": "Desvincular",
+    "linkedAs": "Vinculada como {{name}}"
   }
 }

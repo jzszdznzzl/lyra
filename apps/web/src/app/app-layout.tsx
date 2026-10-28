@@ -8,6 +8,7 @@ import { meQuery } from '../features/auth/api.ts';
 import { changeLanguage } from '../i18n/index.ts';
 import { Avatar } from '../ui/avatar.tsx';
 import { Brand } from '../ui/brand.tsx';
+import { LibrarySidebar } from './library-sidebar.tsx';
 
 const NAV_ITEMS = [
   { to: '/', icon: Home, label: 'nav.home' },
@@ -50,6 +51,7 @@ export function AppLayout() {
         <p className="px-3 pt-6 pb-2 text-[11px] font-semibold tracking-[0.12em] text-muted uppercase">
           {t('nav.library')}
         </p>
+        <LibrarySidebar isGoogleLinked={me.isGoogleLinked} />
       </aside>
       <main className="flex min-h-0 flex-col overflow-y-auto rounded-2xl border border-line bg-panel backdrop-blur-2xl">
         <header className="sticky top-0 z-10 flex items-center justify-between px-4 pt-4 sm:px-7">

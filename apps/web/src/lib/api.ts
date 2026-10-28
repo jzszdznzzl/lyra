@@ -1,10 +1,12 @@
 import { z } from 'zod';
 
-import { AuthError, err, ok } from '@lyra/shared';
+import { AuthError, GoogleError, MusicError, err, ok } from '@lyra/shared';
 import type { Result } from '@lyra/shared';
 
 export const ApiError = Object.freeze({
   ...AuthError,
+  ...MusicError,
+  ...GoogleError,
   Validation: 'validation',
   Network: 'network',
   Unexpected: 'unexpected',
@@ -12,7 +14,7 @@ export const ApiError = Object.freeze({
 
 export type ApiError = (typeof ApiError)[keyof typeof ApiError];
 
-const ErrorBody = z.object({ error: z.enum(AuthError) });
+const ErrorBody = z.object({ error: z.enum({ ...AuthError, ...MusicError, ...GoogleError }) });
 const ValidationBody = z.object({ type: z.literal('validation') });
 
 export const NoContent = z.null();

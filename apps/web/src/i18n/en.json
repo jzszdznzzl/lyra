@@ -142,6 +142,63 @@
     "invalid_image": "That file is not an image we can use.",
     "validation": "Check the highlighted fields.",
     "network": "Can't reach Lyra. Check your connection.",
-    "unexpected": "Something went wrong. Try again."
+    "unexpected": "Something went wrong. Try again.",
+    "google_not_linked": "Link your Google account in your profile to see this.",
+    "google_session_expired": "Your Google session expired. Link the account again from your profile.",
+    "unavailable": "This is not available.",
+    "upstream": "YT Music didn't answer. Try again in a moment.",
+    "invalid_cookies": "Those cookies don't contain a signed-in YouTube session.",
+    "not_signed_in": "Google didn't finish signing in. Try again.",
+    "browser_unavailable": "The sign-in browser couldn't start on the server.",
+    "browser_busy": "Another sign-in is in progress. Try again in a minute."
+  },
+  "search": {
+    "placeholder": "Songs, albums, artists, videos",
+    "empty": "No results for “{{query}}”.",
+    "prompt": "Search YT Music",
+    "filters": {
+      "all": "All",
+      "songs": "Songs",
+      "videos": "Videos",
+      "albums": "Albums",
+      "artists": "Artists",
+      "playlists": "Playlists"
+    }
+  },
+  "music": {
+    "quickPicks": "Quick picks",
+    "likedSongs": "Liked songs",
+    "songs_one": "{{count}} song",
+    "songs_other": "{{count}} songs",
+    "play": "Play",
+    "shuffle": "Shuffle",
+    "explicit": "Explicit",
+    "album": "Album",
+    "artist": "Artist",
+    "playlist": "Playlist",
+    "video": "Video",
+    "song": "Song",
+    "linkToSeeLibrary": "Link Google to see your playlists.",
+    "loadFailed": "Couldn't load this page.",
+    "retry": "Try again"
+  },
+  "google": {
+    "browser": {
+      "title": "Sign in with Google",
+      "body": "A secure browser runs on your Lyra server. Sign in as you would on YouTube; Lyra keeps only the session.",
+      "start": "Sign in with Google",
+      "connecting": "Starting the browser…",
+      "typeHere": "Type here and press Enter",
+      "cancel": "Cancel"
+    },
+    "cookies": {
+      "title": "Paste cookies",
+      "body": "On a computer, open music.youtube.com signed in, open DevTools → Network, click any request to music.youtube.com and copy the whole “cookie” request header.",
+      "label": "Cookie header",
+      "submit": "Link with cookies"
+    },
+    "or": "or",
+    "unlink": "Unlink",
+    "linkedAs": "Linked as {{name}}"
   }
 }

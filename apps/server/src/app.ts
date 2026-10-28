@@ -5,6 +5,7 @@ import { authRoutes } from './auth/routes.ts';
 import { isGoogleLinked } from './google/accounts.ts';
 import { googleRoutes } from './google/routes.ts';
 import { userRoutes } from './users/routes.ts';
+import { imageProxyRoutes } from './ytmusic/image-proxy.ts';
 import { InnertubePool } from './ytmusic/innertube.ts';
 import { musicRoutes } from './ytmusic/routes.ts';
 import type { AppContext } from './context.ts';
@@ -29,7 +30,8 @@ export function createApp(ctx: AppContext, options: AppOptions = {}) {
         ...(options.loginTarget ? { loginTarget: options.loginTarget } : {}),
       }),
     )
-    .use(musicRoutes(ctx, pool));
+    .use(musicRoutes(ctx, pool))
+    .use(imageProxyRoutes(ctx));
 }
 
 export type App = ReturnType<typeof createApp>;

@@ -6,6 +6,8 @@ import {
   redirect,
 } from '@tanstack/react-router';
 import { z } from 'zod';
+
+import { SearchFilter } from '@lyra/shared';
 import type { QueryClient } from '@tanstack/react-query';
 
 import { meQuery } from '../features/auth/api.ts';
@@ -18,6 +20,10 @@ import { ResetPasswordPage } from '../features/auth/reset-password-page.tsx';
 import { VerifyEmailPage } from '../features/auth/verify-email-page.tsx';
 import { HomePage } from '../features/home/home-page.tsx';
 import { PlaceholderPage } from '../features/home/placeholder-page.tsx';
+import { AlbumPage } from '../features/music/album-page.tsx';
+import { ArtistPage } from '../features/music/artist-page.tsx';
+import { LikedPage, PlaylistPage } from '../features/music/playlist-page.tsx';
+import { SearchPage } from '../features/music/search-page.tsx';
 import { ProfilePage } from '../features/profile/profile-page.tsx';
 import { AppLayout } from './app-layout.tsx';
 
@@ -27,6 +33,10 @@ interface RouterContext {
 
 const TokenSearch = z.object({ token: z.string().catch('') });
 const EmailSearch = z.object({ email: z.string().catch('') });
+const MusicSearch = z.object({
+  q: z.string().catch(''),
+  filter: z.enum(SearchFilter).catch(SearchFilter.All),
+});
 
 const rootRoute = createRootRouteWithContext<RouterContext>()({ component: Outlet });
 
@@ -101,7 +111,32 @@ const homeRoute = createRoute({ getParentRoute: () => appRoute, path: '/', compo
 const searchRoute = createRoute({
   getParentRoute: () => appRoute,
   path: '/search',
-  component: () => <PlaceholderPage title="nav.search" />,
+  validateSearch: (search) => MusicSearch.parse(search),
+  component: SearchPage,
+});
+
+const albumRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/album/$id',
+  component: AlbumPage,
+});
+
+const artistRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/artist/$id',
+  component: ArtistPage,
+});
+
+const playlistRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/playlist/$id',
+  component: PlaylistPage,
+});
+
+const likedRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/liked',
+  component: LikedPage,
 });
 
 const exploreRoute = createRoute({
@@ -131,7 +166,17 @@ const routeTree = rootRoute.addChildren([
     verifyEmailRoute,
     resetPasswordRoute,
   ]),
-  appRoute.addChildren([homeRoute, searchRoute, exploreRoute, downloadsRoute, profileRoute]),
+  appRoute.addChildren([
+    homeRoute,
+    searchRoute,
+    albumRoute,
+    artistRoute,
+    playlistRoute,
+    likedRoute,
+    exploreRoute,
+    downloadsRoute,
+    profileRoute,
+  ]),
 ]);
 
 export function createAppRouter(queryClient: QueryClient) {

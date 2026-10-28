@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { formatRelative } from '../format.ts';
+import { formatDuration, formatRelative } from '../format.ts';
 
 describe('formatRelative', () => {
   const now = Date.UTC(2026, 9, 27, 12);
@@ -12,5 +12,15 @@ describe('formatRelative', () => {
 
   test('treats the last seconds as now', () => {
     expect(formatRelative(now - 5000, 'en', now)).toBe('now');
+  });
+});
+
+describe('formatDuration', () => {
+  test.each([
+    [5, '0:05'],
+    [225, '3:45'],
+    [3723, '1:02:03'],
+  ])('%i seconds', (seconds, text) => {
+    expect(formatDuration(seconds)).toBe(text);
   });
 });
