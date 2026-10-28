@@ -106,6 +106,13 @@
       "history": "Save to my YouTube history",
       "historyHint": "Songs you play for at least 30 seconds are added to your history, so YouTube Music can tune your home page and recommendations.",
       "historyNeedsGoogle": "Link your Google account to use it.",
+      "public": "Show what I listen to publicly",
+      "publicHint": "Creates a card with your current (or last) song for your GitHub or website. Anyone with the link can see it.",
+      "widgetAlt": "What I am listening to on Lyra",
+      "copyMarkdown": "Copy Markdown",
+      "copyImage": "Copy image link",
+      "copyJson": "Copy JSON link",
+      "cacheNote": "GitHub caches images for a while, so the card may take a few minutes to change.",
       "copied": "Copied",
       "copyFailed": "Could not copy"
     },

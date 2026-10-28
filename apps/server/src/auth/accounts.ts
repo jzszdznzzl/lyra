@@ -77,6 +77,7 @@ export async function register(
     avatarVersion: null,
     emailVerifiedAt: null,
     isYoutubeHistoryEnabled: true,
+    isNowPlayingPublic: false,
     createdAt: ctx.now(),
   };
 

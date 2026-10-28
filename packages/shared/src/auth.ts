@@ -94,6 +94,7 @@ export const UpdateProfileInput = z.object({
   name: DisplayName.exactOptional(),
   language: z.enum(Language).exactOptional(),
   isYoutubeHistoryEnabled: z.boolean().exactOptional(),
+  isNowPlayingPublic: z.boolean().exactOptional(),
 });
 
 export type UpdateProfileInput = z.infer<typeof UpdateProfileInput>;
@@ -108,6 +109,8 @@ export const UserProfile = z.object({
   isGoogleLinked: z.boolean(),
   // Songs played past a threshold are added to the linked YouTube account's history.
   isYoutubeHistoryEnabled: z.boolean(),
+  // Anyone can see the current or last song through the public widget.
+  isNowPlayingPublic: z.boolean(),
 });
 
 export type UserProfile = z.infer<typeof UserProfile>;

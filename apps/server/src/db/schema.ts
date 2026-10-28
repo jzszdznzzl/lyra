@@ -15,6 +15,9 @@ export const users = sqliteTable('users', {
   isYoutubeHistoryEnabled: integer('is_youtube_history_enabled', { mode: 'boolean' })
     .notNull()
     .default(true),
+  isNowPlayingPublic: integer('is_now_playing_public', { mode: 'boolean' })
+    .notNull()
+    .default(false),
   createdAt: timestamp('created_at').notNull(),
 });
 

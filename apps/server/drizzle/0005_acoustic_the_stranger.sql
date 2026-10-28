@@ -1,0 +1,1 @@
+ALTER TABLE `users` ADD `is_now_playing_public` integer DEFAULT false NOT NULL;

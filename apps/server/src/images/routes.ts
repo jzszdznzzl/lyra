@@ -3,17 +3,10 @@ import { z } from 'zod';
 
 import { clientInfo } from '../auth/plugin.ts';
 import { RateLimiter } from '../common/index.ts';
+import { IMAGE_HOSTS } from './registry.ts';
 import type { AppContext } from '../context.ts';
 import type { ImageRegistry } from './registry.ts';
 
-// Only YouTube's image CDNs, checked again here in case a bad URL ever got registered.
-const ALLOWED_HOSTS = new Set([
-  'lh3.googleusercontent.com',
-  'yt3.googleusercontent.com',
-  'yt3.ggpht.com',
-  'i.ytimg.com',
-  'i9.ytimg.com',
-]);
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 const CACHE_CONTROL = 'public, max-age=2592000, immutable';
 const IMAGES_PER_MINUTE = 600;
@@ -37,7 +30,7 @@ export function imageRoutes(ctx: AppContext, images: ImageRegistry) {
 
       const remote = await images.urlOf(params.id);
 
-      if (!remote || !ALLOWED_HOSTS.has(new URL(remote).hostname)) {
+      if (!remote || !IMAGE_HOSTS.has(new URL(remote).hostname)) {
         return status(404, { error: 'not_found' });
       }
 

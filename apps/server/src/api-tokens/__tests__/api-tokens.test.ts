@@ -131,3 +131,29 @@ describe('personal API tokens', () => {
     expect(extra.body.error).toBe('too_many_tokens');
   });
 });
+
+describe('public now-playing widget', () => {
+  test('stays hidden until the owner turns it on', async () => {
+    const ctx = createTestContext();
+    const app = createApp(ctx);
+    const { client, userId } = await signUp(ctx, app);
+    await ctx.db.insert(schema.lastPlayed).values({ userId, track: TRACK, playedAt: ctx.now() });
+
+    expect((await anonymous(app, '/u/ana/now-playing.svg')).status).toBe(404);
+    expect((await anonymous(app, '/u/ana/now-playing.json')).status).toBe(404);
+
+    const updated = await client.request('PATCH', '/me', { isNowPlayingPublic: true });
+    expect(updated.body.isNowPlayingPublic).toBe(true);
+
+    const svg = await anonymous(app, '/u/ana/now-playing.svg?theme=light');
+    expect(svg.status).toBe(200);
+    expect(svg.headers.get('content-type')).toContain('image/svg+xml');
+    expect(await svg.text()).toContain('Get Lucky');
+
+    const json = await anonymous(app, '/u/ana/now-playing.json');
+    expect(NowPlaying.parse(await json.json()).track.title).toBe('Get Lucky');
+
+    expect((await anonymous(app, '/u/ana/now-playing.svg?theme=pink')).status).toBe(422);
+    expect((await anonymous(app, '/u/nobody/now-playing.svg')).status).toBe(404);
+  });
+});

@@ -10,6 +10,14 @@ const ID_BYTES = 16;
 const KNOWN_LIMIT = 50_000;
 
 export const IMAGE_PATH = '/api/images/';
+// Only YouTube's image CDNs, checked again when fetching in case a bad URL ever got registered.
+export const IMAGE_HOSTS = new Set([
+  'lh3.googleusercontent.com',
+  'yt3.googleusercontent.com',
+  'yt3.ggpht.com',
+  'i.ytimg.com',
+  'i9.ytimg.com',
+]);
 
 export function imageId(url: string) {
   return createHash('sha256').update(url).digest().subarray(0, ID_BYTES).toString('base64url');

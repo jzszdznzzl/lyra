@@ -14,6 +14,7 @@ import { imageRoutes } from './images/routes.ts';
 import { lyricsRoutes } from './lyrics/routes.ts';
 import { NowPlayingService } from './now-playing/now-playing.ts';
 import { nowPlayingRoutes } from './now-playing/routes.ts';
+import { WidgetCovers } from './now-playing/widget-covers.ts';
 import { streamRoutes } from './stream/routes.ts';
 import { originGuard } from './security.ts';
 import { userRoutes } from './users/routes.ts';
@@ -33,6 +34,7 @@ export function createApp(ctx: AppContext, options: AppOptions = {}) {
   const linked = (userId: string) => isGoogleLinked(ctx, userId);
   const hub = new ConnectHub(ctx.now);
   const nowPlaying = new NowPlayingService(ctx, hub);
+  const covers = new WidgetCovers(images, new URL(ctx.env.PUBLIC_URL).origin);
 
   return new Elysia({ prefix: '/api' })
     .use(originGuard(ctx))
@@ -58,7 +60,7 @@ export function createApp(ctx: AppContext, options: AppOptions = {}) {
     .use(lyricsRoutes(ctx, pool))
     .use(connectRoutes(ctx, hub))
     .use(apiTokenRoutes(ctx))
-    .use(nowPlayingRoutes(ctx, nowPlaying))
+    .use(nowPlayingRoutes(ctx, nowPlaying, covers))
     .use(imageRoutes(ctx, images));
 }
 

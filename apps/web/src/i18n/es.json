@@ -106,6 +106,13 @@
       "history": "Guardar en mi historial de YouTube",
       "historyHint": "Las canciones que escuchas al menos 30 segundos se añaden a tu historial, así YouTube Music ajusta tu inicio y tus recomendaciones.",
       "historyNeedsGoogle": "Vincula tu cuenta de Google para usarlo.",
+      "public": "Mostrar públicamente lo que escucho",
+      "publicHint": "Crea una tarjeta con tu canción actual (o la última) para tu GitHub o tu web. Cualquiera con el enlace puede verla.",
+      "widgetAlt": "Lo que escucho en Lyra",
+      "copyMarkdown": "Copiar Markdown",
+      "copyImage": "Copiar enlace de la imagen",
+      "copyJson": "Copiar enlace JSON",
+      "cacheNote": "GitHub guarda las imágenes un rato, así que la tarjeta puede tardar unos minutos en cambiar.",
       "copied": "Copiado",
       "copyFailed": "No se pudo copiar"
     },
