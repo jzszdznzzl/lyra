@@ -3,12 +3,15 @@ import { describe, expect, test } from 'vitest';
 import type { Track } from '@lyra/shared';
 
 import {
+  freshRadio,
   insertNext,
   moveItem,
   nextIndex,
   previousIndex,
+  radioSeed,
   removeAt,
   shuffleQueue,
+  shuffled,
 } from '../queue.ts';
 
 function track(id: string): Track {
@@ -78,5 +81,32 @@ describe('queue', () => {
 
       expect(moved.queue[moved.index]?.id).toBe('c');
     }
+  });
+});
+
+describe('radio', () => {
+  test('shuffled keeps every item', () => {
+    const result = shuffled([1, 2, 3, 4, 5]);
+
+    expect([...result].sort((a, b) => a - b)).toEqual([1, 2, 3, 4, 5]);
+  });
+
+  test('shuffled gives different orders with different randomness', () => {
+    const items = ['a', 'b', 'c', 'd', 'e', 'f'];
+
+    expect(shuffled(items, () => 0)).not.toEqual(shuffled(items, () => 0.99));
+  });
+
+  test('freshRadio drops excluded and repeated songs', () => {
+    const candidates = ['a', 'b', 'c', 'b', 'd'].map(track);
+    const result = freshRadio(candidates, new Set(['a', 'd']));
+
+    expect(ids(result).sort((a, b) => a.localeCompare(b))).toEqual(['b', 'c']);
+  });
+
+  test('radioSeed picks among the last songs', () => {
+    expect(radioSeed(queue, 2, () => 0)?.id).toBe('c');
+    expect(radioSeed(queue, 2, () => 0.99)?.id).toBe('d');
+    expect(radioSeed([], 2)).toBeNull();
   });
 });

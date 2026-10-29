@@ -64,6 +64,7 @@ function PlaylistView({
         }
       />
       <TrackList
+        shouldPlayInOrder
         tracks={query.data.tracks}
         playlist={{ id: query.data.id, isEditable: query.data.isEditable }}
       />

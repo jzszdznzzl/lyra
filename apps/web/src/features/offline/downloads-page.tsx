@@ -43,7 +43,7 @@ export function DownloadsPage() {
       {tracks.length === 0 ? (
         <p className="max-w-md text-sm text-muted">{t('offline.empty')}</p>
       ) : (
-        <TrackList tracks={tracks} />
+        <TrackList tracks={tracks} shouldPlayInOrder />
       )}
     </Page>
   );

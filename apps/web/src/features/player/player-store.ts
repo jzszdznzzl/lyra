@@ -13,10 +13,12 @@ import type { Command, PlaybackState, Track } from '@lyra/shared';
 import { AudioEngine } from '../../audio/engine.ts';
 import {
   RepeatMode,
+  freshRadio,
   insertNext,
   moveItem,
   nextIndex,
   previousIndex,
+  radioSeed,
   removeAt,
   shuffleQueue,
 } from '../../audio/queue.ts';
@@ -60,6 +62,8 @@ interface PlayerState {
   googleBlock: MusicError | null;
   dismissGoogleBlock: () => void;
   playTracks: (tracks: Track[], startIndex: number) => void;
+  /** Plays a song picked outside a playlist or album, followed by similar songs. */
+  playRadio: (track: Track) => void;
   togglePlay: () => void;
   next: () => void;
   previous: () => void;
@@ -95,6 +99,14 @@ const SHARED_HISTORY = 100;
 const MAX_FAILURES_IN_A_ROW = 3;
 // Playing this long proves the stream works, so earlier failures stop counting.
 const HEALTHY_PLAYBACK_SECONDS = 5;
+// Seconds before the crossfade when the next song starts buffering.
+const PRELOAD_LEAD_SECONDS = 15;
+// The radio continues from one of the last few songs, so it does not loop around one artist.
+const RADIO_SEED_SPREAD = 5;
+// Songs remembered as recently heard, so a new radio does not bring them straight back.
+const RECENT_LIMIT = 200;
+// Below this, skipping recently heard songs leaves the radio too thin, so they are allowed back.
+const MIN_FRESH_RADIO = 10;
 const GOOGLE_ERRORS: readonly MusicError[] = [
   MusicError.GoogleNotLinked,
   MusicError.GoogleSessionExpired,
@@ -107,6 +119,9 @@ export function streamUrl(track: Track, settings: PlayerSettings) {
 export const usePlayerStore = create<PlayerState>()((set, get) => {
   let isCrossfading = false;
   let isFetchingRadio = false;
+  // Bumped whenever a new queue replaces the old one, so a late radio does not land in it.
+  let queueGeneration = 0;
+  const recentIds: string[] = [];
   let failuresInARow = 0;
   // The song already retried from where it broke, so a second failure skips it.
   let retriedTrackId: string | null = null;
@@ -124,7 +139,7 @@ export const usePlayerStore = create<PlayerState>()((set, get) => {
       }
 
       set({ position, duration });
-      maybeCrossfade(position, duration);
+      maybeCrossfade(position, duration || (get().queue[get().index]?.durationSeconds ?? 0));
 
       const current = get().queue[get().index];
 
@@ -151,6 +166,22 @@ export const usePlayerStore = create<PlayerState>()((set, get) => {
   engine.setVolume(initial.volume);
   engine.setEqualizer(initial.isEqEnabled, initial.eqGains);
 
+  function remember(track: Track) {
+    if (recentIds.at(-1) !== track.id) {
+      recentIds.push(track.id);
+    }
+
+    if (recentIds.length > RECENT_LIMIT) {
+      recentIds.shift();
+    }
+  }
+
+  function replaceQueue(queue: Track[]) {
+    queueGeneration += 1;
+    isFetchingRadio = false;
+    set({ queue, unshuffled: null, isShuffled: false });
+  }
+
   function start(index: number, startAt = 0, shouldPlay = true) {
     const { queue, settings } = get();
     const track = queue[index];
@@ -159,6 +190,7 @@ export const usePlayerStore = create<PlayerState>()((set, get) => {
       return;
     }
 
+    remember(track);
     isCrossfading = false;
     set({
       index,
@@ -173,27 +205,41 @@ export const usePlayerStore = create<PlayerState>()((set, get) => {
     void topUpRadio();
   }
 
-  /** Like YT Music: when the queue runs out, keep going with the last song's radio. */
-  async function topUpRadio() {
+  /**
+   * Like YT Music: when the queue runs out, keep going with a radio of similar songs. A radio
+   * started by picking a song always loads, whatever the autoplay setting.
+   */
+  async function topUpRadio(isRadioStart = false) {
     const { queue, index, settings, repeat } = get();
-    const last = queue.at(-1);
+    const seed = isRadioStart ? queue[0] : radioSeed(queue, RADIO_SEED_SPREAD);
 
-    if (!settings.isAutoplayEnabled || repeat !== RepeatMode.Off || isFetchingRadio || !last) {
+    if (isFetchingRadio || !seed) {
       return;
     }
 
-    if (queue.length - index > 2) {
+    if (
+      !isRadioStart &&
+      (!settings.isAutoplayEnabled || repeat !== RepeatMode.Off || queue.length - index > 2)
+    ) {
       return;
     }
 
+    const generation = queueGeneration;
     isFetchingRadio = true;
-    const result = await api('GET', `/music/up-next/${encodeURIComponent(last.id)}`, UpNext);
+    const result = await api('GET', `/music/up-next/${encodeURIComponent(seed.id)}`, UpNext);
+
+    if (generation !== queueGeneration) {
+      return;
+    }
+
     isFetchingRadio = false;
 
     if (result.data) {
-      const known = new Set(get().queue.map((track) => track.id));
-      const fresh = result.data.tracks.filter((track) => !known.has(track.id));
-      set({ queue: [...get().queue, ...fresh] });
+      const queued = get().queue.map((track) => track.id);
+      const fresh = freshRadio(result.data.tracks, new Set([...recentIds, ...queued]));
+      const tracks =
+        fresh.length >= MIN_FRESH_RADIO ? fresh : freshRadio(result.data.tracks, new Set(queued));
+      set({ queue: [...get().queue, ...tracks] });
     }
   }
 
@@ -255,10 +301,18 @@ export const usePlayerStore = create<PlayerState>()((set, get) => {
 
     if (withCrossfade && track && target !== index) {
       isCrossfading = true;
+      remember(track);
       set({ index: target, position: 0, duration: track.durationSeconds ?? 0 });
       engine
         .crossfade(streamUrl(track, settings), settings.crossfadeSeconds)
-        .catch(() => undefined);
+        .catch((error: unknown) => {
+          // Aborted because the user moved on; anything else means the next song cannot play.
+          const isAborted = error instanceof DOMException && error.name === 'AbortError';
+
+          if (!isAborted && get().index === target && get().queue[target]?.id === track.id) {
+            void recover();
+          }
+        });
       void topUpRadio();
 
       return;
@@ -268,27 +322,45 @@ export const usePlayerStore = create<PlayerState>()((set, get) => {
   }
 
   function maybeCrossfade(position: number, duration: number) {
-    const { settings, repeat } = get();
+    const { settings, repeat, queue, index } = get();
+    const seconds = settings.crossfadeSeconds;
+    const remaining = duration - position;
 
-    if (
-      isCrossfading ||
-      settings.crossfadeSeconds <= 0 ||
-      repeat === RepeatMode.One ||
-      duration <= settings.crossfadeSeconds * 2 ||
-      duration - position > settings.crossfadeSeconds
-    ) {
+    if (seconds <= 0 || repeat === RepeatMode.One || duration <= seconds * 2) {
       return;
     }
 
-    advance(false, true);
+    // Far from the end again (the new song after a crossfade, or a seek back): arm the next one.
+    if (remaining > seconds) {
+      isCrossfading = false;
+    }
+
+    const target = nextIndex({ queue, index }, repeat, false);
+    const next = target === null || target === index ? null : queue[target];
+
+    // With nothing queued yet (the radio may still be loading), the song ends on its own.
+    if (isCrossfading || !next) {
+      return;
+    }
+
+    if (remaining <= seconds) {
+      advance(false, true);
+    } else if (remaining <= seconds + PRELOAD_LEAD_SECONDS) {
+      engine.preload(streamUrl(next, settings));
+    }
   }
 
   // --- Local implementations; every public action runs one of these or sends a command ---
 
   const local = {
     playTracks: (tracks: Track[], startIndex: number) => {
-      set({ queue: tracks, unshuffled: null, isShuffled: false });
+      replaceQueue(tracks);
       start(startIndex);
+    },
+    playRadio: (track: Track) => {
+      replaceQueue([track]);
+      start(0);
+      void topUpRadio(true);
     },
     play: () => {
       const { status, queue, index, settings, position } = get();
@@ -396,6 +468,10 @@ export const usePlayerStore = create<PlayerState>()((set, get) => {
         local.playTracks(command.tracks, command.index);
         break;
       }
+      case 'playRadio': {
+        local.playRadio(command.track);
+        break;
+      }
       case 'enqueue': {
         local.enqueue(command.tracks, command.isNext);
         break;
@@ -474,6 +550,7 @@ export const usePlayerStore = create<PlayerState>()((set, get) => {
     dismissGoogleBlock: () => set({ googleBlock: null }),
     playTracks: (tracks, index) =>
       act({ type: 'playTracks', tracks: tracks.slice(0, MAX_SHARED_QUEUE), index }),
+    playRadio: (track) => act({ type: 'playRadio', track }),
     togglePlay: () => act({ type: get().status === PlaybackStatus.Playing ? 'pause' : 'play' }),
     next: () => act({ type: 'next' }),
     previous: () => act({ type: 'previous' }),
@@ -520,6 +597,8 @@ export const usePlayerStore = create<PlayerState>()((set, get) => {
       };
     },
     takeover: (state, serverNow) => {
+      queueGeneration += 1;
+      isFetchingRadio = false;
       set({
         remote: null,
         queue: state.queue,

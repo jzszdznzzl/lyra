@@ -31,23 +31,63 @@ export function previousIndex({ queue, index }: QueueState, repeat: RepeatMode) 
   return repeat === RepeatMode.All && queue.length > 0 ? queue.length - 1 : 0;
 }
 
-/** Shuffles everything after keeping the current track first, so playback does not jump. */
-export function shuffleQueue({ queue, index }: QueueState, random = Math.random): QueueState {
-  const current = queue[index];
-  const rest = queue.filter((_, position) => position !== index);
+/** A Fisher-Yates shuffled copy. */
+export function shuffled<T>(items: readonly T[], random = Math.random): T[] {
+  const result = [...items];
 
-  for (let position = rest.length - 1; position > 0; position -= 1) {
+  for (let position = result.length - 1; position > 0; position -= 1) {
     const other = Math.floor(random() * (position + 1));
-    const value = rest[position];
-    const swap = rest[other];
+    const value = result[position];
+    const swap = result[other];
 
-    if (value && swap) {
-      rest[position] = swap;
-      rest[other] = value;
+    if (value !== undefined && swap !== undefined) {
+      result[position] = swap;
+      result[other] = value;
     }
   }
 
+  return result;
+}
+
+/** Shuffles everything after keeping the current track first, so playback does not jump. */
+export function shuffleQueue({ queue, index }: QueueState, random = Math.random): QueueState {
+  const current = queue[index];
+  const rest = shuffled(
+    queue.filter((_, position) => position !== index),
+    random,
+  );
+
   return { queue: current ? [current, ...rest] : rest, index: 0 };
+}
+
+/**
+ * Radio songs to add: without songs already queued or heard recently, and shuffled, since
+ * YouTube returns the same radio in the same order every time.
+ */
+export function freshRadio(
+  candidates: readonly Track[],
+  exclude: ReadonlySet<string>,
+  random = Math.random,
+): Track[] {
+  const seen = new Set(exclude);
+  const unique = candidates.filter((track) => {
+    if (seen.has(track.id)) {
+      return false;
+    }
+
+    seen.add(track.id);
+
+    return true;
+  });
+
+  return shuffled(unique, random);
+}
+
+/** The song whose radio continues the queue: one of the last few, so the radio drifts. */
+export function radioSeed(queue: readonly Track[], spread: number, random = Math.random) {
+  const tail = queue.slice(-Math.max(1, spread));
+
+  return tail[Math.floor(random() * tail.length)] ?? null;
 }
 
 /** Puts tracks right after the current one. */

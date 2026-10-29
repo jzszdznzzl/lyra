@@ -15,6 +15,8 @@ export interface EngineEvents {
 // Exponential ramps cannot reach zero; this is silent enough.
 const SILENCE = 0.0001;
 const EQ_Q = 1.1;
+// Points in a crossfade curve; enough for a smooth fade without a large buffer.
+const CURVE_STEPS = 64;
 
 /**
  * Two <audio> decks routed through Web Audio. One deck plays; the other takes the next song for
@@ -31,6 +33,10 @@ export class AudioEngine {
   #isEqEnabled = false;
   #volume = 1;
   #fadeTimer: ReturnType<typeof setTimeout> | null = null;
+  // The deck fading out during a crossfade, until it is stopped.
+  #outgoing: Deck | null = null;
+  #outgoingTimer: ReturnType<typeof setTimeout> | null = null;
+  #preloadedUrl: string | null = null;
 
   constructor(events: EngineEvents) {
     this.#events = events;
@@ -135,6 +141,52 @@ export class AudioEngine {
     }
   }
 
+  /**
+   * Equal-power fade: the two songs together keep a steady loudness. Exponential ramps fade out
+   * too fast and in too late, which leaves a quiet gap in the middle of the crossfade.
+   */
+  #crossfadeCurve(gain: GainNode, isFadingIn: boolean, seconds: number) {
+    const context = this.#context;
+
+    if (!context) {
+      return;
+    }
+
+    const from = isFadingIn ? SILENCE : Math.max(gain.gain.value, SILENCE);
+    const curve = new Float32Array(CURVE_STEPS);
+
+    for (let step = 0; step < CURVE_STEPS; step += 1) {
+      const progress = step / (CURVE_STEPS - 1);
+      const level = isFadingIn
+        ? Math.sin((progress * Math.PI) / 2)
+        : from * Math.cos((progress * Math.PI) / 2);
+      curve[step] = Math.max(level, SILENCE);
+    }
+
+    const now = context.currentTime;
+    gain.gain.cancelScheduledValues(now);
+    gain.gain.setValueAtTime(from, now);
+    gain.gain.setValueCurveAtTime(curve, now, seconds);
+  }
+
+  /** Stops the song that was fading out, if a crossfade is still running. */
+  #stopOutgoing() {
+    if (this.#outgoingTimer) {
+      clearTimeout(this.#outgoingTimer);
+      this.#outgoingTimer = null;
+    }
+
+    const deck = this.#outgoing;
+    this.#outgoing = null;
+
+    if (deck) {
+      deck.gain.gain.cancelScheduledValues(0);
+      deck.gain.gain.value = SILENCE;
+      deck.audio.pause();
+      deck.audio.removeAttribute('src');
+    }
+  }
+
   #clearFadeTimer() {
     if (this.#fadeTimer) {
       clearTimeout(this.#fadeTimer);
@@ -169,6 +221,8 @@ export class AudioEngine {
     }
 
     this.#clearFadeTimer();
+    this.#stopOutgoing();
+    this.#preloadedUrl = null;
     idle.audio.pause();
     idle.audio.removeAttribute('src');
     deck.audio.pause();
@@ -208,6 +262,8 @@ export class AudioEngine {
     }
 
     this.#clearFadeTimer();
+    // Pausing mid-crossfade must silence the old song too, not leave it fading out alone.
+    this.#stopOutgoing();
     this.#ramp(deck.gain, SILENCE, fadeMs);
     this.#fadeTimer = setTimeout(() => deck.audio.pause(), fadeMs);
   }
@@ -220,9 +276,31 @@ export class AudioEngine {
     }
   }
 
+  /**
+   * Starts buffering the next song on the idle deck, so a crossfade starts on time instead of
+   * fading the current song out while the next one is still loading.
+   */
+  preload(url: string) {
+    const decks = this.#decks;
+    const idle = decks?.[1 - this.#active];
+
+    if (!idle || this.#outgoing || this.#preloadedUrl === url) {
+      return;
+    }
+
+    idle.gain.gain.value = SILENCE;
+    idle.audio.src = url;
+    idle.audio.load();
+    this.#preloadedUrl = url;
+  }
+
   /** Starts `url` on the idle deck and fades between the two over `seconds`. */
   async crossfade(url: string, seconds: number) {
     const { context, decks } = this.#ensureGraph();
+
+    // A crossfade still running finishes now, so only two songs ever overlap.
+    this.#stopOutgoing();
+
     const outgoing = decks[this.#active];
     const incoming = decks[1 - this.#active];
 
@@ -231,19 +309,30 @@ export class AudioEngine {
     }
 
     this.#clearFadeTimer();
-    incoming.audio.src = url;
+
+    // A preload that failed is retried, so the error surfaces on the active deck.
+    if (this.#preloadedUrl !== url || incoming.audio.error) {
+      incoming.audio.src = url;
+    }
+
+    this.#preloadedUrl = null;
     incoming.audio.currentTime = 0;
+    incoming.gain.gain.cancelScheduledValues(0);
     incoming.gain.gain.value = SILENCE;
     this.#active = 1 - this.#active;
+    this.#outgoing = outgoing;
 
     await context.resume();
     await incoming.audio.play();
-    this.#ramp(incoming.gain, 1, seconds * 1000);
-    this.#ramp(outgoing.gain, SILENCE, seconds * 1000);
-    this.#fadeTimer = setTimeout(() => {
-      outgoing.audio.pause();
-      outgoing.audio.removeAttribute('src');
-    }, seconds * 1000);
+
+    // Skipped or paused while the next song was starting.
+    if (this.#outgoing !== outgoing || decks[this.#active] !== incoming) {
+      return;
+    }
+
+    this.#crossfadeCurve(incoming.gain, true, seconds);
+    this.#crossfadeCurve(outgoing.gain, false, seconds);
+    this.#outgoingTimer = setTimeout(() => this.#stopOutgoing(), seconds * 1000);
   }
 
   setVolume(volume: number) {
@@ -263,6 +352,8 @@ export class AudioEngine {
 
   stop() {
     this.#clearFadeTimer();
+    this.#stopOutgoing();
+    this.#preloadedUrl = null;
 
     for (const deck of this.#decks ?? []) {
       deck.audio.pause();

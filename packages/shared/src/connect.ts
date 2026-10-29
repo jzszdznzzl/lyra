@@ -48,6 +48,8 @@ export const Command = z.discriminatedUnion('type', [
     tracks: z.array(Track).min(1).max(MAX_SHARED_QUEUE),
     index: z.number().int().min(0),
   }),
+  // Plays the track followed by a freshly shuffled radio of similar songs.
+  z.object({ type: z.literal('playRadio'), track: Track }),
   z.object({
     type: z.literal('enqueue'),
     tracks: z.array(Track).min(1).max(200),

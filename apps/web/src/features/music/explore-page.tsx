@@ -11,7 +11,7 @@ import { Shelf } from './shelf.tsx';
 export function ExplorePage() {
   const { t } = useTranslation();
   const explore = useQuery(exploreQuery);
-  const playTracks = usePlayerStore((state) => state.playTracks);
+  const playRadio = usePlayerStore((state) => state.playRadio);
   useDocumentTitle(t('nav.explore'));
 
   return (
@@ -22,11 +22,7 @@ export function ExplorePage() {
         <ErrorState error={explore.error} onRetry={() => void explore.refetch()} />
       ) : null}
       {explore.data?.shelves.map((shelf, index) => (
-        <Shelf
-          key={`${shelf.title}-${index}`}
-          shelf={shelf}
-          onPlay={(track, tracks) => playTracks(tracks, Math.max(0, tracks.indexOf(track)))}
-        />
+        <Shelf key={`${shelf.title}-${index}`} shelf={shelf} onPlay={(track) => playRadio(track)} />
       ))}
     </Page>
   );

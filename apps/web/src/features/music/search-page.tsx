@@ -39,7 +39,7 @@ export function SearchPage() {
   const { t } = useTranslation();
   const { q, filter } = useSearch({ from: '/app/search' });
   const navigate = useNavigate({ from: '/search' });
-  const playTracks = usePlayerStore((state) => state.playTracks);
+  const playRadio = usePlayerStore((state) => state.playRadio);
   const [draft, setDraft] = useState(q);
   const [isFocused, setIsFocused] = useState(false);
   const typed = useDebounced(draft);
@@ -183,7 +183,7 @@ export function SearchPage() {
           {offlineResults.length === 0 ? (
             <p className="text-muted">{t('search.empty', { query: q })}</p>
           ) : (
-            <TrackList tracks={offlineResults} />
+            <TrackList tracks={offlineResults} shouldPlayInOrder />
           )}
         </section>
       ) : q === '' ? null : results.isPending ? (
@@ -205,7 +205,7 @@ export function SearchPage() {
                 <MediaCard
                   key={`${item.kind}-${item.id}`}
                   item={item}
-                  onPlay={(track) => playTracks([track], 0)}
+                  onPlay={(track) => playRadio(track)}
                 />
               ))}
             </div>

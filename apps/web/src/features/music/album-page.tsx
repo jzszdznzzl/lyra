@@ -44,7 +44,7 @@ export function AlbumPage() {
         tracks={album.data.tracks}
         actions={<ShareButton kind={ShareKind.Album} id={album.data.id} title={album.data.title} />}
       />
-      <TrackList tracks={album.data.tracks} showCovers={false} showIndex />
+      <TrackList tracks={album.data.tracks} showCovers={false} showIndex shouldPlayInOrder />
     </Page>
   );
 }

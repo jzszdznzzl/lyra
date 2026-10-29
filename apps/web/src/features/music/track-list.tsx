@@ -17,6 +17,8 @@ interface TrackListProps {
   showCovers?: boolean;
   showIndex?: boolean;
   playlist?: PlaylistContext;
+  // Playlists and albums keep their order; elsewhere a song starts a radio of similar ones.
+  shouldPlayInOrder?: boolean;
 }
 
 export function TrackList({
@@ -24,10 +26,22 @@ export function TrackList({
   showCovers = true,
   showIndex = false,
   playlist,
+  shouldPlayInOrder = false,
 }: TrackListProps) {
   const { t } = useTranslation();
   const playTracks = usePlayerStore((state) => state.playTracks);
+  const playRadio = usePlayerStore((state) => state.playRadio);
   const currentId = usePlayerStore((state) => state.queue[state.index]?.id);
+
+  const play = (index: number) => {
+    const track = tracks[index];
+
+    if (shouldPlayInOrder) {
+      playTracks(tracks, index);
+    } else if (track) {
+      playRadio(track);
+    }
+  };
 
   return (
     <ol className="flex flex-col">
@@ -38,7 +52,7 @@ export function TrackList({
           <li key={`${track.id}-${index}`}>
             {/* The whole row plays on click; the cover button is the keyboard and screen reader path. */}
             <div
-              onClick={() => playTracks(tracks, index)}
+              onClick={() => play(index)}
               className="group grid cursor-pointer grid-cols-[auto_1fr_auto_auto] items-center gap-3 rounded-xl px-2 py-1.5 hover:bg-surface sm:grid-cols-[auto_1fr_1fr_auto_auto]"
             >
               <button
@@ -46,7 +60,7 @@ export function TrackList({
                 aria-label={`${t('music.play')} ${track.title}`}
                 onClick={(event) => {
                   event.stopPropagation();
-                  playTracks(tracks, index);
+                  play(index);
                 }}
                 className="relative grid size-11 place-items-center rounded-lg"
               >

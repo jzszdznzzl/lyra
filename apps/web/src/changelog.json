@@ -1,5 +1,19 @@
 [
   {
+    "id": "2026-10-29-queue",
+    "date": "2026-10-29",
+    "changes": {
+      "es": [
+        "Elegir una canción fuera de una playlist o álbum inicia una radio de canciones parecidas, en un orden distinto cada vez.",
+        "El crossfade funciona en todos los cambios de canción, sin silencio a la mitad y sin cortar el final."
+      ],
+      "en": [
+        "Picking a song outside a playlist or album starts a radio of similar songs, in a different order every time.",
+        "Crossfade works on every song change, with no silence in the middle and no cut-off ending."
+      ]
+    }
+  },
+  {
     "id": "2026-10-28-polish",
     "date": "2026-10-28",
     "changes": {

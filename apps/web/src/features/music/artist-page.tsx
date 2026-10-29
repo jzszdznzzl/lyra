@@ -22,7 +22,7 @@ export function ArtistPage() {
   const { id } = useParams({ from: '/app/artist/$id' });
   const artist = useQuery(artistQuery(id));
   useDocumentTitle(artist.data?.name);
-  const playTracks = usePlayerStore((state) => state.playTracks);
+  const playRadio = usePlayerStore((state) => state.playRadio);
 
   if (artist.isPending) {
     return (
@@ -68,11 +68,7 @@ export function ArtistPage() {
         </section>
       ) : null}
       {shelves.map((shelf) => (
-        <Shelf
-          key={shelf.title}
-          shelf={shelf}
-          onPlay={(track, tracks) => playTracks(tracks, Math.max(0, tracks.indexOf(track)))}
-        />
+        <Shelf key={shelf.title} shelf={shelf} onPlay={(track) => playRadio(track)} />
       ))}
     </Page>
   );

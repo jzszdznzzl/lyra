@@ -19,7 +19,7 @@ export function HomePage() {
   const home = useQuery(homeQuery);
   const { data: me } = useSuspenseQuery(meQuery);
   useDocumentTitle(null);
-  const playTracks = usePlayerStore((state) => state.playTracks);
+  const playRadio = usePlayerStore((state) => state.playRadio);
 
   return (
     <div className="p-4 sm:p-7">
@@ -28,11 +28,7 @@ export function HomePage() {
       {home.isPending ? <LoadingState /> : null}
       {home.isError ? <ErrorState error={home.error} onRetry={() => void home.refetch()} /> : null}
       {home.data?.shelves.map((shelf, index) => (
-        <Shelf
-          key={`${shelf.title}-${index}`}
-          shelf={shelf}
-          onPlay={(track, tracks) => playTracks(tracks, Math.max(0, tracks.indexOf(track)))}
-        />
+        <Shelf key={`${shelf.title}-${index}`} shelf={shelf} onPlay={(track) => playRadio(track)} />
       ))}
     </div>
   );
