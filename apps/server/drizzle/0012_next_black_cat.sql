@@ -1,0 +1,1 @@
+ALTER TABLE `users` ADD `is_now_playing_shared_with_friends` integer DEFAULT false NOT NULL;

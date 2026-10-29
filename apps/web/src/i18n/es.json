@@ -122,7 +122,9 @@
       "copied": "Copiado",
       "copyFailed": "No se pudo copiar",
       "recentFriends": "Mostrar a mis amigos lo que escuché",
-      "recentFriendsHint": "Tus amigos ven en tu perfil las últimas canciones de tu historial de YouTube Music."
+      "recentFriendsHint": "Tus amigos ven en tu perfil las últimas canciones de tu historial de YouTube Music.",
+      "nowFriends": "Mostrar a mis amigos lo que escucho ahora",
+      "nowFriendsHint": "Tus amigos ven en su página de Amigos la canción que estás escuchando, o la última del día. No ven en qué dispositivo."
     },
     "password": {
       "title": "Contraseña",
@@ -658,7 +660,8 @@
     "recentEmpty": "Nada por ahora.",
     "publicPlaylists": "Playlists públicas",
     "addToSee": "Agrega a {{name}} como amigo para ver lo que escucha.",
-    "createNeedsGoogle": "Vincula tu cuenta de Google en tu perfil para crear playlists juntos."
+    "createNeedsGoogle": "Vincula tu cuenta de Google en tu perfil para crear playlists juntos.",
+    "friendsListening": "Lo que escuchan tus amigos"
   },
   "folders": {
     "folder": "Carpeta",

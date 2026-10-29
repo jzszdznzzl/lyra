@@ -99,6 +99,7 @@ export const UpdateProfileInput = z.object({
   isYoutubeHistoryEnabled: z.boolean().exactOptional(),
   isNowPlayingPublic: z.boolean().exactOptional(),
   isRecentSharedWithFriends: z.boolean().exactOptional(),
+  isNowPlayingSharedWithFriends: z.boolean().exactOptional(),
 });
 
 export type UpdateProfileInput = z.infer<typeof UpdateProfileInput>;
@@ -117,6 +118,8 @@ export const UserProfile = z.object({
   isNowPlayingPublic: z.boolean(),
   // Friends can see the songs heard lately, read from the YouTube history.
   isRecentSharedWithFriends: z.boolean(),
+  // Friends can see the song playing now (or the last one, for a day).
+  isNowPlayingSharedWithFriends: z.boolean(),
   // Only present for admins, so other accounts never see the field.
   isAdmin: z.literal(true).exactOptional(),
 });

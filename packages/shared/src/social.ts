@@ -76,6 +76,18 @@ export const UserPage = z.object({
 
 export type UserPage = z.infer<typeof UserPage>;
 
+/** A friend's song, playing now or heard lately, for the Friends page. */
+export const FriendListening = z.object({
+  user: UserCard,
+  nowPlaying: NowPlaying,
+});
+
+export type FriendListening = z.infer<typeof FriendListening>;
+
+export const FriendsListening = z.object({ friends: z.array(FriendListening) });
+
+export type FriendsListening = z.infer<typeof FriendsListening>;
+
 /** The slower part of a friend's page, read from their YT Music account. */
 export const UserMusic = z.object({
   // Null when the friend keeps it private.

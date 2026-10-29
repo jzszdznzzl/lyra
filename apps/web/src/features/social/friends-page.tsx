@@ -21,10 +21,12 @@ import { ErrorState, LoadingState } from '../music/query-state.tsx';
 import {
   addFriend,
   declineSharedPlaylist,
+  friendsListeningQuery,
   friendsQuery,
   joinSharedPlaylist,
   removeFriend,
 } from './api.ts';
+import { ListeningRow } from './listening-row.tsx';
 import { UserRow } from './user-row.tsx';
 import type { ApiError } from '../../lib/api.ts';
 
@@ -171,6 +173,7 @@ export function FriendsPage() {
   const queryClient = useQueryClient();
   const { data: me } = useSuspenseQuery(meQuery);
   const friends = useQuery(friendsQuery);
+  const listening = useQuery(friendsListeningQuery);
   useDocumentTitle(t('social.title'));
 
   async function remove(username: string) {
@@ -211,6 +214,15 @@ export function FriendsPage() {
         <ErrorState error={friends.error} onRetry={() => void friends.refetch()} />
       ) : null}
       {isEmpty ? <p className="mt-8 text-sm text-muted">{t('social.empty')}</p> : null}
+      {listening.data && listening.data.friends.length > 0 ? (
+        <Group title={t('social.friendsListening')}>
+          <ul className="flex flex-col">
+            {listening.data.friends.map((item) => (
+              <ListeningRow key={item.user.username} listening={item} />
+            ))}
+          </ul>
+        </Group>
+      ) : null}
       {data && data.invites.length > 0 ? (
         <Group title={t('social.invites')}>
           <ul className="flex flex-col gap-2">

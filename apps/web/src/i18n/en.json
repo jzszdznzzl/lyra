@@ -122,7 +122,9 @@
       "copied": "Copied",
       "copyFailed": "Could not copy",
       "recentFriends": "Show my friends what I played",
-      "recentFriendsHint": "Your friends see the latest songs from your YouTube Music history on your profile."
+      "recentFriendsHint": "Your friends see the latest songs from your YouTube Music history on your profile.",
+      "nowFriends": "Show my friends what I'm playing now",
+      "nowFriendsHint": "Your friends see the song you are playing, or your last one today, on their Friends page. They do not see which device."
     },
     "password": {
       "title": "Password",
@@ -658,7 +660,8 @@
     "recentEmpty": "Nothing yet.",
     "publicPlaylists": "Public playlists",
     "addToSee": "Add {{name}} as a friend to see what they listen to.",
-    "createNeedsGoogle": "Link your Google account in your profile to make playlists together."
+    "createNeedsGoogle": "Link your Google account in your profile to make playlists together.",
+    "friendsListening": "What your friends are playing"
   },
   "folders": {
     "folder": "Folder",

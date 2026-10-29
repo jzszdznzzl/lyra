@@ -2,7 +2,14 @@ import { Elysia } from 'elysia';
 import { z } from 'zod';
 
 import { CreateSharedPlaylistInput, FriendStatus, SocialError } from '@lyra/shared';
-import type { PlaylistCard, Track, UserMusic, UserPage } from '@lyra/shared';
+import type {
+  FriendListening,
+  FriendsListening,
+  PlaylistCard,
+  Track,
+  UserMusic,
+  UserPage,
+} from '@lyra/shared';
 
 import { authPlugin } from '../auth/plugin.ts';
 import { PushKind } from '../push/messages.ts';
@@ -16,12 +23,14 @@ import {
   findUser,
   friendStatus,
   friendsOverview,
+  friendsSharingListening,
   markJoined,
   pendingInvite,
   removeFriend,
   requestFriend,
   saveSharedPlaylist,
   sharedBetween,
+  sharesListeningWithFriends,
   toUserCard,
 } from './friends.ts';
 import type { ImageRegistry } from '../images/registry.ts';
@@ -50,6 +59,8 @@ const SOCIAL_ERROR_STATUS = {
 // Reading which playlists are public costs a request per playlist.
 const PUBLIC_PLAYLISTS_TTL_MS = 10 * 60 * 1000;
 const RECENT_TRACKS = 12;
+// A song heard longer ago than this is old news on the Friends page.
+const LISTENING_WINDOW_MS = 24 * 60 * 60 * 1000;
 
 /** Friends, profiles and collaborative playlists made with friends. */
 export function socialRoutes(
@@ -84,6 +95,37 @@ export function socialRoutes(
       })
       .get('/friends', ({ user }) => friendsOverview(ctx, user.id), { isSignedIn: true })
       .get(
+        '/friends/listening',
+        async ({ user }) => {
+          const friends = await friendsSharingListening(ctx, user.id);
+          const now = ctx.now();
+          const listening = await Promise.all(
+            friends.map(async (friend): Promise<FriendListening[]> => {
+              const current = await nowPlaying.current(friend.id);
+              const isRecent =
+                current !== null &&
+                (current.isPlaying || now - current.updatedAt <= LISTENING_WINDOW_MS);
+
+              // The device name often carries the owner's name; friends do not need it.
+              return isRecent
+                ? [{ user: toUserCard(friend), nowPlaying: { ...current, device: null } }]
+                : [];
+            }),
+          );
+
+          return {
+            friends: listening
+              .flat()
+              .sort(
+                (a, b) =>
+                  Number(b.nowPlaying.isPlaying) - Number(a.nowPlaying.isPlaying) ||
+                  b.nowPlaying.updatedAt - a.nowPlaying.updatedAt,
+              ),
+          } satisfies FriendsListening;
+        },
+        { isSignedIn: true },
+      )
+      .get(
         '/users/:username',
         async ({ user, params, status }) => {
           const other = await findUser(ctx, params.username);
@@ -97,7 +139,7 @@ export function socialRoutes(
           // People see their own page as their friends do.
           const canSee = isFriend || relation === FriendStatus.Self;
           const current =
-            canSee && other.isNowPlayingPublic ? await nowPlaying.current(other.id) : null;
+            canSee && sharesListeningWithFriends(other) ? await nowPlaying.current(other.id) : null;
 
           return {
             user: toUserCard(other),

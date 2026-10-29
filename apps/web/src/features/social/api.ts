@@ -1,7 +1,7 @@
 import { queryOptions } from '@tanstack/react-query';
 import { z } from 'zod';
 
-import { FriendStatus, FriendsOverview, UserMusic, UserPage } from '@lyra/shared';
+import { FriendStatus, FriendsListening, FriendsOverview, UserMusic, UserPage } from '@lyra/shared';
 import type { CreateSharedPlaylistInput } from '@lyra/shared';
 
 import { NoContent, api, unwrap } from '../../lib/api.ts';
@@ -18,6 +18,14 @@ export const friendsQuery = queryOptions({
   // Requests and invitations should show up without a reload.
   staleTime: MINUTE_MS,
   refetchInterval: 2 * MINUTE_MS,
+});
+
+export const friendsListeningQuery = queryOptions({
+  queryKey: ['social', 'friends', 'listening'],
+  queryFn: async () => unwrap(await api('GET', '/social/friends/listening', FriendsListening)),
+  // Songs change every few minutes; a short refresh keeps "listening now" honest.
+  staleTime: 20 * 1000,
+  refetchInterval: 30 * 1000,
 });
 
 export const userPageQuery = (username: string) =>

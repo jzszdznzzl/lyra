@@ -79,6 +79,7 @@ export async function register(
     isYoutubeHistoryEnabled: true,
     isNowPlayingPublic: false,
     isRecentSharedWithFriends: false,
+    isNowPlayingSharedWithFriends: false,
     suspendedAt: null,
     lastActiveAt: null,
     createdAt: ctx.now(),

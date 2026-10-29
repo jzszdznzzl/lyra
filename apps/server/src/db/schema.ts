@@ -21,6 +21,10 @@ export const users = sqliteTable('users', {
   isRecentSharedWithFriends: integer('is_recent_shared_with_friends', { mode: 'boolean' })
     .notNull()
     .default(false),
+  // Friends see the song playing now on their Friends page and on this user's page.
+  isNowPlayingSharedWithFriends: integer('is_now_playing_shared_with_friends', { mode: 'boolean' })
+    .notNull()
+    .default(false),
   // Set by an admin: the account keeps its data but cannot sign in or use any session or token.
   suspendedAt: timestamp('suspended_at'),
   // Updated with the session (at most once a minute), for the admin panel and activity stats.

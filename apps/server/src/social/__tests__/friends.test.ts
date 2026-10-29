@@ -1,9 +1,17 @@
 import { describe, expect, test } from 'bun:test';
 
-import { FriendStatus, FriendsOverview, SocialError, UserPage } from '@lyra/shared';
+import {
+  FriendStatus,
+  FriendsListening,
+  FriendsOverview,
+  MediaKind,
+  SocialError,
+  UserPage,
+} from '@lyra/shared';
 
 import { createApp } from '../../app.ts';
 import { TestClient, createTestContext, linkToken } from '../../testing/test-context.ts';
+import { schema } from '../../db/index.ts';
 import { markJoined, saveSharedPlaylist } from '../friends.ts';
 import type { App } from '../../app.ts';
 import type { TestContext } from '../../testing/test-context.ts';
@@ -140,5 +148,44 @@ describe('friends', () => {
       204,
     );
     expect((await overview(bob.client)).invites).toEqual([]);
+  });
+
+  test('friends see what a friend plays only when that friend shares it', async () => {
+    const { ctx, ana, bob } = await twoUsers();
+    const listening = async () =>
+      FriendsListening.parse((await ana.client.request('GET', '/social/friends/listening')).body);
+    const track = {
+      kind: MediaKind.Song,
+      id: 'dQw4w9WgXcQ',
+      title: 'Song',
+      artists: [{ id: null, name: 'Artist' }],
+      album: null,
+      durationSeconds: 200,
+      thumbnail: null,
+      isExplicit: false,
+    };
+    await ctx.db
+      .insert(schema.lastPlayed)
+      .values({ userId: bob.userId, track, playedAt: ctx.now() });
+
+    // Not friends yet, then friends who do not share.
+    expect((await listening()).friends).toEqual([]);
+    await ana.client.request('POST', '/social/friends/bob');
+    await bob.client.request('POST', '/social/friends/ana');
+    expect((await listening()).friends).toEqual([]);
+    expect(
+      UserPage.parse((await ana.client.request('GET', '/social/users/bob')).body).nowPlaying,
+    ).toBeNull();
+
+    await bob.client.request('PATCH', '/me', { isNowPlayingSharedWithFriends: true });
+    const shared = (await listening()).friends;
+    expect(shared.map((friend) => [friend.user.username, friend.nowPlaying.track.title])).toEqual([
+      ['bob', 'Song'],
+    ]);
+    expect(shared[0]?.nowPlaying.device).toBeNull();
+    expect(
+      UserPage.parse((await ana.client.request('GET', '/social/users/bob')).body).nowPlaying?.track
+        .id,
+    ).toBe('dQw4w9WgXcQ');
   });
 });

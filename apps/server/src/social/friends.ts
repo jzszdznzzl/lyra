@@ -75,6 +75,11 @@ async function playlistsOf(ctx: AppContext, playlistIds: string[]): Promise<Shar
   });
 }
 
+/** Public listening is visible to anyone, so friends see it too. */
+export function sharesListeningWithFriends(user: User) {
+  return user.isNowPlayingSharedWithFriends || user.isNowPlayingPublic;
+}
+
 export function toUserCard(user: User): UserCard {
   return {
     username: user.username,
@@ -270,4 +275,29 @@ export async function declineInvite(ctx: AppContext, meId: string, playlistId: s
         isNull(schema.sharedPlaylistMembers.joinedAt),
       ),
     );
+}
+
+/** Friends who let their friends see what they play. Suspended accounts are left out. */
+export async function friendsSharingListening(ctx: AppContext, meId: string) {
+  const rows = await ctx.db
+    .select()
+    .from(schema.friendships)
+    .where(
+      and(
+        or(eq(schema.friendships.requesterId, meId), eq(schema.friendships.addresseeId, meId)),
+        isNotNull(schema.friendships.acceptedAt),
+      ),
+    );
+  const ids = rows.map((row) => (row.requesterId === meId ? row.addresseeId : row.requesterId));
+
+  if (ids.length === 0) {
+    return [];
+  }
+
+  const users = await ctx.db
+    .select()
+    .from(schema.users)
+    .where(and(inArray(schema.users.id, ids), isNull(schema.users.suspendedAt)));
+
+  return users.filter(sharesListeningWithFriends);
 }

@@ -72,6 +72,12 @@ export function ListeningSection({ me }: { me: UserProfile }) {
           onChange={(isOn) => void save({ isRecentSharedWithFriends: isOn })}
         />
         <Toggle
+          label={t('profile.listening.nowFriends')}
+          hint={t('profile.listening.nowFriendsHint')}
+          isOn={me.isNowPlayingSharedWithFriends}
+          onChange={(isOn) => void save({ isNowPlayingSharedWithFriends: isOn })}
+        />
+        <Toggle
           label={t('profile.listening.public')}
           hint={t('profile.listening.publicHint')}
           isOn={me.isNowPlayingPublic}
