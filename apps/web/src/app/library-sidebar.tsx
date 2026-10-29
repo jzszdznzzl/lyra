@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
-import { Heart } from 'lucide-react';
+import { Heart, History } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { libraryPlaylistsQuery } from '../features/music/api.ts';
@@ -28,6 +28,15 @@ export function LibrarySidebar({ isGoogleLinked }: { isGoogleLinked: boolean }) 
           <Heart className="size-4 fill-white text-white" />
         </span>
         <span className="truncate font-semibold">{t('music.likedSongs')}</span>
+      </Link>
+      <Link
+        to="/history"
+        className="flex items-center gap-2.5 rounded-xl p-1.5 text-[13px] hover:bg-surface data-[status=active]:bg-surface-2"
+      >
+        <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-surface-2">
+          <History className="size-4 text-text" />
+        </span>
+        <span className="truncate font-semibold">{t('music.history.title')}</span>
       </Link>
       {playlists.data?.playlists
         .filter((playlist) => playlist.id !== 'LM' && playlist.id !== 'VLLM')

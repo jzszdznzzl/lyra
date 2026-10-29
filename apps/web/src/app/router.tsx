@@ -24,6 +24,7 @@ import { HomePage } from '../features/home/home-page.tsx';
 import { AlbumPage } from '../features/music/album-page.tsx';
 import { ArtistPage } from '../features/music/artist-page.tsx';
 import { ExplorePage } from '../features/music/explore-page.tsx';
+import { HistoryPage } from '../features/music/history-page.tsx';
 import { LikedPage, PlaylistPage } from '../features/music/playlist-page.tsx';
 import { SearchPage } from '../features/music/search-page.tsx';
 import { TrackPage } from '../features/music/track-page.tsx';
@@ -172,6 +173,12 @@ const likedRoute = createRoute({
   component: LikedPage,
 });
 
+const historyRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/history',
+  component: HistoryPage,
+});
+
 const exploreRoute = createRoute({
   getParentRoute: () => appRoute,
   path: '/explore',
@@ -220,6 +227,7 @@ const routeTree = rootRoute.addChildren([
     artistRoute,
     playlistRoute,
     likedRoute,
+    historyRoute,
     exploreRoute,
     downloadsRoute,
     profileRoute,

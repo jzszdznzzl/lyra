@@ -253,7 +253,14 @@
     "linkToSeeLibrary": "Link Google to see your playlists.",
     "loadFailed": "Couldn't load this page.",
     "retry": "Try again",
-    "similar": "Similar songs"
+    "similar": "Similar songs",
+    "history": {
+      "title": "History",
+      "hint": "What you heard on YouTube Music, in Lyra or any other app.",
+      "link": "Link your Google account to see your history.",
+      "notSent": "Lyra is not sending what you play to your YouTube history. Turn it on in your profile to see it here.",
+      "empty": "Nothing in your history yet."
+    }
   },
   "google": {
     "browser": {

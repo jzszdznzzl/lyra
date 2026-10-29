@@ -1,4 +1,4 @@
-import { YTMusic, YTNodes } from 'youtubei.js';
+import { Parser, YTMusic, YTNodes } from 'youtubei.js';
 import type { Helpers, Innertube } from 'youtubei.js';
 
 import { MediaKind, MusicError, SearchFilter, err, ok } from '@lyra/shared';
@@ -7,6 +7,7 @@ import type {
   ArtistPage,
   HomeFeed,
   LibraryPlaylists,
+  ListeningHistory,
   MediaItem,
   PlaylistCard,
   PlaylistPage,
@@ -33,6 +34,7 @@ const SEARCH_TYPES = {
 const MAX_PLAYLIST_TRACKS = 5000;
 const LIKED_MUSIC_ID = 'LM';
 const LIBRARY_PLAYLISTS_ID = 'FEmusic_liked_playlists';
+const HISTORY_ID = 'FEmusic_history';
 // Liked songs has its own entry; "Episodes for later" holds podcasts, not music.
 const HIDDEN_LIBRARY_PLAYLISTS = new Set(['VLLM', 'LM', 'VLSE', 'SE']);
 const BROWSE_PLAYLIST_PREFIX = 'VL';
@@ -262,6 +264,26 @@ export function getLibraryPlaylists(yt: Innertube): Promise<Result<LibraryPlayli
     );
 
     return { playlists };
+  });
+}
+
+/** The account's YT Music history: every song heard, in Lyra or anywhere else. */
+export function getHistory(yt: Innertube): Promise<Result<ListeningHistory, MusicError>> {
+  return attempt(async () => {
+    const response = await yt.actions.execute('/browse', {
+      browseId: HISTORY_ID,
+      client: 'YTMUSIC',
+    });
+    // Parsed by hand: YTMusic.Library rejects the history page's header (a chip cloud).
+    const page = Parser.parseResponse(response.data);
+    const shelves = page.contents_memo?.getType(YTNodes.MusicShelf) ?? [];
+    const sections = shelves.flatMap((shelf) => {
+      const tracks = toTracks(shelf.contents);
+
+      return tracks.length > 0 ? [{ title: shelf.title.toString(), tracks }] : [];
+    });
+
+    return { sections };
   });
 }
 

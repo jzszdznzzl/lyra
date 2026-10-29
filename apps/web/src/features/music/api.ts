@@ -5,6 +5,7 @@ import {
   ArtistPage,
   HomeFeed,
   LibraryPlaylists,
+  ListeningHistory,
   PlaylistPage,
   SearchResults,
   SearchSuggestions,
@@ -100,6 +101,13 @@ export const likedQuery = queryOptions({
   queryKey: ['music', 'liked'],
   queryFn: async () => unwrap(await api('GET', '/music/liked', PlaylistPage)),
   staleTime: 5 * MINUTE_MS,
+});
+
+export const historyQuery = queryOptions({
+  queryKey: ['music', 'history'],
+  queryFn: async () => unwrap(await api('GET', '/music/history', ListeningHistory)),
+  // Songs heard a moment ago should be there when the page opens again.
+  staleTime: MINUTE_MS,
 });
 
 export const libraryPlaylistsQuery = queryOptions({

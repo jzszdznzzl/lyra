@@ -31,6 +31,7 @@ import {
   getSuggestions,
   search,
   findMusicVideo,
+  getHistory,
   getUpNext,
 } from './catalog.ts';
 import { accountClient, musicClient } from './clients.ts';
@@ -185,6 +186,11 @@ export function musicRoutes(ctx: AppContext, pool: InnertubePool, images: ImageR
         async ({ user, params, status }) =>
           respond(await getUpNext(await clientFor(user), params.id), status),
         { isSignedIn: true, params: IdParams },
+      )
+      .get(
+        '/history',
+        async ({ user, status }) => respond(await withAccount(user, getHistory), status),
+        { isSignedIn: true },
       )
       .get(
         '/liked',

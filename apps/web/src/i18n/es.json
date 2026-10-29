@@ -253,7 +253,14 @@
     "linkToSeeLibrary": "Vincula Google para ver tus playlists.",
     "loadFailed": "No se pudo cargar esta página.",
     "retry": "Reintentar",
-    "similar": "Canciones similares"
+    "similar": "Canciones similares",
+    "history": {
+      "title": "Historial",
+      "hint": "Lo que escuchaste en YouTube Music, en Lyra o en cualquier otra app.",
+      "link": "Vincula tu cuenta de Google para ver tu historial.",
+      "notSent": "Lyra no está enviando lo que escuchas a tu historial de YouTube. Actívalo en tu perfil para verlo aquí.",
+      "empty": "Todavía no hay nada en tu historial."
+    }
   },
   "google": {
     "browser": {

@@ -183,6 +183,13 @@ export const UpNext = z.object({ tracks: z.array(Track) });
 
 export type UpNext = z.infer<typeof UpNext>;
 
+/** YT Music's listening history, grouped as it shows it ("Today", "Yesterday"…). */
+export const ListeningHistory = z.object({
+  sections: z.array(z.object({ title: z.string(), tracks: z.array(Track) })),
+});
+
+export type ListeningHistory = z.infer<typeof ListeningHistory>;
+
 /** Response header with YouTube's loudness measure, so players can even out volume. */
 export const LOUDNESS_HEADER = 'x-lyra-loudness-db';
 
