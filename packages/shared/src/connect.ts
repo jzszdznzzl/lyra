@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { Track } from './music.ts';
+import { ListeningPreferences } from './preferences.ts';
 
 export const DeviceKind = Object.freeze({ Desktop: 'desktop', Mobile: 'mobile' } as const);
 
@@ -98,6 +99,12 @@ export const ServerMessage = z.discriminatedUnion('type', [
   z.object({ type: z.literal('release') }),
   // Sent to everyone when an admin publishes or ends an announcement.
   z.object({ type: z.literal('announcements') }),
+  // Sent to every device of the account when one of them saves its listening preferences.
+  z.object({
+    type: z.literal('preferences'),
+    preferences: ListeningPreferences,
+    updatedAt: z.number(),
+  }),
 ]);
 
 export type ServerMessage = z.infer<typeof ServerMessage>;

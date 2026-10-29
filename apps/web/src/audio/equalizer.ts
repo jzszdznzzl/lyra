@@ -1,21 +1,7 @@
-export const EQ_FREQUENCIES = [32, 64, 125, 250, 500, 1000, 2000, 4000, 8000, 16000] as const;
+import { EQ_MAX_DB, EQ_MIN_DB, EqPreset } from '@lyra/shared';
 
-export const EQ_MIN_DB = -12;
-export const EQ_MAX_DB = 12;
-
-export const EqPreset = Object.freeze({
-  Flat: 'flat',
-  BassBoost: 'bass_boost',
-  TrebleBoost: 'treble_boost',
-  Vocal: 'vocal',
-  Rock: 'rock',
-  Pop: 'pop',
-  Electronic: 'electronic',
-  Acoustic: 'acoustic',
-  Custom: 'custom',
-} as const);
-
-export type EqPreset = (typeof EqPreset)[keyof typeof EqPreset];
+// The bands and limits are shared, because the account's saved equalizer must fit them.
+export { EQ_FREQUENCIES, EQ_MAX_DB, EQ_MIN_DB, EqPreset } from '@lyra/shared';
 
 export const EQ_PRESETS: Record<Exclude<EqPreset, 'custom'>, number[]> = {
   [EqPreset.Flat]: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],

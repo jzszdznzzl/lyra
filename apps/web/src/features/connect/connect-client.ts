@@ -1,5 +1,5 @@
 import { ServerMessage, currentPositionMs } from '@lyra/shared';
-import type { ClientMessage, Command, PlaybackState } from '@lyra/shared';
+import type { ClientMessage, Command, ListeningPreferences, PlaybackState } from '@lyra/shared';
 
 import { PlaybackStatus, usePlayerStore } from '../player/player-store.ts';
 import { useConnectStore } from './connect-store.ts';
@@ -16,10 +16,12 @@ const REMOTE_TICK_MS = 500;
 interface ConnectOptions {
   // An admin published or ended an announcement.
   onAnnouncements?: () => void;
+  // Another device of the account saved its listening preferences.
+  onPreferences?: (preferences: ListeningPreferences, updatedAt: number) => void;
 }
 
 /** Keeps this tab in the account's Connect room and bridges it to the player. */
-export function startConnect({ onAnnouncements }: ConnectOptions = {}) {
+export function startConnect({ onAnnouncements, onPreferences }: ConnectOptions = {}) {
   const device = thisDevice();
   let socket: WebSocket | null = null;
   let retryMs = RECONNECT_MIN_MS;
@@ -114,6 +116,10 @@ export function startConnect({ onAnnouncements }: ConnectOptions = {}) {
       }
       case 'announcements': {
         onAnnouncements?.();
+        break;
+      }
+      case 'preferences': {
+        onPreferences?.(message.preferences, message.updatedAt);
         break;
       }
       default: {

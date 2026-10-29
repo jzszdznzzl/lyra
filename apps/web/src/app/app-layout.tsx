@@ -27,6 +27,7 @@ import { NowPlayingPanel } from '../features/player/now-playing-panel.tsx';
 import { GoogleRequiredDialog } from '../features/player/google-required-dialog.tsx';
 import { ImmersiveView } from '../features/player/immersive-view.tsx';
 import { PlayerBar } from '../features/player/player-bar.tsx';
+import { startPreferencesSync } from '../features/player/preferences-sync.ts';
 import { useCoverTheme } from '../features/player/use-cover-theme.ts';
 import { useMediaSession } from '../features/player/use-media-session.ts';
 import { changeLanguage } from '../i18n/index.ts';
@@ -71,14 +72,20 @@ export function AppLayout() {
   useMediaSession();
   useCoverTheme();
   useHideBootSplash();
-  useEffect(
-    () =>
-      startConnect({
-        onAnnouncements: () =>
-          void queryClient.invalidateQueries({ queryKey: announcementsQuery.queryKey }),
-      }),
-    [queryClient],
-  );
+  const userId = me?.id ?? null;
+  useEffect(() => {
+    const preferences = userId ? startPreferencesSync(userId) : null;
+    const stopConnect = startConnect({
+      onAnnouncements: () =>
+        void queryClient.invalidateQueries({ queryKey: announcementsQuery.queryKey }),
+      ...(preferences ? { onPreferences: preferences.receive } : {}),
+    });
+
+    return () => {
+      stopConnect();
+      preferences?.stop();
+    };
+  }, [queryClient, userId]);
   useEffect(() => {
     void useDownloads.getState().load();
     syncPushSubscription().catch(() => undefined);

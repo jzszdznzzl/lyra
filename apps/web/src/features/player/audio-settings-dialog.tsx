@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 
-import { AudioQuality, VIDEO_HEIGHTS } from '@lyra/shared';
+import { AudioQuality, MAX_CROSSFADE_SECONDS, MAX_FADE_MS, VIDEO_HEIGHTS } from '@lyra/shared';
 
 import {
   EQ_FREQUENCIES,
@@ -12,7 +12,7 @@ import {
 import { Dialog } from '../../ui/dialog.tsx';
 import { Toggle } from '../../ui/toggle.tsx';
 import { usePlayerStore } from './player-store.ts';
-import { MAX_CROSSFADE_SECONDS, MAX_FADE_MS, isOnMeteredNetwork } from './settings.ts';
+import { isOnMeteredNetwork } from './settings.ts';
 import { VolumeSettings } from './volume-settings.tsx';
 
 const FADE_STEP_MS = 100;

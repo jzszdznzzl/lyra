@@ -9,6 +9,7 @@ export * from './lyrics.ts';
 export * from './music.ts';
 export * from './now-playing.ts';
 export * from './passkey-options.ts';
+export * from './preferences.ts';
 export * from './result.ts';
 export * from './social.ts';
 export * from './push.ts';

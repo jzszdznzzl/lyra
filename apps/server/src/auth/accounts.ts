@@ -80,6 +80,8 @@ export async function register(
     isNowPlayingPublic: false,
     isRecentSharedWithFriends: false,
     isNowPlayingSharedWithFriends: false,
+    listeningPreferences: null,
+    listeningPreferencesUpdatedAt: null,
     suspendedAt: null,
     lastActiveAt: null,
     createdAt: ctx.now(),

@@ -196,3 +196,16 @@ describe('kick', () => {
     expect(hub.activity('u1')).toBeNull();
   });
 });
+
+describe('sendTo', () => {
+  test('reaches every device of that account and nobody else', () => {
+    const other = fakeSocket('o');
+    hub.join('u2', other.socket, { id: 'device-other', name: 'Other', kind: 'mobile' });
+
+    hub.sendTo('u', { type: 'announcements' });
+
+    expect(last(pc.inbox, 'announcements')).toBeDefined();
+    expect(last(phone.inbox, 'announcements')).toBeDefined();
+    expect(last(other.inbox, 'announcements')).toBeUndefined();
+  });
+});

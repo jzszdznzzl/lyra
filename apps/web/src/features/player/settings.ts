@@ -1,13 +1,19 @@
 import { z } from 'zod';
 
-import { AudioQuality, DEFAULT_VIDEO_HEIGHT, MAX_VOLUME, VIDEO_HEIGHTS } from '@lyra/shared';
+import {
+  AudioQuality,
+  DEFAULT_VIDEO_HEIGHT,
+  MAX_CROSSFADE_SECONDS,
+  MAX_FADE_MS,
+  MAX_VOLUME,
+  VIDEO_HEIGHTS,
+} from '@lyra/shared';
+import type { ListeningPreferences } from '@lyra/shared';
 
 import { EQ_FREQUENCIES, EqPreset } from '../../audio/equalizer.ts';
 
 const STORAGE_KEY = 'lyra.player-settings';
 
-export const MAX_CROSSFADE_SECONDS = 12;
-export const MAX_FADE_MS = 2000;
 const DATA_SAVER_VIDEO_HEIGHT = 360;
 
 const VideoHeightSetting = z
@@ -46,7 +52,10 @@ export const PlayerSettings = z.object({
 
 export type PlayerSettings = z.infer<typeof PlayerSettings>;
 
-/** Settings are per device: a phone on mobile data may want a lower quality than the PC. */
+/**
+ * Settings are kept per device, so they work offline and on the first visit. The listening
+ * preferences among them are also synced with the account (see preferences-sync.ts).
+ */
 export function loadSettings(): PlayerSettings {
   try {
     const stored: unknown = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}');
@@ -74,6 +83,22 @@ export function outputSettings(settings: PlayerSettings) {
   return {
     isLimiterEnabled: settings.isLimiterEnabled,
     isNormalizationEnabled: settings.isNormalizationEnabled,
+  };
+}
+
+/** The settings that follow the account to every device. */
+export function pickPreferences(settings: PlayerSettings): ListeningPreferences {
+  return {
+    crossfadeSeconds: settings.crossfadeSeconds,
+    fadeMs: settings.fadeMs,
+    isMixEnabled: settings.isMixEnabled,
+    isEqEnabled: settings.isEqEnabled,
+    eqPreset: settings.eqPreset,
+    eqGains: settings.eqGains,
+    isNormalizationEnabled: settings.isNormalizationEnabled,
+    isLimiterEnabled: settings.isLimiterEnabled,
+    isAutoplayEnabled: settings.isAutoplayEnabled,
+    isLyricsSyncEnabled: settings.isLyricsSyncEnabled,
   };
 }
 

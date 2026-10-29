@@ -25,6 +25,9 @@ export const users = sqliteTable('users', {
   isNowPlayingSharedWithFriends: integer('is_now_playing_shared_with_friends', { mode: 'boolean' })
     .notNull()
     .default(false),
+  // The player settings that follow the account (shared ListeningPreferences), checked on read.
+  listeningPreferences: text('listening_preferences', { mode: 'json' }).$type<unknown>(),
+  listeningPreferencesUpdatedAt: timestamp('listening_preferences_updated_at'),
   // Set by an admin: the account keeps its data but cannot sign in or use any session or token.
   suspendedAt: timestamp('suspended_at'),
   // Updated with the session (at most once a minute), for the admin panel and activity stats.
