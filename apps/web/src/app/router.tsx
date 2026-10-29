@@ -30,6 +30,8 @@ import { SearchPage } from '../features/music/search-page.tsx';
 import { TrackPage } from '../features/music/track-page.tsx';
 import { DownloadsPage } from '../features/offline/downloads-page.tsx';
 import { ProfilePage } from '../features/profile/profile-page.tsx';
+import { FriendsPage } from '../features/social/friends-page.tsx';
+import { UserPage } from '../features/social/user-page.tsx';
 import { AppLayout } from './app-layout.tsx';
 import { pageTransition } from './page-transitions.ts';
 import { CrashPage, NotFoundPage } from './route-states.tsx';
@@ -179,6 +181,18 @@ const historyRoute = createRoute({
   component: HistoryPage,
 });
 
+const friendsRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/friends',
+  component: FriendsPage,
+});
+
+const userRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/user/$username',
+  component: UserPage,
+});
+
 const exploreRoute = createRoute({
   getParentRoute: () => appRoute,
   path: '/explore',
@@ -228,6 +242,8 @@ const routeTree = rootRoute.addChildren([
     playlistRoute,
     likedRoute,
     historyRoute,
+    friendsRoute,
+    userRoute,
     exploreRoute,
     downloadsRoute,
     profileRoute,

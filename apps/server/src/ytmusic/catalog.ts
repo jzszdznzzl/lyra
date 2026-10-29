@@ -35,6 +35,12 @@ const MAX_PLAYLIST_TRACKS = 5000;
 const LIKED_MUSIC_ID = 'LM';
 const LIBRARY_PLAYLISTS_ID = 'FEmusic_liked_playlists';
 const HISTORY_ID = 'FEmusic_history';
+// Only playlists the account owns carry the privacy menu in the library.
+const OWNED_PLAYLIST =
+  /"playlistId":"([\w-]+)","actions":\[\{"action":"ACTION_SET_PLAYLIST_PRIVACY"/g;
+const PUBLIC_PLAYLIST = /"privacy":"PUBLIC"/;
+// Each owned playlist costs a request to read its privacy.
+const MAX_OWNED_PLAYLISTS = 25;
 // Liked songs has its own entry; "Episodes for later" holds podcasts, not music.
 const HIDDEN_LIBRARY_PLAYLISTS = new Set(['VLLM', 'LM', 'VLSE', 'SE']);
 const BROWSE_PLAYLIST_PREFIX = 'VL';
@@ -284,6 +290,42 @@ export function getHistory(yt: Innertube): Promise<Result<ListeningHistory, Musi
     });
 
     return { sections };
+  });
+}
+
+/** The account's own public playlists, which anyone could find on YouTube anyway. */
+export function getPublicPlaylists(yt: Innertube): Promise<Result<PlaylistCard[], MusicError>> {
+  return attempt(async () => {
+    const response = await yt.actions.execute('/browse', {
+      browseId: LIBRARY_PLAYLISTS_ID,
+      client: 'YTMUSIC',
+      parse: false,
+    });
+    const owned = [
+      ...new Set([...JSON.stringify(response.data).matchAll(OWNED_PLAYLIST)].map((m) => m[1])),
+    ].slice(0, MAX_OWNED_PLAYLISTS);
+    const checks = await Promise.all(
+      owned.map(async (id) => {
+        const page = await yt.actions.execute('/browse', {
+          browseId: `${BROWSE_PLAYLIST_PREFIX}${id}`,
+          client: 'YTMUSIC',
+          parse: false,
+        });
+
+        return PUBLIC_PLAYLIST.test(JSON.stringify(page.data)) ? id : null;
+      }),
+    );
+    const isPublic = new Set(checks.filter((id) => id !== null));
+
+    if (isPublic.size === 0) {
+      return [];
+    }
+
+    const library = await getLibraryPlaylists(yt);
+
+    return (library.data?.playlists ?? []).filter((playlist) =>
+      isPublic.has(playlist.id.replace(/^VL/, '')),
+    );
   });
 }
 

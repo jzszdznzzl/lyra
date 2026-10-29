@@ -18,6 +18,7 @@ export function toUserProfile(ctx: AppContext, user: User, isGoogleLinked: boole
     isGoogleLinked,
     isYoutubeHistoryEnabled: user.isYoutubeHistoryEnabled,
     isNowPlayingPublic: user.isNowPlayingPublic,
+    isRecentSharedWithFriends: user.isRecentSharedWithFriends,
     ...(isAdmin(ctx, user) ? { isAdmin: true as const } : {}),
   };
 }

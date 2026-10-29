@@ -14,7 +14,8 @@
     "downloads": "Descargas",
     "library": "Tu biblioteca",
     "profile": "Perfil",
-    "back": "Atrás"
+    "back": "Atrás",
+    "friends": "Amigos"
   },
   "home": {
     "greeting": {
@@ -111,14 +112,16 @@
       "historyHint": "Las canciones que escuchas al menos 30 segundos se añaden a tu historial, así YouTube Music ajusta tu inicio y tus recomendaciones.",
       "historyNeedsGoogle": "Vincula tu cuenta de Google para usarlo.",
       "public": "Mostrar públicamente lo que escucho",
-      "publicHint": "Crea una tarjeta con tu canción actual (o la última) para tu GitHub o tu web. Cualquiera con el enlace puede verla.",
+      "publicHint": "Crea una tarjeta con tu canción actual (o la última) para tu GitHub o tu web. Cualquiera con el enlace puede verla, y tus amigos la ven en tu perfil.",
       "widgetAlt": "Lo que escucho en Lyra",
       "copyMarkdown": "Copiar Markdown",
       "copyImage": "Copiar enlace de la imagen",
       "copyJson": "Copiar enlace JSON",
       "cacheNote": "GitHub guarda las imágenes un rato, así que la tarjeta puede tardar unos minutos en cambiar.",
       "copied": "Copiado",
-      "copyFailed": "No se pudo copiar"
+      "copyFailed": "No se pudo copiar",
+      "recentFriends": "Mostrar a mis amigos lo que escuché",
+      "recentFriendsHint": "Tus amigos ven en tu perfil las últimas canciones de tu historial de YouTube Music."
     },
     "password": {
       "title": "Contraseña",
@@ -227,7 +230,11 @@
     "registration_closed": "No se pueden crear cuentas nuevas en este Lyra.",
     "too_many_tokens": "Ya tienes el máximo de tokens. Revoca alguno para crear otro.",
     "account_suspended": "Tu cuenta está suspendida. Habla con quien administra este servidor.",
-    "protected_account": "No puedes hacer eso con tu cuenta ni con la de otro administrador."
+    "protected_account": "No puedes hacer eso con tu cuenta ni con la de otro administrador.",
+    "not_friends": "Solo puedes hacer esto con tus amigos.",
+    "self": "No puedes agregarte a ti mismo.",
+    "friend_not_linked": "Tu amigo todavía no vinculó su cuenta de Google.",
+    "needs_channel": "YouTube no permitió unirte."
   },
   "search": {
     "placeholder": "Canciones, álbumes, artistas, vídeos",
@@ -574,5 +581,49 @@
   },
   "announcements": {
     "dismiss": "Cerrar comunicado"
+  },
+  "social": {
+    "title": "Amigos",
+    "yourUsername": "Tu usuario es",
+    "addLabel": "Agregar por usuario",
+    "addPlaceholder": "usuario",
+    "add": "Agregar amigo",
+    "requestSent": "Solicitud enviada a @{{username}}",
+    "nowFriends": "Ahora eres amigo de @{{username}}",
+    "empty": "Todavía no tienes amigos en Lyra. Pídeles su usuario y agrégalos aquí.",
+    "invites": "Invitaciones a playlists",
+    "incoming": "Solicitudes de amistad",
+    "friends": "Tus amigos ({{count}})",
+    "outgoing": "Solicitudes enviadas",
+    "accept": "Aceptar",
+    "decline": "Rechazar",
+    "cancel": "Cancelar",
+    "cancelRequest": "Cancelar solicitud",
+    "inviteText": "{{name}} te invitó a «{{title}}», una playlist colaborativa de YouTube Music.",
+    "join": "Unirme",
+    "joined": "Te uniste a «{{title}}»",
+    "needsChannel": "YouTube exige que tu cuenta de Google tenga un canal de YouTube para unirte. Es gratis:",
+    "createChannel": "crear mi canal",
+    "profile": "Perfil",
+    "editProfile": "Editar perfil",
+    "createTogether": "Crear playlist juntos",
+    "unfriend": "Eliminar amigo",
+    "unfriendTitle": "¿Eliminar amigo?",
+    "unfriendText": "Ya no verán lo que escucha cada uno. Las playlists que comparten siguen en YouTube Music.",
+    "createTitle": "Playlist juntos",
+    "createHint": "Se crea en tu YouTube Music como playlist colaborativa y oculta (solo con enlace). {{name}} recibirá una invitación para unirse y agregar canciones.",
+    "create": "Crear e invitar",
+    "friendNotLinked": "{{name}} todavía no vinculó su cuenta de Google, así que no hay música para mostrar ni pueden crear playlists juntos.",
+    "nowPlaying": "Escuchando",
+    "listeningNow": "Escuchando ahora",
+    "lastHeard": "Escuchó {{when}}",
+    "shared": "Playlists en común",
+    "recent": "Escuchado recientemente",
+    "recentOff": "{{name}} no comparte lo que escuchó.",
+    "recentOffSelf": "No compartes lo que escuchas. Actívalo en Perfil → Lo que escuchas.",
+    "recentEmpty": "Nada por ahora.",
+    "publicPlaylists": "Playlists públicas",
+    "addToSee": "Agrega a {{name}} como amigo para ver lo que escucha.",
+    "createNeedsGoogle": "Vincula tu cuenta de Google en tu perfil para crear playlists juntos."
   }
 }

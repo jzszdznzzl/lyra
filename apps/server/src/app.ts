@@ -20,6 +20,7 @@ import { nowPlayingRoutes } from './now-playing/routes.ts';
 import { WidgetCovers } from './now-playing/widget-covers.ts';
 import { streamRoutes } from './stream/routes.ts';
 import { originGuard } from './security.ts';
+import { socialRoutes } from './social/routes.ts';
 import { userRoutes } from './users/routes.ts';
 import { InnertubePool } from './ytmusic/innertube.ts';
 import { musicRoutes } from './ytmusic/routes.ts';
@@ -67,6 +68,7 @@ export function createApp(ctx: AppContext, options: AppOptions = {}) {
       }),
     )
     .use(musicRoutes(ctx, pool, images))
+    .use(socialRoutes(ctx, pool, images, nowPlaying))
     .use(streamRoutes(ctx, pool))
     .use(lyricsRoutes(ctx, pool))
     .use(connectRoutes(ctx, hub))

@@ -18,6 +18,9 @@ export const users = sqliteTable('users', {
   isNowPlayingPublic: integer('is_now_playing_public', { mode: 'boolean' })
     .notNull()
     .default(false),
+  isRecentSharedWithFriends: integer('is_recent_shared_with_friends', { mode: 'boolean' })
+    .notNull()
+    .default(false),
   // Set by an admin: the account keeps its data but cannot sign in or use any session or token.
   suspendedAt: timestamp('suspended_at'),
   // Updated with the session (at most once a minute), for the admin panel and activity stats.
@@ -133,6 +136,57 @@ export const announcements = sqliteTable('announcements', {
   createdAt: timestamp('created_at').notNull(),
   expiresAt: timestamp('expires_at').notNull(),
 });
+
+// One row per pair. Until `acceptedAt` is set it is a request from `requesterId`.
+export const friendships = sqliteTable(
+  'friendships',
+  {
+    requesterId: text('requester_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    addresseeId: text('addressee_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    createdAt: timestamp('created_at').notNull(),
+    acceptedAt: timestamp('accepted_at'),
+  },
+  (table) => [
+    primaryKey({ columns: [table.requesterId, table.addresseeId] }),
+    index('friendships_addressee_idx').on(table.addresseeId),
+  ],
+);
+
+// Collaborative YT Music playlists made through Lyra. The playlist itself lives in YouTube;
+// this remembers who it was made with, for profiles and invitations.
+export const sharedPlaylists = sqliteTable('shared_playlists', {
+  id: text('id').primaryKey(),
+  ownerId: text('owner_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  title: text('title').notNull(),
+  // YouTube's invite token (the link's `jct`); anyone holding it can join.
+  inviteToken: text('invite_token').notNull(),
+  createdAt: timestamp('created_at').notNull(),
+});
+
+export const sharedPlaylistMembers = sqliteTable(
+  'shared_playlist_members',
+  {
+    playlistId: text('playlist_id')
+      .notNull()
+      .references(() => sharedPlaylists.id, { onDelete: 'cascade' }),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    invitedAt: timestamp('invited_at').notNull(),
+    // Null while the invitation is pending.
+    joinedAt: timestamp('joined_at'),
+  },
+  (table) => [
+    primaryKey({ columns: [table.playlistId, table.userId] }),
+    index('shared_playlist_members_user_idx').on(table.userId),
+  ],
+);
 
 // Settings changed from the admin panel, one JSON value per key; the env file holds the defaults.
 export const settings = sqliteTable('settings', {

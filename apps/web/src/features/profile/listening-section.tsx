@@ -61,6 +61,17 @@ export function ListeningSection({ me }: { me: UserProfile }) {
           onChange={(isOn) => void save({ isYoutubeHistoryEnabled: isOn })}
         />
         <Toggle
+          label={t('profile.listening.recentFriends')}
+          hint={t(
+            me.isGoogleLinked
+              ? 'profile.listening.recentFriendsHint'
+              : 'profile.listening.historyNeedsGoogle',
+          )}
+          isOn={me.isGoogleLinked && me.isRecentSharedWithFriends}
+          isDisabled={!me.isGoogleLinked}
+          onChange={(isOn) => void save({ isRecentSharedWithFriends: isOn })}
+        />
+        <Toggle
           label={t('profile.listening.public')}
           hint={t('profile.listening.publicHint')}
           isOn={me.isNowPlayingPublic}

@@ -14,7 +14,8 @@
     "downloads": "Downloads",
     "library": "Your library",
     "profile": "Profile",
-    "back": "Back"
+    "back": "Back",
+    "friends": "Friends"
   },
   "home": {
     "greeting": {
@@ -111,14 +112,16 @@
       "historyHint": "Songs you play for at least 30 seconds are added to your history, so YouTube Music can tune your home page and recommendations.",
       "historyNeedsGoogle": "Link your Google account to use it.",
       "public": "Show what I listen to publicly",
-      "publicHint": "Creates a card with your current (or last) song for your GitHub or website. Anyone with the link can see it.",
+      "publicHint": "Creates a card with your current (or last) song for your GitHub or website. Anyone with the link can see it, and your friends see it on your profile.",
       "widgetAlt": "What I am listening to on Lyra",
       "copyMarkdown": "Copy Markdown",
       "copyImage": "Copy image link",
       "copyJson": "Copy JSON link",
       "cacheNote": "GitHub caches images for a while, so the card may take a few minutes to change.",
       "copied": "Copied",
-      "copyFailed": "Could not copy"
+      "copyFailed": "Could not copy",
+      "recentFriends": "Show my friends what I played",
+      "recentFriendsHint": "Your friends see the latest songs from your YouTube Music history on your profile."
     },
     "password": {
       "title": "Password",
@@ -227,7 +230,11 @@
     "registration_closed": "New accounts are closed on this Lyra.",
     "too_many_tokens": "You already have the most tokens allowed. Revoke one to create another.",
     "account_suspended": "Your account is suspended. Talk to whoever runs this server.",
-    "protected_account": "You cannot do that to your own account or another admin's."
+    "protected_account": "You cannot do that to your own account or another admin's.",
+    "not_friends": "You can only do this with your friends.",
+    "self": "You cannot add yourself.",
+    "friend_not_linked": "Your friend has not linked a Google account yet.",
+    "needs_channel": "YouTube did not let you join."
   },
   "search": {
     "placeholder": "Songs, albums, artists, videos",
@@ -574,5 +581,49 @@
   },
   "announcements": {
     "dismiss": "Close announcement"
+  },
+  "social": {
+    "title": "Friends",
+    "yourUsername": "Your username is",
+    "addLabel": "Add by username",
+    "addPlaceholder": "username",
+    "add": "Add friend",
+    "requestSent": "Request sent to @{{username}}",
+    "nowFriends": "You and @{{username}} are now friends",
+    "empty": "No friends on Lyra yet. Ask for their username and add them here.",
+    "invites": "Playlist invitations",
+    "incoming": "Friend requests",
+    "friends": "Your friends ({{count}})",
+    "outgoing": "Sent requests",
+    "accept": "Accept",
+    "decline": "Decline",
+    "cancel": "Cancel",
+    "cancelRequest": "Cancel request",
+    "inviteText": "{{name}} invited you to “{{title}}”, a collaborative YouTube Music playlist.",
+    "join": "Join",
+    "joined": "You joined “{{title}}”",
+    "needsChannel": "YouTube requires your Google account to have a YouTube channel to join. It is free:",
+    "createChannel": "create my channel",
+    "profile": "Profile",
+    "editProfile": "Edit profile",
+    "createTogether": "Make a playlist together",
+    "unfriend": "Remove friend",
+    "unfriendTitle": "Remove friend?",
+    "unfriendText": "You will no longer see what each other plays. Playlists you share stay in YouTube Music.",
+    "createTitle": "Playlist together",
+    "createHint": "It is created in your YouTube Music as a collaborative, unlisted playlist (link only). {{name}} gets an invitation to join and add songs.",
+    "create": "Create and invite",
+    "friendNotLinked": "{{name}} has not linked a Google account yet, so there is no music to show and you cannot make playlists together.",
+    "nowPlaying": "Listening",
+    "listeningNow": "Listening now",
+    "lastHeard": "Played {{when}}",
+    "shared": "Playlists in common",
+    "recent": "Recently played",
+    "recentOff": "{{name}} does not share what they played.",
+    "recentOffSelf": "You do not share what you play. Turn it on in Profile → What you listen to.",
+    "recentEmpty": "Nothing yet.",
+    "publicPlaylists": "Public playlists",
+    "addToSee": "Add {{name}} as a friend to see what they listen to.",
+    "createNeedsGoogle": "Link your Google account in your profile to make playlists together."
   }
 }

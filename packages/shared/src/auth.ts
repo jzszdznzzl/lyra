@@ -98,6 +98,7 @@ export const UpdateProfileInput = z.object({
   language: z.enum(Language).exactOptional(),
   isYoutubeHistoryEnabled: z.boolean().exactOptional(),
   isNowPlayingPublic: z.boolean().exactOptional(),
+  isRecentSharedWithFriends: z.boolean().exactOptional(),
 });
 
 export type UpdateProfileInput = z.infer<typeof UpdateProfileInput>;
@@ -114,6 +115,8 @@ export const UserProfile = z.object({
   isYoutubeHistoryEnabled: z.boolean(),
   // Anyone can see the current or last song through the public widget.
   isNowPlayingPublic: z.boolean(),
+  // Friends can see the songs heard lately, read from the YouTube history.
+  isRecentSharedWithFriends: z.boolean(),
   // Only present for admins, so other accounts never see the field.
   isAdmin: z.literal(true).exactOptional(),
 });

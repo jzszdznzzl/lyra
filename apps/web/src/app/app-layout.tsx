@@ -1,4 +1,4 @@
-import { useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
 import { Link, Outlet, useCanGoBack, useRouter, useRouterState } from '@tanstack/react-router';
 import {
   ChevronLeft,
@@ -8,6 +8,7 @@ import {
   MonitorDown,
   Plus,
   Search,
+  Users,
   WifiOff,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -19,6 +20,7 @@ import { meQuery } from '../features/auth/api.ts';
 import { startConnect } from '../features/connect/connect-client.ts';
 import { CreatePlaylistDialog } from '../features/library/playlist-dialogs.tsx';
 import { useDownloads } from '../features/offline/downloads.ts';
+import { friendsQuery } from '../features/social/api.ts';
 import { MobilePlayer } from '../features/player/mobile-player.tsx';
 import { NowPlayingPanel } from '../features/player/now-playing-panel.tsx';
 import { GoogleRequiredDialog } from '../features/player/google-required-dialog.tsx';
@@ -44,6 +46,7 @@ const NAV_ITEMS = [
   { to: '/search', icon: Search, label: 'nav.search' },
   { to: '/explore', icon: Compass, label: 'nav.explore' },
   { to: '/downloads', icon: Download, label: 'nav.downloads' },
+  { to: '/friends', icon: Users, label: 'nav.friends' },
 ] as const;
 
 export function AppLayout() {
@@ -58,6 +61,9 @@ export function AppLayout() {
   const isHome = useRouterState({ select: (state) => state.location.pathname === '/' });
   const queryClient = useQueryClient();
   const [isScrolled, setIsScrolled] = useState(false);
+  const friends = useQuery(friendsQuery);
+  // Requests and playlist invitations waiting for an answer.
+  const pendingCount = (friends.data?.incoming.length ?? 0) + (friends.data?.invites.length ?? 0);
 
   useMediaSession();
   useCoverTheme();
@@ -108,6 +114,11 @@ export function AppLayout() {
           >
             <Icon className="size-[18px]" />
             {t(label)}
+            {to === '/friends' && pendingCount > 0 ? (
+              <span className="ml-auto grid h-5 min-w-5 place-items-center rounded-full bg-accent px-1.5 text-[11px] font-bold text-white">
+                {pendingCount}
+              </span>
+            ) : null}
           </Link>
         ))}
         <div className="flex items-center justify-between px-3 pt-6 pb-2">
@@ -191,10 +202,15 @@ export function AppLayout() {
           <Link
             key={to}
             to={to}
-            className="flex flex-col items-center gap-1 px-3 py-1 text-[11px] font-semibold text-muted data-[status=active]:text-text"
+            className="relative flex flex-col items-center gap-1 px-2 py-1 text-[11px] font-semibold text-muted data-[status=active]:text-text"
           >
             <Icon className="size-5" />
             {t(label)}
+            {to === '/friends' && pendingCount > 0 ? (
+              <span className="absolute top-0 right-1 grid h-4 min-w-4 place-items-center rounded-full bg-accent px-1 text-[10px] font-bold text-white">
+                {pendingCount}
+              </span>
+            ) : null}
           </Link>
         ))}
       </nav>

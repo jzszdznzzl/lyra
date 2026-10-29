@@ -10,3 +10,4 @@ export * from './music.ts';
 export * from './now-playing.ts';
 export * from './passkey-options.ts';
 export * from './result.ts';
+export * from './social.ts';
