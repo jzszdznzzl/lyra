@@ -649,5 +649,30 @@
     "publicPlaylists": "Playlists públicas",
     "addToSee": "Agrega a {{name}} como amigo para ver lo que escucha.",
     "createNeedsGoogle": "Vincula tu cuenta de Google en tu perfil para crear playlists juntos."
+  },
+  "folders": {
+    "folder": "Carpeta",
+    "new": "Nueva carpeta",
+    "rename": "Renombrar",
+    "delete": "Eliminar carpeta",
+    "name": "Nombre",
+    "namePlaceholder": "Gimnasio, Viaje, Para dormir…",
+    "save": "Guardar",
+    "create": "Crear carpeta",
+    "pick": "Añadir a carpeta",
+    "none": "Todavía no tienes carpetas.",
+    "added": "Añadida a «{{name}}»",
+    "removed": "Quitada de «{{name}}»",
+    "addTo": "Añadir a carpeta",
+    "removeFrom": "Quitar de la carpeta",
+    "notFound": "Esta carpeta ya no existe.",
+    "empty": "Esta carpeta está vacía. Añade canciones descargadas desde su menú (⋯ → Añadir a carpeta).",
+    "deleteConfirm": "¿Eliminar «{{name}}»? Las canciones siguen descargadas.",
+    "views": {
+      "songs": "Canciones",
+      "folders": "Carpetas",
+      "albums": "Álbumes",
+      "artists": "Artistas"
+    }
   }
 }

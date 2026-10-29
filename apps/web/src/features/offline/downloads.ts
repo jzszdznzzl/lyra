@@ -8,6 +8,7 @@ import { api } from '../../lib/api.ts';
 import { imageUrl } from '../../lib/image.ts';
 import { AUDIO_CACHE, offlineAudioKey } from '../../offline/keys.ts';
 import { DownloadRecord, offlineDb } from './db.ts';
+import { useFolders } from './folders.ts';
 
 interface DownloadsState {
   records: Map<string, DownloadRecord>;
@@ -155,6 +156,7 @@ export const useDownloads = create<DownloadsState>()((set, get) => {
       }
 
       set({ records });
+      await useFolders.getState().load();
     },
     download: (tracks, quality) => {
       const pending = tracks.filter(
@@ -185,6 +187,7 @@ export const useDownloads = create<DownloadsState>()((set, get) => {
       const records = new Map(get().records);
       ids.forEach((id) => records.delete(id));
       set({ records });
+      await useFolders.getState().forgetTracks(ids);
     },
   };
 });

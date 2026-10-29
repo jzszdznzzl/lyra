@@ -649,5 +649,30 @@
     "publicPlaylists": "Public playlists",
     "addToSee": "Add {{name}} as a friend to see what they listen to.",
     "createNeedsGoogle": "Link your Google account in your profile to make playlists together."
+  },
+  "folders": {
+    "folder": "Folder",
+    "new": "New folder",
+    "rename": "Rename",
+    "delete": "Delete folder",
+    "name": "Name",
+    "namePlaceholder": "Gym, Road trip, Sleep…",
+    "save": "Save",
+    "create": "Create folder",
+    "pick": "Add to folder",
+    "none": "You don't have any folders yet.",
+    "added": "Added to “{{name}}”",
+    "removed": "Removed from “{{name}}”",
+    "addTo": "Add to folder",
+    "removeFrom": "Remove from folder",
+    "notFound": "This folder no longer exists.",
+    "empty": "This folder is empty. Add downloaded songs from their menu (⋯ → Add to folder).",
+    "deleteConfirm": "Delete “{{name}}”? The songs stay downloaded.",
+    "views": {
+      "songs": "Songs",
+      "folders": "Folders",
+      "albums": "Albums",
+      "artists": "Artists"
+    }
   }
 }

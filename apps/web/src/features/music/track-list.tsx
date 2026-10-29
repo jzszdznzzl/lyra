@@ -17,6 +17,8 @@ interface TrackListProps {
   showCovers?: boolean;
   showIndex?: boolean;
   playlist?: PlaylistContext;
+  // A folder of downloads, whose songs can be taken out of it from their menu.
+  folderId?: string;
   // Playlists and albums keep their order; elsewhere a song starts a radio of similar ones.
   shouldPlayInOrder?: boolean;
 }
@@ -26,6 +28,7 @@ export function TrackList({
   showCovers = true,
   showIndex = false,
   playlist,
+  folderId,
   shouldPlayInOrder = false,
 }: TrackListProps) {
   const { t } = useTranslation();
@@ -105,7 +108,7 @@ export function TrackList({
                 onClick={(event) => event.stopPropagation()}
                 onKeyDown={(event) => event.stopPropagation()}
               >
-                <TrackMenu track={track} playlist={playlist} />
+                <TrackMenu track={track} playlist={playlist} folderId={folderId} />
               </span>
             </div>
           </li>

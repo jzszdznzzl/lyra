@@ -4,6 +4,8 @@ import {
   CircleMinus,
   Disc3,
   Download,
+  FolderInput,
+  FolderMinus,
   Heart,
   ListEnd,
   ListPlus,
@@ -22,6 +24,8 @@ import { Menu } from '../../ui/menu.tsx';
 import type { MenuItem } from '../../ui/menu.tsx';
 import { meQuery } from '../auth/api.ts';
 import { useDownloads } from '../offline/downloads.ts';
+import { AddToFolderDialog } from '../offline/folder-dialogs.tsx';
+import { useFolders } from '../offline/folders.ts';
 import { useShare } from '../share/share-button.tsx';
 import { ShareKind } from '../share/share.ts';
 import { usePlayerStore } from '../player/player-store.ts';
@@ -37,9 +41,11 @@ export interface PlaylistContext {
 interface TrackMenuProps {
   track: Track;
   playlist?: PlaylistContext | undefined;
+  // Set inside a folder of downloads, so the song can be taken out of it.
+  folderId?: string | undefined;
 }
 
-export function TrackMenu({ track, playlist }: TrackMenuProps) {
+export function TrackMenu({ track, playlist, folderId }: TrackMenuProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -47,6 +53,7 @@ export function TrackMenu({ track, playlist }: TrackMenuProps) {
   const { canLike, isLiked, toggle } = useLikes();
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
   const [isPicking, setIsPicking] = useState(false);
+  const [isPickingFolder, setIsPickingFolder] = useState(false);
   const { playNext, addToQueue } = usePlayerStore.getState();
   const hasLibrary = me?.isGoogleLinked ?? false;
   const isDownloaded = useDownloads((state) => state.records.has(track.id));
@@ -81,6 +88,22 @@ export function TrackMenu({ track, playlist }: TrackMenuProps) {
             useDownloads.getState().download([track], usePlayerStore.getState().settings.quality),
         },
   );
+
+  if (isDownloaded) {
+    items.push({
+      label: t('folders.addTo'),
+      icon: <FolderInput className="size-4" />,
+      onSelect: () => setIsPickingFolder(true),
+    });
+  }
+
+  if (folderId) {
+    items.push({
+      label: t('folders.removeFrom'),
+      icon: <FolderMinus className="size-4" />,
+      onSelect: () => void useFolders.getState().removeTracks(folderId, [track.id]),
+    });
+  }
 
   if (hasLibrary) {
     items.push({
@@ -150,6 +173,9 @@ export function TrackMenu({ track, playlist }: TrackMenuProps) {
       {anchor ? <Menu anchor={anchor} items={items} onClose={() => setAnchor(null)} /> : null}
       {isPicking ? (
         <AddToPlaylistDialog tracks={[track]} onClose={() => setIsPicking(false)} />
+      ) : null}
+      {isPickingFolder ? (
+        <AddToFolderDialog trackIds={[track.id]} onClose={() => setIsPickingFolder(false)} />
       ) : null}
     </>
   );

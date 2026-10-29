@@ -28,7 +28,9 @@ import { HistoryPage } from '../features/music/history-page.tsx';
 import { LikedPage, PlaylistPage } from '../features/music/playlist-page.tsx';
 import { SearchPage } from '../features/music/search-page.tsx';
 import { TrackPage } from '../features/music/track-page.tsx';
-import { DownloadsPage } from '../features/offline/downloads-page.tsx';
+import { DownloadGroupKind } from '../features/offline/download-groups.ts';
+import { DownloadGroupPage } from '../features/offline/download-group-page.tsx';
+import { DownloadsPage, DownloadsSearch } from '../features/offline/downloads-page.tsx';
 import { ProfilePage } from '../features/profile/profile-page.tsx';
 import { FriendsPage } from '../features/social/friends-page.tsx';
 import { UserPage } from '../features/social/user-page.tsx';
@@ -202,7 +204,26 @@ const exploreRoute = createRoute({
 const downloadsRoute = createRoute({
   getParentRoute: () => appRoute,
   path: '/downloads',
+  validateSearch: (search) => DownloadsSearch.parse(search),
   component: DownloadsPage,
+});
+
+const downloadFolderRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/downloads/folder/$id',
+  component: () => <DownloadGroupPage kind={DownloadGroupKind.Folder} />,
+});
+
+const downloadAlbumRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/downloads/album/$id',
+  component: () => <DownloadGroupPage kind={DownloadGroupKind.Album} />,
+});
+
+const downloadArtistRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/downloads/artist/$id',
+  component: () => <DownloadGroupPage kind={DownloadGroupKind.Artist} />,
 });
 
 const profileRoute = createRoute({
@@ -246,6 +267,9 @@ const routeTree = rootRoute.addChildren([
     userRoute,
     exploreRoute,
     downloadsRoute,
+    downloadFolderRoute,
+    downloadAlbumRoute,
+    downloadArtistRoute,
     profileRoute,
     adminRoute,
   ]),
