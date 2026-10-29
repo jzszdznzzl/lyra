@@ -8,14 +8,18 @@ afterEach(() => {
 
 describe('pageTransition', () => {
   test('animates real page changes only', () => {
-    expect(pageTransition({ pathChanged: true })).toEqual(['page']);
+    expect(pageTransition({ fromLocation: '/', pathChanged: true })).toEqual(['page']);
     // Opening or closing an overlay, or typing a search, keeps the path.
-    expect(pageTransition({ pathChanged: false })).toBe(false);
+    expect(pageTransition({ fromLocation: '/', pathChanged: false })).toBe(false);
+  });
+
+  test('does not animate the first page of a load', () => {
+    expect(pageTransition({ pathChanged: true })).toBe(false);
   });
 
   test('never animates with motion turned off', () => {
     document.documentElement.dataset['motion'] = 'reduced';
 
-    expect(pageTransition({ pathChanged: true })).toBe(false);
+    expect(pageTransition({ fromLocation: '/', pathChanged: true })).toBe(false);
   });
 });

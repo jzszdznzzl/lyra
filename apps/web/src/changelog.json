@@ -8,14 +8,16 @@
         "El crossfade funciona en todos los cambios de canción, sin silencio a la mitad y sin cortar el final.",
         "Nueva página de Historial con lo que escuchaste en YouTube Music.",
         "«Acerca de Lyra» se abre en una ventana con qué es Lyra, tus datos y los créditos.",
-        "Amigos: agrega gente por su usuario, mira su perfil (lo que escucha, sus playlists públicas y las que comparten) y creen juntos una playlist colaborativa de YouTube Music."
+        "Amigos: agrega gente por su usuario, mira su perfil (lo que escucha, sus playlists públicas y las que comparten) y creen juntos una playlist colaborativa de YouTube Music.",
+        "Logo nuevo: barras de ecualizador que forman la «L», y una animación de bienvenida al abrir la app (tócala para saltarla; no aparece si apagas las animaciones)."
       ],
       "en": [
         "Picking a song outside a playlist or album starts a radio of similar songs, in a different order every time.",
         "Crossfade works on every song change, with no silence in the middle and no cut-off ending.",
         "New History page with what you heard on YouTube Music.",
         "“About Lyra” opens in a window with what Lyra is, your data and the credits.",
-        "Friends: add people by username, see their profile (what they play, their public playlists and the ones you share) and make a collaborative YouTube Music playlist together."
+        "Friends: add people by username, see their profile (what they play, their public playlists and the ones you share) and make a collaborative YouTube Music playlist together.",
+        "New logo: equalizer bars that form the “L”, plus a welcome animation when the app opens (tap to skip; it does not show with animations off)."
       ]
     }
   },

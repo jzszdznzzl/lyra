@@ -3,6 +3,7 @@ import { RouterProvider } from '@tanstack/react-router';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 
+import { hideBootSplash, hideBootSplashLater } from './app/boot-splash.ts';
 import { createAppRouter } from './app/router.tsx';
 import { startUpdates } from './app/updates.ts';
 import { applyMotion, followSystemMotion, readStoredMotion } from './app/motion.ts';
@@ -17,6 +18,7 @@ const queryClient = new QueryClient({
 const router = createAppRouter(queryClient);
 
 async function start() {
+  hideBootSplashLater();
   startUpdates();
   applyTheme(readStoredTheme());
   followSystemTheme();
@@ -40,5 +42,6 @@ async function start() {
 }
 
 start().catch((error: unknown) => {
+  hideBootSplash();
   console.error(error);
 });

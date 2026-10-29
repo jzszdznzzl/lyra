@@ -2,10 +2,12 @@ import { Link } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 
 import { useDocumentTitle } from '../lib/use-document-title.ts';
+import { useHideBootSplash } from './boot-splash.ts';
 import { Page } from '../ui/page.tsx';
 
 export function NotFoundPage() {
   const { t } = useTranslation();
+  useHideBootSplash();
   useDocumentTitle(t('states.notFound'));
 
   return (
@@ -23,6 +25,7 @@ export function NotFoundPage() {
 
 export function CrashPage() {
   const { t } = useTranslation();
+  useHideBootSplash();
   useDocumentTitle(t('states.crash'));
 
   return (

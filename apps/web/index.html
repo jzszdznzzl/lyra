@@ -15,8 +15,10 @@
       href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <!-- Shown until the app renders (first visit, slow network, installing an update). Plain CSS:
-         scripts cannot run before the bundle, and the page policy forbids inline ones. -->
+    <!-- Shown until the app renders (first visit, slow network, installing an update): the logo
+         at the size and place where the opening animation (app/intro-splash.tsx) starts, so the
+         two read as one. Plain CSS: scripts cannot run before the bundle, and the page policy
+         forbids inline ones. -->
     <style>
       .splash {
         position: fixed;
@@ -25,15 +27,33 @@
         place-items: center;
         background: #0b0a0f;
       }
-      .splash img {
-        width: 72px;
-        height: 72px;
-        animation: splash-pulse 1.4s ease-in-out infinite;
+      .splash svg {
+        width: 177px;
+        height: 177px;
       }
-      @keyframes splash-pulse {
-        50% {
-          transform: scale(0.88);
-          opacity: 0.6;
+      .splash .bar {
+        transform-box: fill-box;
+        transform-origin: bottom;
+        animation: splash-eq 0.42s ease-in-out infinite alternate;
+      }
+      .splash .b1 {
+        --from: 0.45;
+      }
+      .splash .b2 {
+        --from: 2.2;
+        animation-delay: 0.08s;
+      }
+      .splash .b3 {
+        --from: 0.5;
+        animation-delay: 0.04s;
+      }
+      .splash .b4 {
+        --from: 2.6;
+        animation-delay: 0.12s;
+      }
+      @keyframes splash-eq {
+        from {
+          transform: scaleY(var(--from));
         }
       }
       @media (prefers-color-scheme: light) {
@@ -42,17 +62,31 @@
         }
       }
       @media (prefers-reduced-motion: reduce) {
-        .splash img {
+        .splash .bar {
           animation: none;
         }
       }
     </style>
   </head>
   <body>
-    <div id="root">
-      <div class="splash" aria-hidden="true">
-        <img src="/icons/favicon.svg" alt="" />
-      </div>
+    <div id="root"></div>
+    <div id="boot-splash" class="splash" aria-hidden="true">
+      <svg viewBox="0 0 128 128">
+        <defs>
+          <linearGradient id="splash-g" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#f39c4a" />
+            <stop offset="0.55" stop-color="#e0457b" />
+            <stop offset="1" stop-color="#8b2a6b" />
+          </linearGradient>
+        </defs>
+        <rect width="128" height="128" rx="32" fill="url(#splash-g)" />
+        <g fill="#fff">
+          <rect class="bar b1" x="24" y="24" width="15" height="80" rx="7.5" />
+          <rect class="bar b2" x="46" y="76" width="15" height="28" rx="7.5" fill-opacity="0.9" />
+          <rect class="bar b3" x="68" y="62" width="15" height="42" rx="7.5" fill-opacity="0.8" />
+          <rect class="bar b4" x="90" y="84" width="15" height="20" rx="7.5" fill-opacity="0.7" />
+        </g>
+      </svg>
     </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

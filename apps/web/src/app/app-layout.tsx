@@ -34,6 +34,8 @@ import { Brand } from '../ui/brand.tsx';
 import { useInstallPrompt } from '../lib/use-install-prompt.ts';
 import { useOnline } from '../lib/use-online.ts';
 import { Toaster } from '../ui/toast.tsx';
+import { useHideBootSplash } from './boot-splash.ts';
+import { IntroSplash } from './intro-splash.tsx';
 import { handleShortcut } from './shortcuts.ts';
 import { LibrarySidebar } from './library-sidebar.tsx';
 import { UpdateBanner } from './update-banner.tsx';
@@ -67,6 +69,7 @@ export function AppLayout() {
 
   useMediaSession();
   useCoverTheme();
+  useHideBootSplash();
   useEffect(
     () =>
       startConnect({
@@ -193,6 +196,7 @@ export function AppLayout() {
       <PlayerBar />
       <MobilePlayer />
       <Toaster />
+      <IntroSplash />
       <UpdateBanner />
       <ImmersiveView />
       <GoogleRequiredDialog />
