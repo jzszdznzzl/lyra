@@ -1,5 +1,35 @@
 [
   {
+    "id": "2026-10-29-mix",
+    "date": "2026-10-29",
+    "changes": {
+      "es": [
+        "Mezcla tipo DJ: las canciones se enlazan en el compás y al mismo tempo. Actívala en Ajustes de audio.",
+        "Volumen hasta 200% (con aviso), un limitador que evita la saturación y volumen parejo entre canciones.",
+        "Tus ajustes de audio (crossfade, mezcla DJ, ecualizador, volumen parejo, limitador, reproducción automática y letras) se sincronizan entre tus dispositivos al instante. El volumen y la calidad siguen siendo de cada dispositivo.",
+        "Botones − y + junto a los deslizadores de volumen, crossfade y ecualizador; mantenlos apretados para avanzar rápido.",
+        "Descargas: carpetas propias y vistas por álbum y por artista.",
+        "Temporizador para dormir: la música se apaga poco a poco después de un tiempo o al terminar la canción.",
+        "Amigos: mira qué están escuchando ahora, si lo comparten (Perfil → Lo que escuchas).",
+        "Tu año en Lyra: artistas y canciones favoritas y cuándo escuchas más, desde Historial.",
+        "Arreglado: al volver a la app en el teléfono mientras suena en otro dispositivo, la barra seguía avanzando y se salía de la pantalla.",
+        "Arreglado: Escape cierra las ventanas abiertas desde el menú de una canción."
+      ],
+      "en": [
+        "DJ-style mix: songs blend on the beat and at the same tempo. Turn it on in Audio settings.",
+        "Volume up to 200% (with a warning), a limiter that prevents distortion, and even loudness between songs.",
+        "Your audio settings (crossfade, DJ mix, equalizer, even loudness, limiter, autoplay and lyrics) sync across your devices instantly. Volume and quality stay per device.",
+        "− and + buttons next to the volume, crossfade and equalizer sliders; hold them to move faster.",
+        "Downloads: your own folders, plus views by album and by artist.",
+        "Sleep timer: the music fades out after a while or at the end of the song.",
+        "Friends: see what they are playing now, if they share it (Profile → What you listen to).",
+        "Your year in Lyra: favourite artists and songs and when you listen most, from History.",
+        "Fixed: back in the app on a phone while another device plays, the progress bar kept growing past the screen.",
+        "Fixed: Escape closes windows opened from a song's menu."
+      ]
+    }
+  },
+  {
     "id": "2026-10-29-queue",
     "date": "2026-10-29",
     "changes": {
