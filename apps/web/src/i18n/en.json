@@ -201,6 +201,15 @@
       "system": "System",
       "on": "On",
       "off": "Off"
+    },
+    "notifications": {
+      "title": "Notifications",
+      "toggle": "Notifications on this device",
+      "hint": "We let you know when someone sends you a friend request, accepts yours or invites you to a playlist. Turn it on separately on each device.",
+      "unsupported": "This browser does not support notifications.",
+      "needsInstall": "On iPhone and iPad, first add Lyra to the home screen (Share → Add to Home Screen) and open it from there.",
+      "denied": "You blocked notifications from Lyra. To turn them on, allow them in your browser’s site settings.",
+      "failed": "Notifications could not be turned on. Try again."
     }
   },
   "errors": {

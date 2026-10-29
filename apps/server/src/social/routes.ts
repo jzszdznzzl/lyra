@@ -5,6 +5,7 @@ import { CreateSharedPlaylistInput, FriendStatus, SocialError } from '@lyra/shar
 import type { PlaylistCard, Track, UserMusic, UserPage } from '@lyra/shared';
 
 import { authPlugin } from '../auth/plugin.ts';
+import { PushKind } from '../push/messages.ts';
 import { isGoogleLinked } from '../google/accounts.ts';
 import { sessionRateLimit } from '../security.ts';
 import { getHistory, getPublicPlaylists } from '../ytmusic/catalog.ts';
@@ -25,6 +26,7 @@ import {
 } from './friends.ts';
 import type { ImageRegistry } from '../images/registry.ts';
 import type { NowPlayingService } from '../now-playing/now-playing.ts';
+import type { PushService } from '../push/push.ts';
 import type { InnertubePool } from '../ytmusic/innertube.ts';
 import type { AppContext } from '../context.ts';
 
@@ -55,6 +57,7 @@ export function socialRoutes(
   pool: InnertubePool,
   images: ImageRegistry,
   nowPlaying: NowPlayingService,
+  push: PushService,
 ) {
   const publicPlaylists = new Map<string, CachedPlaylists>();
 
@@ -159,7 +162,18 @@ export function socialRoutes(
             return status(422, { error: SocialError.Self });
           }
 
-          return { status: await requestFriend(ctx, user.id, other.id) };
+          const before = await friendStatus(ctx, user.id, other.id);
+          const result = await requestFriend(ctx, user.id, other.id);
+          const notice = { name: user.name, username: user.username };
+
+          // Only real changes notify; not awaited, so the answer does not wait for push services.
+          if (before === FriendStatus.None && result === FriendStatus.Outgoing) {
+            void push.notify(other.id, { kind: PushKind.FriendRequest, ...notice });
+          } else if (before === FriendStatus.Incoming && result === FriendStatus.Friends) {
+            void push.notify(other.id, { kind: PushKind.FriendAccepted, ...notice });
+          }
+
+          return { status: result };
         },
         { isSignedIn: true, params: UsernameParams },
       )
@@ -211,6 +225,12 @@ export function socialRoutes(
             inviteToken: created.data.inviteToken,
             ownerId: user.id,
             friendId: friend.id,
+          });
+
+          void push.notify(friend.id, {
+            kind: PushKind.PlaylistInvite,
+            name: user.name,
+            title: body.title,
           });
 
           return status(201, { id: created.data.id });

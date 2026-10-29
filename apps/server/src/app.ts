@@ -19,6 +19,8 @@ import { NowPlayingService } from './now-playing/now-playing.ts';
 import { nowPlayingRoutes } from './now-playing/routes.ts';
 import { WidgetCovers } from './now-playing/widget-covers.ts';
 import { streamRoutes } from './stream/routes.ts';
+import { PushService } from './push/push.ts';
+import { pushRoutes } from './push/routes.ts';
 import { originGuard } from './security.ts';
 import { socialRoutes } from './social/routes.ts';
 import { userRoutes } from './users/routes.ts';
@@ -26,9 +28,12 @@ import { InnertubePool } from './ytmusic/innertube.ts';
 import { musicRoutes } from './ytmusic/routes.ts';
 import type { AppContext } from './context.ts';
 import type { RemoteLoginTarget } from './google/remote-login.ts';
+import type { PushSender } from './push/push.ts';
 
 export interface AppOptions {
   loginTarget?: RemoteLoginTarget;
+  // Tests pass a fake, so nothing reaches real push services.
+  pushSender?: PushSender;
 }
 
 export function createApp(ctx: AppContext, options: AppOptions = {}) {
@@ -43,6 +48,7 @@ export function createApp(ctx: AppContext, options: AppOptions = {}) {
     hub.kick(userId);
   };
   const nowPlaying = new NowPlayingService(ctx, hub);
+  const push = new PushService(ctx, options.pushSender);
   const covers = new WidgetCovers(images, new URL(ctx.env.PUBLIC_URL).origin);
 
   return new Elysia({ prefix: '/api' })
@@ -68,7 +74,8 @@ export function createApp(ctx: AppContext, options: AppOptions = {}) {
       }),
     )
     .use(musicRoutes(ctx, pool, images))
-    .use(socialRoutes(ctx, pool, images, nowPlaying))
+    .use(socialRoutes(ctx, pool, images, nowPlaying, push))
+    .use(pushRoutes(ctx, push))
     .use(streamRoutes(ctx, pool))
     .use(lyricsRoutes(ctx, pool))
     .use(connectRoutes(ctx, hub))

@@ -4,6 +4,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 
 import { hideBootSplash, hideBootSplashLater } from './app/boot-splash.ts';
+import { followNotificationLinks } from './app/notification-links.ts';
 import { createAppRouter } from './app/router.tsx';
 import { startUpdates } from './app/updates.ts';
 import { applyMotion, followSystemMotion, readStoredMotion } from './app/motion.ts';
@@ -20,6 +21,7 @@ const router = createAppRouter(queryClient);
 async function start() {
   hideBootSplashLater();
   startUpdates();
+  followNotificationLinks((path) => router.history.push(path));
   applyTheme(readStoredTheme());
   followSystemTheme();
   applyMotion(readStoredMotion());

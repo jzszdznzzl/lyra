@@ -201,6 +201,15 @@
       "system": "Sistema",
       "on": "Activadas",
       "off": "Desactivadas"
+    },
+    "notifications": {
+      "title": "Notificaciones",
+      "toggle": "Notificaciones en este dispositivo",
+      "hint": "Te avisamos cuando alguien te envía una solicitud de amistad, la acepta o te invita a una playlist. Se activa por separado en cada dispositivo.",
+      "unsupported": "Este navegador no admite notificaciones.",
+      "needsInstall": "En iPhone y iPad, primero agrega Lyra a la pantalla de inicio (Compartir → Agregar a inicio) y ábrela desde ahí.",
+      "denied": "Bloqueaste las notificaciones de Lyra. Para activarlas, permítelas en los ajustes del sitio de tu navegador.",
+      "failed": "No se pudieron activar las notificaciones. Inténtalo de nuevo."
     }
   },
   "errors": {

@@ -188,6 +188,21 @@ export const sharedPlaylistMembers = sqliteTable(
   ],
 );
 
+// One row per browser or installed app that accepted notifications.
+export const pushSubscriptions = sqliteTable(
+  'push_subscriptions',
+  {
+    endpoint: text('endpoint').primaryKey(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    p256dh: text('p256dh').notNull(),
+    auth: text('auth').notNull(),
+    createdAt: timestamp('created_at').notNull(),
+  },
+  (table) => [index('push_subscriptions_user_idx').on(table.userId)],
+);
+
 // Settings changed from the admin panel, one JSON value per key; the env file holds the defaults.
 export const settings = sqliteTable('settings', {
   key: text('key').primaryKey(),

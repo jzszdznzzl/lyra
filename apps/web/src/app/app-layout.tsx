@@ -20,6 +20,7 @@ import { meQuery } from '../features/auth/api.ts';
 import { startConnect } from '../features/connect/connect-client.ts';
 import { CreatePlaylistDialog } from '../features/library/playlist-dialogs.tsx';
 import { useDownloads } from '../features/offline/downloads.ts';
+import { syncPushSubscription } from '../features/notifications/push.ts';
 import { friendsQuery } from '../features/social/api.ts';
 import { MobilePlayer } from '../features/player/mobile-player.tsx';
 import { NowPlayingPanel } from '../features/player/now-playing-panel.tsx';
@@ -80,6 +81,7 @@ export function AppLayout() {
   );
   useEffect(() => {
     void useDownloads.getState().load();
+    syncPushSubscription().catch(() => undefined);
   }, []);
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => handleShortcut(event);

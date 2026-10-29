@@ -7,11 +7,15 @@ import {
 import { NavigationRoute, registerRoute } from 'workbox-routing';
 import type { PrecacheEntry } from 'workbox-precaching';
 
+import { PushMessage } from '@lyra/shared';
+
 import { AUDIO_CACHE, IMAGE_CACHE, offlineAudioKey } from './offline/keys.ts';
+import type { OpenPathMessage } from './sw-messages.ts';
 
 declare const self: ServiceWorkerGlobalScope & { __WB_MANIFEST: (string | PrecacheEntry)[] };
 
 const RANGE_PATTERN = /^bytes=(\d*)-(\d*)$/;
+const NOTIFICATION_ICON = '/icons/icon-192.png';
 const IMAGE_MAX_ENTRIES = 3000;
 
 /** Answers a range request from a whole cached file, as <audio> needs to seek. */
@@ -118,4 +122,57 @@ self.addEventListener('message', (event) => {
   ) {
     void self.skipWaiting();
   }
+});
+
+// Friend requests and playlist invitations, sent by the server (push/push.ts).
+self.addEventListener('push', (event) => {
+  const parsed = PushMessage.safeParse(event.data?.json());
+
+  if (!parsed.success) {
+    return;
+  }
+
+  const { title, body, url, tag } = parsed.data;
+  event.waitUntil(
+    self.registration.showNotification(title, {
+      body,
+      tag,
+      icon: NOTIFICATION_ICON,
+      badge: NOTIFICATION_ICON,
+      data: { url },
+    }),
+  );
+});
+
+/**
+ * Shows the notification's page. An open app changes page itself: reloading it would stop the
+ * music. Otherwise the app opens on that page.
+ */
+async function openFromNotification(url: string) {
+  const windows = await self.clients.matchAll({ type: 'window' });
+  const open = windows[0];
+
+  if (open) {
+    await open.focus();
+    open.postMessage({ type: 'open-path', path: url } satisfies OpenPathMessage);
+
+    return;
+  }
+
+  await self.clients.openWindow(url);
+}
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const data: unknown = event.notification.data;
+  const url =
+    typeof data === 'object' &&
+    data !== null &&
+    'url' in data &&
+    typeof data.url === 'string' &&
+    data.url.startsWith('/')
+      ? data.url
+      : '/';
+
+  event.waitUntil(openFromNotification(url));
 });
