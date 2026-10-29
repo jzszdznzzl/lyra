@@ -16,6 +16,7 @@ import {
   versionLabel,
 } from '../../app/version.ts';
 import { formatRelative } from '../../lib/format.ts';
+import { LogoMark } from '../../ui/brand.tsx';
 import { Button, ButtonVariant } from '../../ui/button.tsx';
 import { Dialog } from '../../ui/dialog.tsx';
 import { Notice, NoticeTone } from '../../ui/notice.tsx';
@@ -100,9 +101,7 @@ function AboutDialog({ onClose }: { onClose: () => void }) {
   return (
     <Dialog title={t('profile.about.title')} onClose={onClose}>
       <div className="flex flex-col items-center gap-2 text-center">
-        <span className="grid size-16 place-items-center rounded-[20px] bg-[conic-gradient(from_200deg,var(--accent),var(--accent-2),var(--accent))] shadow-lg">
-          <span className="size-5 rounded-full bg-bg" />
-        </span>
+        <LogoMark className="size-16 drop-shadow-lg" />
         <p className="text-2xl font-extrabold tracking-tight">lyra</p>
         <p className="font-mono text-xs text-muted">{versionLabel(currentBuild.version)}</p>
       </div>
@@ -204,9 +203,7 @@ export function AboutSection() {
 
   return (
     <section className="flex items-center gap-4 rounded-2xl border border-line bg-panel p-5 backdrop-blur-2xl">
-      <span className="grid size-11 shrink-0 place-items-center rounded-[13px] bg-[conic-gradient(from_200deg,var(--accent),var(--accent-2),var(--accent))]">
-        <span className="size-3.5 rounded-full bg-bg" />
-      </span>
+      <LogoMark className="size-11 shrink-0" />
       <div className="min-w-0 flex-1">
         <p className="font-bold tracking-tight">{t('profile.about.title')}</p>
         <p className="truncate text-sm text-muted">

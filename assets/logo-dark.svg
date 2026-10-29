@@ -7,8 +7,13 @@
     </linearGradient>
   </defs>
   <g transform="translate(16 16)">
-    <rect width="128" height="128" rx="36" fill="url(#bg)"/>
-    <circle cx="64" cy="64" r="22" fill="#0B0A0F"/>
+    <rect width="128" height="128" rx="32" fill="url(#bg)"/>
+    <g fill="#FFFFFF">
+      <rect x="24" y="24" width="15" height="80" rx="7.5"/>
+      <rect x="46" y="76" width="15" height="28" rx="7.5" fill-opacity="0.9"/>
+      <rect x="68" y="62" width="15" height="42" rx="7.5" fill-opacity="0.8"/>
+      <rect x="90" y="84" width="15" height="20" rx="7.5" fill-opacity="0.7"/>
+    </g>
   </g>
   <text x="172" y="106" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="72" font-weight="800" letter-spacing="-1.5" fill="#F8FAFC">ly<tspan fill="#F39C4A">ra</tspan></text>
 </svg>

@@ -6,6 +6,6 @@
       <stop offset="1" stop-color="#8b2a6b"/>
     </linearGradient>
   </defs>
-  <rect x="4.48" y="4.48" width="55.04" height="55.04" rx="15.411200000000001" fill="url(#g)"/>
-  <circle cx="32" cy="32" r="9.3568" fill="#0b0a0f"/>
+  <rect x="4.48" y="4.48" width="55.04" height="55.04" rx="13.76" fill="url(#g)"/>
+  <g transform="translate(4.48 4.48) scale(0.43)"><rect x="24" y="24" width="15" height="80" rx="7.5" fill="#fff" fill-opacity="1"/><rect x="46" y="76" width="15" height="28" rx="7.5" fill="#fff" fill-opacity="0.9"/><rect x="68" y="62" width="15" height="42" rx="7.5" fill="#fff" fill-opacity="0.8"/><rect x="90" y="84" width="15" height="20" rx="7.5" fill="#fff" fill-opacity="0.7"/></g>
 </svg>

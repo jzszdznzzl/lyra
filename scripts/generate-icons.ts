@@ -2,16 +2,33 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import sharp from 'sharp';
 
-// Run with: bun scripts/generate-icons.ts (from apps/server, where sharp is installed).
+// Run from apps/server, where sharp is installed:
+//   NODE_PATH=$PWD/node_modules bun ../../scripts/generate-icons.ts
 const OUT = join(import.meta.dirname, '..', 'apps', 'web', 'public', 'icons');
 
-/** The brand mark: a rounded tile with the cover-art gradient and a record hole. */
+// The equalizer bars that also draw an "L", in a 128-unit square (same as apps/web/src/ui/brand.tsx).
+const BARS = [
+  { x: 24, y: 24, height: 80, opacity: 1 },
+  { x: 46, y: 76, height: 28, opacity: 0.9 },
+  { x: 68, y: 62, height: 42, opacity: 0.8 },
+  { x: 90, y: 84, height: 20, opacity: 0.7 },
+] as const;
+const BAR_WIDTH = 15;
+const MARK_UNITS = 128;
+// Maskable icons are cropped to a circle or squircle; the bars shrink into the 80% safe zone.
+const MASKABLE_SCALE = 0.78;
+
+/** The brand mark: a rounded tile with the cover-art gradient and the equalizer "L". */
 function mark(size: number, isMaskable: boolean) {
-  // Maskable icons are cropped to a circle or squircle; keep the mark inside the 80% safe zone.
   const tile = isMaskable ? size : size * 0.86;
   const offset = (size - tile) / 2;
-  const radius = isMaskable ? 0 : tile * 0.28;
-  const hole = tile * (isMaskable ? 0.14 : 0.17);
+  const radius = isMaskable ? 0 : tile * 0.25;
+  const scale = (tile / MARK_UNITS) * (isMaskable ? MASKABLE_SCALE : 1);
+  const inset = offset + (tile - MARK_UNITS * scale) / 2;
+  const bars = BARS.map(
+    (bar) =>
+      `<rect x="${bar.x}" y="${bar.y}" width="${BAR_WIDTH}" height="${bar.height}" rx="${BAR_WIDTH / 2}" fill="#fff" fill-opacity="${bar.opacity}"/>`,
+  ).join('');
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
   <defs>
@@ -22,7 +39,7 @@ function mark(size: number, isMaskable: boolean) {
     </linearGradient>
   </defs>
   <rect x="${offset}" y="${offset}" width="${tile}" height="${tile}" rx="${radius}" fill="url(#g)"/>
-  <circle cx="${size / 2}" cy="${size / 2}" r="${hole}" fill="#0b0a0f"/>
+  <g transform="translate(${inset} ${inset}) scale(${scale})">${bars}</g>
 </svg>`;
 }
 
