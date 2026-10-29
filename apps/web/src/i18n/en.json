@@ -390,7 +390,17 @@
       "link": "Link Google",
       "later": "Not now"
     },
-    "boosted": "Volume boosted"
+    "boosted": "Volume boosted",
+    "sleep": {
+      "title": "Sleep timer",
+      "minutes_one": "{{count}} minute",
+      "minutes_other": "{{count}} minutes",
+      "endOfTrack": "End of this song",
+      "off": "Turn off timer",
+      "left_one": "{{count}} min",
+      "left_other": "{{count}} min",
+      "afterTrack": "End of song"
+    }
   },
   "library": {
     "like": "Like",

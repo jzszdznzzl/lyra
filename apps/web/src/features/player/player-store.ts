@@ -69,6 +69,8 @@ interface PlayerState {
   // Shows the music video instead of the cover; the audio engine keeps playing either way.
   isVideoMode: boolean;
   isFindingVideo: boolean;
+  // Sleep timer set to the end of the current song: the next one is loaded but not played.
+  stopsAfterTrack: boolean;
   // Set when YouTube needs this user's Google account; skipping would only fail song after song.
   googleBlock: MusicError | null;
   dismissGoogleBlock: () => void;
@@ -88,6 +90,9 @@ interface PlayerState {
   moveInQueue: (from: number, to: number) => void;
   setVolume: (volume: number) => void;
   updateSettings: (patch: Partial<PlayerSettings>) => void;
+  setStopsAfterTrack: (isOn: boolean) => void;
+  /** Fades the music out slowly and pauses: the sleep timer ran out. */
+  sleep: () => void;
   // --- Used by Connect ---
   runCommand: (command: Command) => void;
   snapshot: () => PlaybackState;
@@ -118,6 +123,8 @@ const MIX_PREPARE_LEAD_SECONDS = 90;
 const MIX_TRIGGER_LEAD_SECONDS = 0.6;
 // Too short to mix: the transition would eat most of the song.
 const MIN_MIX_DURATION_SECONDS = 60;
+// Long enough to drift off to, short enough to not seem stuck.
+const SLEEP_FADE_MS = 10_000;
 // The radio continues from one of the last few songs, so it does not loop around one artist.
 const RADIO_SEED_SPREAD = 5;
 // Songs remembered as recently heard, so a new radio does not bring them straight back.
@@ -322,6 +329,20 @@ export const usePlayerStore = create<PlayerState>()((set, get) => {
     const { queue, index, repeat, settings } = get();
     const target = nextIndex({ queue, index }, repeat, isUserAction);
 
+    if (!isUserAction && get().stopsAfterTrack) {
+      set({ stopsAfterTrack: false });
+
+      if (target === null) {
+        engine.pause(0);
+        set({ status: PlaybackStatus.Paused });
+      } else {
+        // Ready but paused, so play continues with the next song.
+        start(target, 0, false);
+      }
+
+      return;
+    }
+
     if (target === null) {
       engine.pause(0);
       set({ status: PlaybackStatus.Paused });
@@ -403,7 +424,13 @@ export const usePlayerStore = create<PlayerState>()((set, get) => {
   }
 
   function maybeCrossfade(position: number, duration: number) {
-    const { settings, repeat, queue, index } = get();
+    const { settings, repeat, queue, index, stopsAfterTrack } = get();
+
+    // The song must end on its own, without the next one fading in.
+    if (stopsAfterTrack) {
+      return;
+    }
+
     const current = queue[index];
     const mixTarget = nextIndex({ queue, index }, repeat, false);
     const mixNext = mixTarget === null || mixTarget === index ? null : queue[mixTarget];
@@ -647,6 +674,7 @@ export const usePlayerStore = create<PlayerState>()((set, get) => {
     remote: null,
     isVideoMode: false,
     isFindingVideo: false,
+    stopsAfterTrack: false,
     googleBlock: null,
     dismissGoogleBlock: () => set({ googleBlock: null }),
     playTracks: (tracks, index) =>
@@ -682,6 +710,17 @@ export const usePlayerStore = create<PlayerState>()((set, get) => {
       engine.setVolume(settings.volume);
       engine.setEqualizer(settings.isEqEnabled, settings.eqGains);
       engine.setOutput(outputSettings(settings));
+    },
+    setStopsAfterTrack: (stopsAfterTrack) => set({ stopsAfterTrack }),
+    sleep: () => {
+      if (get().remote || get().status !== PlaybackStatus.Playing) {
+        act({ type: 'pause' });
+
+        return;
+      }
+
+      engine.pause(SLEEP_FADE_MS);
+      set({ status: PlaybackStatus.Paused });
     },
     runCommand,
     snapshot: () => {

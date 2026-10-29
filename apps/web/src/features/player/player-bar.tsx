@@ -9,6 +9,7 @@ import { ArtistLinks } from '../music/artist-links.tsx';
 import { AudioSettingsDialog } from './audio-settings-dialog.tsx';
 import { currentTrack, usePlayerStore } from './player-store.ts';
 import { ProgressBar } from './progress-bar.tsx';
+import { SleepTimerButton } from './sleep-timer-button.tsx';
 import { TransportControls } from './transport-controls.tsx';
 import { VolumeControl } from './volume-control.tsx';
 
@@ -55,6 +56,7 @@ export function PlayerBar() {
           ) : null}
           {settings.isEqEnabled ? <span>· EQ</span> : null}
         </button>
+        <SleepTimerButton />
         <button
           type="button"
           aria-label={t('player.settings.title')}

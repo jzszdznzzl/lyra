@@ -24,6 +24,7 @@ import { LikeButton } from '../library/like-button.tsx';
 import { TrackMenu } from '../library/track-menu.tsx';
 import { ArtistLinks } from '../music/artist-links.tsx';
 import { AudioSettingsDialog } from './audio-settings-dialog.tsx';
+import { SleepTimerButton } from './sleep-timer-button.tsx';
 import { PlaybackStatus, currentTrack, usePlayerStore } from './player-store.ts';
 import { ProgressBar } from './progress-bar.tsx';
 import { LyricsView } from './lyrics-view.tsx';
@@ -129,6 +130,7 @@ export function MobilePlayer() {
               {t('player.playingFrom')}
             </span>
             <span className="flex items-center gap-1">
+              <SleepTimerButton />
               <button
                 type="button"
                 aria-label={t('video.fullscreen')}

@@ -390,7 +390,17 @@
       "link": "Ir a vincular Google",
       "later": "Ahora no"
     },
-    "boosted": "Volumen reforzado"
+    "boosted": "Volumen reforzado",
+    "sleep": {
+      "title": "Temporizador",
+      "minutes_one": "{{count}} minuto",
+      "minutes_other": "{{count}} minutos",
+      "endOfTrack": "Al terminar esta canción",
+      "off": "Apagar temporizador",
+      "left_one": "{{count}} min",
+      "left_other": "{{count}} min",
+      "afterTrack": "Al terminar"
+    }
   },
   "library": {
     "like": "Me gusta",
