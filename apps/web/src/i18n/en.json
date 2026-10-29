@@ -483,7 +483,9 @@
   },
   "common": {
     "close": "Close",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "decrease": "Less: {{label}}",
+    "increase": "More: {{label}}"
   },
   "states": {
     "notFound": "Page not found",

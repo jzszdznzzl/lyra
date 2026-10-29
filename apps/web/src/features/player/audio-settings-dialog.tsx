@@ -10,6 +10,7 @@ import {
   EqPreset,
 } from '../../audio/equalizer.ts';
 import { Dialog } from '../../ui/dialog.tsx';
+import { StepSlider } from '../../ui/step-slider.tsx';
 import { Toggle } from '../../ui/toggle.tsx';
 import { usePlayerStore } from './player-store.ts';
 import { isOnMeteredNetwork } from './settings.ts';
@@ -71,29 +72,25 @@ export function AudioSettingsDialog({ onClose }: { onClose: () => void }) {
               : t('player.settings.seconds', { count: settings.crossfadeSeconds })}
           </span>
         </div>
-        <input
-          type="range"
+        <StepSlider
           min={0}
           max={MAX_CROSSFADE_SECONDS}
           step={1}
           value={settings.crossfadeSeconds}
-          aria-label={t('player.settings.crossfade')}
-          onChange={(event) => updateSettings({ crossfadeSeconds: Number(event.target.value) })}
-          className="accent-[var(--accent)]"
+          label={t('player.settings.crossfade')}
+          onChange={(crossfadeSeconds) => updateSettings({ crossfadeSeconds })}
         />
         <div className="flex justify-between text-sm">
           <span className="font-bold">{t('player.settings.fade')}</span>
           <span className="text-muted">{t('player.settings.ms', { count: settings.fadeMs })}</span>
         </div>
-        <input
-          type="range"
+        <StepSlider
           min={0}
           max={MAX_FADE_MS}
           step={FADE_STEP_MS}
           value={settings.fadeMs}
-          aria-label={t('player.settings.fade')}
-          onChange={(event) => updateSettings({ fadeMs: Number(event.target.value) })}
-          className="accent-[var(--accent)]"
+          label={t('player.settings.fade')}
+          onChange={(fadeMs) => updateSettings({ fadeMs })}
         />
         <div className="flex flex-col gap-1.5">
           <span className="text-sm font-bold">{t('video.quality')}</span>
@@ -198,26 +195,26 @@ export function AudioSettingsDialog({ onClose }: { onClose: () => void }) {
           ))}
         </div>
         <div
-          className={`flex h-44 justify-between gap-1 ${settings.isEqEnabled ? '' : 'opacity-40'}`}
+          className={`flex h-60 justify-between gap-1 ${settings.isEqEnabled ? '' : 'opacity-40'}`}
         >
           {EQ_FREQUENCIES.map((frequency, band) => (
-            <label
+            <div
               key={frequency}
-              className="flex flex-1 flex-col items-center gap-1 text-[10px] text-muted"
+              className="flex min-w-0 flex-1 flex-col items-center gap-1 text-[10px] text-muted"
             >
               <span className="tabular-nums">{Math.round(settings.eqGains[band] ?? 0)}</span>
-              <input
-                type="range"
+              <StepSlider
+                isVertical
                 min={EQ_MIN_DB}
                 max={EQ_MAX_DB}
                 step={1}
                 value={settings.eqGains[band] ?? 0}
-                aria-label={`${bandLabel(frequency)} Hz`}
-                onChange={(event) => setBand(band, Number(event.target.value))}
-                className="min-h-0 w-full flex-1 cursor-pointer accent-[var(--accent)] [writing-mode:vertical-lr] [direction:rtl]"
+                label={`${bandLabel(frequency)} Hz`}
+                valueText={`${Math.round(settings.eqGains[band] ?? 0)} dB`}
+                onChange={(gain) => setBand(band, gain)}
               />
               {bandLabel(frequency)}
-            </label>
+            </div>
           ))}
         </div>
       </section>

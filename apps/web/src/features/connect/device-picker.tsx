@@ -6,8 +6,9 @@ import { DeviceKind } from '@lyra/shared';
 
 import { formatRelative } from '../../lib/format.ts';
 import { Dialog } from '../../ui/dialog.tsx';
+import { StepSlider } from '../../ui/step-slider.tsx';
 import { usePlayerStore } from '../player/player-store.ts';
-import { maxVolume } from '../player/settings.ts';
+import { VOLUME_BUTTON_STEP, maxVolume } from '../player/settings.ts';
 import { activeDevice, useConnectStore } from './connect-store.ts';
 
 export function DevicePicker({ onClose }: { onClose: () => void }) {
@@ -37,20 +38,22 @@ export function DevicePicker({ onClose }: { onClose: () => void }) {
               </span>
             ) : null}
           </p>
-          <label className="mt-3 flex items-center gap-3 text-sm text-muted">
-            <Volume2 className="size-4" />
-            <input
-              type="range"
-              min={0}
-              max={Math.max(max, volume)}
-              step={0.01}
-              value={volume}
-              aria-label={t('player.volume')}
-              onChange={(event) => setVolume(Number(event.target.value))}
-              className="flex-1 accent-[var(--accent)]"
-            />
+          <div className="mt-3 flex items-center gap-2 text-sm text-muted">
+            <Volume2 className="size-4 shrink-0" />
+            <div className="flex-1">
+              <StepSlider
+                min={0}
+                max={Math.max(max, volume)}
+                step={0.01}
+                buttonStep={VOLUME_BUTTON_STEP}
+                value={volume}
+                label={t('player.volume')}
+                valueText={`${Math.round(volume * 100)}%`}
+                onChange={setVolume}
+              />
+            </div>
             <span className="w-10 text-right tabular-nums">{Math.round(volume * 100)}%</span>
-          </label>
+          </div>
         </div>
       ) : null}
       <ul className="flex flex-col divide-y divide-line">

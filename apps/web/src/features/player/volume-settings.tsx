@@ -3,9 +3,10 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { Button, ButtonVariant } from '../../ui/button.tsx';
+import { StepSlider } from '../../ui/step-slider.tsx';
 import { Toggle } from '../../ui/toggle.tsx';
 import { usePlayerStore } from './player-store.ts';
-import { maxVolume } from './settings.ts';
+import { VOLUME_BUTTON_STEP, maxVolume } from './settings.ts';
 
 export function VolumeSettings() {
   const { t } = useTranslation();
@@ -21,24 +22,25 @@ export function VolumeSettings() {
         {t('player.settings.volume')}
       </h3>
       {/* Phones have no volume bar, so the boost needs a slider here too. */}
-      <label className="flex items-center gap-3 text-sm">
-        <input
-          type="range"
-          min={0}
-          max={maxVolume(settings)}
-          step={0.01}
-          value={settings.volume}
-          aria-label={t('player.volume')}
-          aria-valuetext={`${Math.round(settings.volume * 100)}%`}
-          onChange={(event) => setVolume(Number(event.target.value))}
-          className="flex-1 accent-[var(--accent)]"
-        />
+      <div className="flex items-center gap-2 text-sm">
+        <div className="flex-1">
+          <StepSlider
+            min={0}
+            max={maxVolume(settings)}
+            step={0.01}
+            buttonStep={VOLUME_BUTTON_STEP}
+            value={settings.volume}
+            label={t('player.volume')}
+            valueText={`${Math.round(settings.volume * 100)}%`}
+            onChange={setVolume}
+          />
+        </div>
         <span
           className={`w-11 text-right tabular-nums ${settings.volume > 1 ? 'font-bold text-accent' : 'text-muted'}`}
         >
           {Math.round(settings.volume * 100)}%
         </span>
-      </label>
+      </div>
       <Toggle
         label={t('player.settings.normalization')}
         hint={t('player.settings.normalizationHint')}

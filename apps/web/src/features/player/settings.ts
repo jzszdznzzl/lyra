@@ -15,6 +15,8 @@ import { EQ_FREQUENCIES, EqPreset } from '../../audio/equalizer.ts';
 const STORAGE_KEY = 'lyra.player-settings';
 
 const DATA_SAVER_VIDEO_HEIGHT = 360;
+// One tap of the volume − or + buttons: 5%.
+export const VOLUME_BUTTON_STEP = 0.05;
 
 const VideoHeightSetting = z
   .number()
