@@ -12,6 +12,10 @@ import type { Command, PlaybackState, Track } from '@lyra/shared';
 
 import { AudioEngine } from '../../audio/engine.ts';
 import { fetchLoudness } from '../../audio/loudness.ts';
+import { MixCache } from '../../audio/mix/mix-cache.ts';
+import { planMix } from '../../audio/mix/mix-plan.ts';
+import type { MixPlan } from '../../audio/mix/mix-plan.ts';
+import type { PreparedTrack } from '../../audio/mix/prepare.ts';
 import {
   RepeatMode,
   freshRadio,
@@ -108,6 +112,12 @@ const MAX_FAILURES_IN_A_ROW = 3;
 const HEALTHY_PLAYBACK_SECONDS = 5;
 // Seconds before the crossfade when the next song starts buffering.
 const PRELOAD_LEAD_SECONDS = 15;
+// Seconds before the end when the mix downloads and analyses the current and next songs.
+const MIX_PREPARE_LEAD_SECONDS = 90;
+// The mix is handed to the engine this early; the engine waits for the bar line itself.
+const MIX_TRIGGER_LEAD_SECONDS = 0.6;
+// Too short to mix: the transition would eat most of the song.
+const MIN_MIX_DURATION_SECONDS = 60;
 // The radio continues from one of the last few songs, so it does not loop around one artist.
 const RADIO_SEED_SPREAD = 5;
 // Songs remembered as recently heard, so a new radio does not bring them straight back.
@@ -119,12 +129,22 @@ const GOOGLE_ERRORS: readonly MusicError[] = [
   MusicError.GoogleSessionExpired,
 ];
 
+/** Songs of one album played in order often run into each other, so they are left alone. */
+function isSameAlbum(current: Track, next: Track) {
+  const albumId = current.album?.id ?? null;
+
+  return albumId !== null && albumId === (next.album?.id ?? null);
+}
+
 export function streamUrl(track: Track, settings: PlayerSettings) {
   return audioStreamUrl(track.id, effectiveQuality(settings).quality);
 }
 
 export const usePlayerStore = create<PlayerState>()((set, get) => {
   let isCrossfading = false;
+  // Queue index of the song being mixed out, so one song is mixed out only once.
+  let mixedOutOf: number | null = null;
+  const mixCache = new MixCache();
   let isFetchingRadio = false;
   // Bumped whenever a new queue replaces the old one, so a late radio does not land in it.
   let queueGeneration = 0;
@@ -203,6 +223,7 @@ export const usePlayerStore = create<PlayerState>()((set, get) => {
 
     remember(track);
     isCrossfading = false;
+    mixedOutOf = null;
     set({
       index,
       position: startAt,
@@ -332,8 +353,75 @@ export const usePlayerStore = create<PlayerState>()((set, get) => {
     start(target);
   }
 
+  function startMix(target: number, track: Track, plan: MixPlan, prepared: PreparedTrack) {
+    mixedOutOf = get().index;
+    remember(track);
+    set({ index: target, position: plan.incomingStartAt, duration: track.durationSeconds ?? 0 });
+    engine.mix(prepared.url, plan, prepared.loudnessDb).catch((error: unknown) => {
+      const isAborted = error instanceof DOMException && error.name === 'AbortError';
+
+      if (!isAborted && get().index === target && get().queue[target]?.id === track.id) {
+        void recover();
+      }
+    });
+    void topUpRadio();
+  }
+
+  /**
+   * DJ-style mix: near the end, both songs are downloaded and analysed, and the next one comes in
+   * on a bar line at the same tempo. A song not ready in time simply ends.
+   */
+  function maybeMix(position: number, duration: number, current: Track, target: number) {
+    const { queue, settings } = get();
+    const next = queue[target];
+
+    if (!next || mixedOutOf === get().index || duration - position > MIX_PREPARE_LEAD_SECONDS) {
+      return;
+    }
+
+    mixCache.keepOnly([current.id, next.id]);
+    mixCache.request(current.id, streamUrl(current, settings));
+    mixCache.request(next.id, streamUrl(next, settings));
+    const outgoing = mixCache.get(current.id);
+    const incoming = mixCache.get(next.id);
+
+    if (!incoming) {
+      return;
+    }
+
+    engine.preload(incoming.url, incoming.loudnessDb);
+
+    if (!outgoing) {
+      return;
+    }
+
+    const plan = planMix(outgoing.analysis, incoming.analysis);
+
+    if (position >= plan.startAt - MIX_TRIGGER_LEAD_SECONDS) {
+      startMix(target, next, plan, incoming);
+    }
+  }
+
   function maybeCrossfade(position: number, duration: number) {
     const { settings, repeat, queue, index } = get();
+    const current = queue[index];
+    const mixTarget = nextIndex({ queue, index }, repeat, false);
+    const mixNext = mixTarget === null || mixTarget === index ? null : queue[mixTarget];
+
+    if (
+      settings.isMixEnabled &&
+      repeat !== RepeatMode.One &&
+      current &&
+      mixTarget !== null &&
+      mixNext &&
+      !isSameAlbum(current, mixNext) &&
+      duration >= MIN_MIX_DURATION_SECONDS
+    ) {
+      maybeMix(position, duration, current, mixTarget);
+
+      return;
+    }
+
     const seconds = settings.crossfadeSeconds;
     const remaining = duration - position;
 

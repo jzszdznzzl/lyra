@@ -33,6 +33,8 @@ export const PlayerSettings = z.object({
   isLimiterEnabled: z.boolean().catch(true),
   isNormalizationEnabled: z.boolean().catch(true),
   isAutoplayEnabled: z.boolean().catch(true),
+  // DJ-style transitions: songs come in on the beat, at the same tempo. Replaces the crossfade.
+  isMixEnabled: z.boolean().catch(false),
   // Off shows synced lyrics as plain text: no highlighted line, no scrolling along.
   isLyricsSyncEnabled: z.boolean().catch(true),
   videoHeight: VideoHeightSetting.catch(DEFAULT_VIDEO_HEIGHT),

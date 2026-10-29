@@ -368,7 +368,9 @@
       "boostHint": "Permite llegar hasta 200%.",
       "boostWarning": "Escuchar a mucho volumen por mucho tiempo puede dañar tu audición, y los parlantes pequeños pueden distorsionar o dañarse. Súbelo de a poco.",
       "boostWarningNoLimiter": "Con \"Evitar saturación\" apagado, el sonido se va a romper.",
-      "boostConfirm": "Entiendo, activar"
+      "boostConfirm": "Entiendo, activar",
+      "mix": "Mezcla tipo DJ",
+      "mixHint": "Enlaza las canciones en el compás y al mismo tempo, como un DJ. Reemplaza al crossfade y usa algo más de datos."
     },
     "presets": {
       "flat": "Plano",

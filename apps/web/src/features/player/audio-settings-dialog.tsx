@@ -57,6 +57,12 @@ export function AudioSettingsDialog({ onClose }: { onClose: () => void }) {
       </section>
 
       <section className="flex flex-col gap-2">
+        <Toggle
+          label={t('player.settings.mix')}
+          hint={t('player.settings.mixHint')}
+          isOn={settings.isMixEnabled}
+          onChange={(isMixEnabled) => updateSettings({ isMixEnabled })}
+        />
         <div className="flex justify-between text-sm">
           <span className="font-bold">{t('player.settings.crossfade')}</span>
           <span className="text-muted">

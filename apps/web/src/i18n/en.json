@@ -368,7 +368,9 @@
       "boostHint": "Allows up to 200%.",
       "boostWarning": "Listening at high volume for a long time can damage your hearing, and small speakers can distort or get damaged. Turn it up gradually.",
       "boostWarningNoLimiter": "With \"Prevent distortion\" off, the sound will break up.",
-      "boostConfirm": "I understand, turn on"
+      "boostConfirm": "I understand, turn on",
+      "mix": "DJ-style mix",
+      "mixHint": "Blends songs on the bar and at the same tempo, like a DJ. Replaces the crossfade and uses a bit more data."
     },
     "presets": {
       "flat": "Flat",
