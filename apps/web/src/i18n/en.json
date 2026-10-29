@@ -22,7 +22,8 @@
       "morning": "Good morning",
       "afternoon": "Good afternoon",
       "evening": "Good evening"
-    }
+    },
+    "greetingWithName": "{{greeting}}, {{name}}"
   },
   "auth": {
     "email": "Email",

@@ -22,7 +22,8 @@
       "morning": "Buenos días",
       "afternoon": "Buenas tardes",
       "evening": "Buenas noches"
-    }
+    },
+    "greetingWithName": "{{greeting}}, {{name}}"
   },
   "auth": {
     "email": "Correo",

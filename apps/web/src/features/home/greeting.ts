@@ -13,3 +13,10 @@ export function greetingKey(hour: number) {
 
   return 'home.greeting.evening';
 }
+
+/** The first word of a display name, or null when the name is blank. */
+export function firstName(name: string) {
+  const [first] = name.trim().split(/\s+/);
+
+  return first ? first : null;
+}

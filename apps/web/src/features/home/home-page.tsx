@@ -9,7 +9,7 @@ import { homeQuery } from '../music/api.ts';
 import { ErrorState, LoadingState } from '../music/query-state.tsx';
 import { Shelf } from '../music/shelf.tsx';
 import { usePlayerStore } from '../player/player-store.ts';
-import { greetingKey } from './greeting.ts';
+import { firstName, greetingKey } from './greeting.ts';
 import { QuickAccess } from './quick-access.tsx';
 
 export function HomePage() {
@@ -20,10 +20,14 @@ export function HomePage() {
   const { data: me } = useSuspenseQuery(meQuery);
   useDocumentTitle(null);
   const playRadio = usePlayerStore((state) => state.playRadio);
+  const greeting = t(greetingKey(hour));
+  const name = me ? firstName(me.name) : null;
 
   return (
     <div className="p-4 sm:p-7">
-      <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl">{t(greetingKey(hour))}</h1>
+      <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl">
+        {name ? t('home.greetingWithName', { greeting, name }) : greeting}
+      </h1>
       {me?.isGoogleLinked ? <QuickAccess /> : null}
       {home.isPending ? <LoadingState /> : null}
       {home.isError ? <ErrorState error={home.error} onRetry={() => void home.refetch()} /> : null}
