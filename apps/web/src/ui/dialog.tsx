@@ -34,6 +34,14 @@ export function Dialog({ title, onClose, children }: DialogProps) {
       className="fixed inset-0 z-50 grid animate-fade-in place-items-center bg-black/60 p-3 backdrop-blur-sm"
       role="presentation"
       onClick={onClose}
+      // Handled here too: a portal's keys still bubble through its React parents, and a parent
+      // that stops them (a track row) would keep Escape from reaching the window listener.
+      onKeyDown={(event) => {
+        if (event.key === 'Escape') {
+          event.stopPropagation();
+          onClose();
+        }
+      }}
     >
       <div
         role="dialog"
