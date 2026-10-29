@@ -12,3 +12,4 @@ export * from './passkey-options.ts';
 export * from './result.ts';
 export * from './social.ts';
 export * from './push.ts';
+export * from './recap.ts';

@@ -190,7 +190,7 @@
       "what": "Lyra is not a standalone player: it is a YouTube Music client. It uses your account and the YT Music catalog just like the official web app, and adds what that app lacks: crossfade, an equalizer, synced lyrics, offline downloads and control from your other devices.",
       "unofficial": "Unofficial project, not affiliated with Google or YouTube. It may stop working whenever YouTube changes its API.",
       "dataTitle": "Your data",
-      "data": "Lyra is self-hosted: your account, your settings and your Google session (encrypted) are stored on the server of whoever runs this instance. Your music, library and history are still those of your YouTube Music account.",
+      "data": "Lyra is self-hosted: your account, your settings, your Google session (encrypted) and the songs you play in Lyra (for statistics and your yearly recap, which only you see) are stored on the server of whoever runs this instance. Your music, library and history are still those of your YouTube Music account.",
       "versionTitle": "Version",
       "credits": "Credits",
       "repo": "Open source under the MIT license",
@@ -687,5 +687,26 @@
       "albums": "Albums",
       "artists": "Artists"
     }
+  },
+  "recap": {
+    "kicker": "Your year in Lyra",
+    "title": "Your {{year}}",
+    "cta": "See your {{year}} recap",
+    "empty": "No plays counted this year yet. A song counts once you listen to it for at least 30 seconds.",
+    "minutes": "minutes listened",
+    "plays": "plays",
+    "songs": "different songs",
+    "artists": "artists",
+    "countingSince": "Lyra started counting your plays on {{date}}.",
+    "topArtists": "Your top artists",
+    "topTracks": "Your most played songs",
+    "playTop": "Play your favourites",
+    "timesPlayed_one": "{{count}} time",
+    "timesPlayed_other": "{{count}} times",
+    "byMonth": "Month by month",
+    "peakMonth": "Your month with the most music was {{month}}.",
+    "byHour": "When you listen",
+    "peakHour": "You listen most at {{hour}}.",
+    "firstTrack": "Your first song of the year"
   }
 }

@@ -190,7 +190,7 @@
       "what": "Lyra no es un reproductor independiente: es un cliente de YouTube Music. Usa tu cuenta y el catálogo de YT Music igual que su web oficial, y le suma lo que esta no tiene: crossfade, ecualizador, letras sincronizadas, descargas sin conexión y control desde otros dispositivos.",
       "unofficial": "Proyecto no oficial, sin relación con Google ni YouTube. Puede dejar de funcionar si YouTube cambia su API.",
       "dataTitle": "Tus datos",
-      "data": "Lyra es autoalojado: tu cuenta, tus ajustes y la sesión de Google (cifrada) se guardan en el servidor de quien administra esta instancia. La música, tu biblioteca y tu historial siguen siendo los de tu cuenta de YouTube Music.",
+      "data": "Lyra es autoalojado: tu cuenta, tus ajustes, la sesión de Google (cifrada) y las canciones que escuchas en Lyra (para las estadísticas y tu resumen del año, que solo ves tú) se guardan en el servidor de quien administra esta instancia. La música, tu biblioteca y tu historial siguen siendo los de tu cuenta de YouTube Music.",
       "versionTitle": "Versión",
       "credits": "Créditos",
       "repo": "Código abierto bajo licencia MIT",
@@ -687,5 +687,26 @@
       "albums": "Álbumes",
       "artists": "Artistas"
     }
+  },
+  "recap": {
+    "kicker": "Tu año en Lyra",
+    "title": "Tu {{year}}",
+    "cta": "Ver tu resumen de {{year}}",
+    "empty": "Todavía no hay escuchas contadas en este año. Las canciones cuentan cuando las escuchas al menos 30 segundos.",
+    "minutes": "minutos escuchados",
+    "plays": "reproducciones",
+    "songs": "canciones distintas",
+    "artists": "artistas",
+    "countingSince": "Lyra empezó a contar tus escuchas el {{date}}.",
+    "topArtists": "Tus artistas favoritos",
+    "topTracks": "Tus canciones más escuchadas",
+    "playTop": "Reproducir tus favoritas",
+    "timesPlayed_one": "{{count}} vez",
+    "timesPlayed_other": "{{count}} veces",
+    "byMonth": "Mes a mes",
+    "peakMonth": "Tu mes con más música fue {{month}}.",
+    "byHour": "A qué hora escuchas",
+    "peakHour": "Escuchas más a las {{hour}}.",
+    "firstTrack": "Tu primera canción del año"
   }
 }

@@ -29,6 +29,8 @@ import { LikedPage, PlaylistPage } from '../features/music/playlist-page.tsx';
 import { SearchPage } from '../features/music/search-page.tsx';
 import { TrackPage } from '../features/music/track-page.tsx';
 import { DownloadGroupKind } from '../features/offline/download-groups.ts';
+import { RecapPage } from '../features/recap/recap-page.tsx';
+import { RecapSearch } from '../features/recap/recap.ts';
 import { DownloadGroupPage } from '../features/offline/download-group-page.tsx';
 import { DownloadsPage, DownloadsSearch } from '../features/offline/downloads-page.tsx';
 import { ProfilePage } from '../features/profile/profile-page.tsx';
@@ -183,6 +185,13 @@ const historyRoute = createRoute({
   component: HistoryPage,
 });
 
+const recapRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/recap',
+  validateSearch: (search) => RecapSearch.parse(search),
+  component: RecapPage,
+});
+
 const friendsRoute = createRoute({
   getParentRoute: () => appRoute,
   path: '/friends',
@@ -263,6 +272,7 @@ const routeTree = rootRoute.addChildren([
     playlistRoute,
     likedRoute,
     historyRoute,
+    recapRoute,
     friendsRoute,
     userRoute,
     exploreRoute,

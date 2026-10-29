@@ -21,6 +21,7 @@ import { WidgetCovers } from './now-playing/widget-covers.ts';
 import { streamRoutes } from './stream/routes.ts';
 import { PushService } from './push/push.ts';
 import { pushRoutes } from './push/routes.ts';
+import { recapRoutes } from './recap/routes.ts';
 import { originGuard } from './security.ts';
 import { socialRoutes } from './social/routes.ts';
 import { userRoutes } from './users/routes.ts';
@@ -76,6 +77,7 @@ export function createApp(ctx: AppContext, options: AppOptions = {}) {
     .use(musicRoutes(ctx, pool, images))
     .use(socialRoutes(ctx, pool, images, nowPlaying, push))
     .use(pushRoutes(ctx, push))
+    .use(recapRoutes(ctx, images))
     .use(streamRoutes(ctx, pool))
     .use(lyricsRoutes(ctx, pool))
     .use(connectRoutes(ctx, hub))
