@@ -13,3 +13,5 @@ playwright-report
 *.tsbuildinfo
 claude.chat
 docs/plan.md
+# Playwright CLI output (may contain credentials)
+.playwright-cli/
