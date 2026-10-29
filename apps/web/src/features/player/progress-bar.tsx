@@ -4,6 +4,11 @@ import { useTranslation } from 'react-i18next';
 import { formatDuration } from '../../lib/format.ts';
 import { usePlayerStore } from './player-store.ts';
 
+/** How far into the song, 0–100, never past the ends even if the position overshoots. */
+export function progressPercent(position: number, duration: number) {
+  return duration > 0 ? Math.min(100, Math.max(0, (position / duration) * 100)) : 0;
+}
+
 export function ProgressBar({ isCompact = false }: { isCompact?: boolean }) {
   const { t } = useTranslation();
   const position = usePlayerStore((state) => state.position);
@@ -13,7 +18,7 @@ export function ProgressBar({ isCompact = false }: { isCompact?: boolean }) {
   // While dragging, the thumb follows the finger instead of the audio.
   const [dragValue, setDragValue] = useState<number | null>(null);
   const shown = dragValue ?? position;
-  const percent = duration > 0 ? (shown / duration) * 100 : 0;
+  const percent = progressPercent(shown, duration);
   const crossfadePercent = duration > 0 ? Math.min(100, (crossfade / duration) * 100) : 0;
 
   return (

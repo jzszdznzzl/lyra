@@ -12,6 +12,10 @@ const REPORT_DEBOUNCE_MS = 150;
 // A jump larger than this between reports is a seek, which others must hear about.
 const SEEK_TOLERANCE_SECONDS = 1.5;
 const REMOTE_TICK_MS = 500;
+// The server answers every hello with a sync; silence after this means the socket is dead.
+const HELLO_TIMEOUT_MS = 4000;
+// While another device plays it reports every few seconds; this much silence means we are cut off.
+const MIRROR_SILENCE_MS = BEAT_MS * 3;
 
 interface ConnectOptions {
   // An admin published or ended an announcement.
@@ -31,6 +35,8 @@ export function startConnect({ onAnnouncements, onPreferences }: ConnectOptions 
   let retryTimer: ReturnType<typeof setTimeout> | null = null;
   let lastReported = { position: 0, at: 0 };
   let mirrored: PlaybackState | null = null;
+  let lastMessageAt = Date.now();
+  let helloTimer: ReturnType<typeof setTimeout> | null = null;
 
   useConnectStore.setState({ selfId: device.id });
 
@@ -133,6 +139,7 @@ export function startConnect({ onAnnouncements, onPreferences }: ConnectOptions 
     const protocol = location.protocol === 'https:' ? 'wss' : 'ws';
     const ws = new WebSocket(`${protocol}://${location.host}/api/connect`);
     socket = ws;
+    lastMessageAt = Date.now();
 
     ws.addEventListener('open', () => {
       retryMs = RECONNECT_MIN_MS;
@@ -141,6 +148,12 @@ export function startConnect({ onAnnouncements, onPreferences }: ConnectOptions 
       scheduleReport();
     });
     ws.addEventListener('message', (event) => {
+      // A socket replaced after going silent may still deliver old messages; they are ignored.
+      if (socket !== ws) {
+        return;
+      }
+
+      lastMessageAt = Date.now();
       let payload: unknown;
 
       try {
@@ -156,9 +169,14 @@ export function startConnect({ onAnnouncements, onPreferences }: ConnectOptions 
       }
     });
     ws.addEventListener('close', () => {
+      // A replaced socket closing late must not mark its successor as disconnected.
+      if (socket !== ws) {
+        return;
+      }
+
       useConnectStore.setState({ isConnected: false });
 
-      if (!isStopped && socket === ws) {
+      if (!isStopped) {
         retryTimer = setTimeout(connect, retryMs);
         retryMs = Math.min(retryMs * 2, RECONNECT_MAX_MS);
       }
@@ -188,11 +206,43 @@ export function startConnect({ onAnnouncements, onPreferences }: ConnectOptions 
     }
   });
 
+  /**
+   * Android can keep a socket "open" after freezing the tab while nothing goes through it. It is
+   * dropped for a fresh one instead of waiting for a close event that may never come.
+   */
+  function reconnectNow() {
+    const stale = socket;
+    socket = null;
+    stale?.close();
+
+    if (retryTimer) {
+      clearTimeout(retryTimer);
+      retryTimer = null;
+    }
+
+    retryMs = RECONNECT_MIN_MS;
+    connect();
+  }
+
   // The playing device reports every few seconds; in between, the bar keeps moving locally.
   const tick = setInterval(() => {
-    if (mirrored?.isPlaying && usePlayerStore.getState().remote) {
-      usePlayerStore.setState({ position: currentPositionMs(mirrored, serverNow()) / 1000 });
+    const player = usePlayerStore.getState();
+
+    if (!mirrored?.isPlaying || !player.remote) {
+      return;
     }
+
+    if (Date.now() - lastMessageAt > MIRROR_SILENCE_MS && socket?.readyState === WebSocket.OPEN) {
+      reconnectNow();
+
+      return;
+    }
+
+    // Without news of the next song, the bar waits at the end instead of running past it.
+    const position = currentPositionMs(mirrored, serverNow()) / 1000;
+    usePlayerStore.setState({
+      position: player.duration > 0 ? Math.min(position, player.duration) : position,
+    });
   }, REMOTE_TICK_MS);
 
   const beat = setInterval(() => {
@@ -215,7 +265,20 @@ export function startConnect({ onAnnouncements, onPreferences }: ConnectOptions 
     }
 
     if (socket?.readyState === WebSocket.OPEN) {
+      const sentAt = Date.now();
       send({ type: 'hello', device });
+
+      if (helloTimer) {
+        clearTimeout(helloTimer);
+      }
+
+      helloTimer = setTimeout(() => {
+        helloTimer = null;
+
+        if (!isStopped && lastMessageAt < sentAt) {
+          reconnectNow();
+        }
+      }, HELLO_TIMEOUT_MS);
     } else if (socket?.readyState !== WebSocket.CONNECTING) {
       if (retryTimer) {
         clearTimeout(retryTimer);
@@ -239,6 +302,10 @@ export function startConnect({ onAnnouncements, onPreferences }: ConnectOptions 
 
     if (retryTimer) {
       clearTimeout(retryTimer);
+    }
+
+    if (helloTimer) {
+      clearTimeout(helloTimer);
     }
 
     isStopped = true;

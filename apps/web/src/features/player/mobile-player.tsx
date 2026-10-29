@@ -26,7 +26,7 @@ import { ArtistLinks } from '../music/artist-links.tsx';
 import { AudioSettingsDialog } from './audio-settings-dialog.tsx';
 import { SleepTimerButton } from './sleep-timer-button.tsx';
 import { PlaybackStatus, currentTrack, usePlayerStore } from './player-store.ts';
-import { ProgressBar } from './progress-bar.tsx';
+import { ProgressBar, progressPercent } from './progress-bar.tsx';
 import { LyricsView } from './lyrics-view.tsx';
 import { QueuePanel } from './queue-panel.tsx';
 import { TransportControls } from './transport-controls.tsx';
@@ -102,7 +102,7 @@ export function MobilePlayer() {
         <div className="absolute inset-x-2 bottom-0 h-0.5 rounded-full bg-text/10">
           <div
             className="h-full rounded-full bg-text"
-            style={{ width: `${duration > 0 ? (position / duration) * 100 : 0}%` }}
+            style={{ width: `${progressPercent(position, duration)}%` }}
           />
         </div>
       </div>

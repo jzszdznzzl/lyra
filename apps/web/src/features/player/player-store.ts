@@ -772,7 +772,11 @@ export const usePlayerStore = create<PlayerState>()((set, get) => {
         isShuffled: state.isShuffled,
         repeat: state.repeat,
         status: state.isPlaying ? PlaybackStatus.Playing : PlaybackStatus.Paused,
-        position: currentPositionMs(state, serverNow) / 1000,
+        // A stale report must not put the bar past the end of the song.
+        position: Math.min(
+          currentPositionMs(state, serverNow) / 1000,
+          track?.durationSeconds ?? Number.POSITIVE_INFINITY,
+        ),
         duration: track?.durationSeconds ?? 0,
       });
     },
