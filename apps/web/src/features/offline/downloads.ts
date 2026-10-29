@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-import { LyricsResponse } from '@lyra/shared';
+import { LOUDNESS_HEADER, LyricsResponse } from '@lyra/shared';
 import type { AudioQuality, Track } from '@lyra/shared';
 
 import { audioStreamUrl } from '../../audio/stream-url.ts';
@@ -66,7 +66,10 @@ async function fetchAudio(
     }
   }
 
-  return new Blob(chunks, { type: response.headers.get('content-type') ?? 'audio/webm' });
+  return {
+    blob: new Blob(chunks, { type: response.headers.get('content-type') ?? 'audio/webm' }),
+    loudness: response.headers.get(LOUDNESS_HEADER),
+  };
 }
 
 /** Offline songs: audio in Cache Storage, metadata in IndexedDB, one download at a time. */
@@ -85,12 +88,19 @@ export const useDownloads = create<DownloadsState>()((set, get) => {
 
   async function downloadOne(track: Track, quality: AudioQuality) {
     try {
-      const blob = await fetchAudio(track, quality, (fraction) => setProgress(track.id, fraction));
+      const { blob, loudness } = await fetchAudio(track, quality, (fraction) =>
+        setProgress(track.id, fraction),
+      );
       const cache = await caches.open(AUDIO_CACHE);
       await cache.put(
         offlineAudioKey(track.id),
         new Response(blob, {
-          headers: { 'content-type': blob.type, 'content-length': String(blob.size) },
+          headers: {
+            'content-type': blob.type,
+            'content-length': String(blob.size),
+            // Kept so offline songs are evened out too.
+            ...(loudness === null ? {} : { [LOUDNESS_HEADER]: loudness }),
+          },
         }),
       );
 

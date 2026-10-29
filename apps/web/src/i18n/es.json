@@ -358,7 +358,17 @@
       "dataSaverHint": "Usa estas calidades con datos móviles o con el ahorro de datos del navegador.",
       "onMobileData": "Ahora estás con datos móviles.",
       "videoOnData": "Vídeo {{height}}p",
-      "lyricsSync": "Letras sincronizadas"
+      "lyricsSync": "Letras sincronizadas",
+      "volume": "Volumen",
+      "normalization": "Volumen parejo entre canciones",
+      "normalizationHint": "Usa la medida de YouTube para que ninguna canción suene mucho más fuerte o más bajo que otra.",
+      "limiter": "Evitar saturación",
+      "limiterHint": "Un limitador baja solo los picos que distorsionarían el sonido.",
+      "boost": "Subir el volumen por encima de 100%",
+      "boostHint": "Permite llegar hasta 200%.",
+      "boostWarning": "Escuchar a mucho volumen por mucho tiempo puede dañar tu audición, y los parlantes pequeños pueden distorsionar o dañarse. Súbelo de a poco.",
+      "boostWarningNoLimiter": "Con \"Evitar saturación\" apagado, el sonido se va a romper.",
+      "boostConfirm": "Entiendo, activar"
     },
     "presets": {
       "flat": "Plano",
@@ -377,7 +387,8 @@
       "expired": "Tu sesión de Google caducó y YouTube ya no deja reproducir con ella. Vuelve a vincular tu cuenta desde tu perfil.",
       "link": "Ir a vincular Google",
       "later": "Ahora no"
-    }
+    },
+    "boosted": "Volumen reforzado"
   },
   "library": {
     "like": "Me gusta",
@@ -457,7 +468,8 @@
     "downloadRemaining_other": "Descargar {{count}} restantes"
   },
   "common": {
-    "close": "Cerrar"
+    "close": "Cerrar",
+    "cancel": "Cancelar"
   },
   "states": {
     "notFound": "Página no encontrada",

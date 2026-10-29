@@ -7,7 +7,7 @@ import {
 import { NavigationRoute, registerRoute } from 'workbox-routing';
 import type { PrecacheEntry } from 'workbox-precaching';
 
-import { PushMessage } from '@lyra/shared';
+import { LOUDNESS_HEADER, PushMessage } from '@lyra/shared';
 
 import { AUDIO_CACHE, IMAGE_CACHE, offlineAudioKey } from './offline/keys.ts';
 import type { OpenPathMessage } from './sw-messages.ts';
@@ -22,6 +22,8 @@ const IMAGE_MAX_ENTRIES = 3000;
 async function rangeResponse(cached: Response, rangeHeader: string | null) {
   const blob = await cached.blob();
   const type = cached.headers.get('content-type') ?? 'audio/webm';
+  const loudness = cached.headers.get(LOUDNESS_HEADER);
+  const extra: Record<string, string> = loudness === null ? {} : { [LOUDNESS_HEADER]: loudness };
   const match = rangeHeader ? RANGE_PATTERN.exec(rangeHeader) : null;
 
   if (!match) {
@@ -30,6 +32,7 @@ async function rangeResponse(cached: Response, rangeHeader: string | null) {
         'content-type': type,
         'content-length': String(blob.size),
         'accept-ranges': 'bytes',
+        ...extra,
       },
     });
   }
@@ -52,6 +55,7 @@ async function rangeResponse(cached: Response, rangeHeader: string | null) {
       'content-length': String(end - start + 1),
       'content-range': `bytes ${start}-${end}/${blob.size}`,
       'accept-ranges': 'bytes',
+      ...extra,
     },
   });
 }

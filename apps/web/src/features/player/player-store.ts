@@ -11,6 +11,7 @@ import {
 import type { Command, PlaybackState, Track } from '@lyra/shared';
 
 import { AudioEngine } from '../../audio/engine.ts';
+import { fetchLoudness } from '../../audio/loudness.ts';
 import {
   RepeatMode,
   freshRadio,
@@ -25,7 +26,13 @@ import {
 import { audioStreamUrl, streamFailure } from '../../audio/stream-url.ts';
 import { NoContent, api } from '../../lib/api.ts';
 import { ListenTracker } from './listen-tracker.ts';
-import { effectiveQuality, loadSettings, saveSettings } from './settings.ts';
+import {
+  effectiveQuality,
+  loadSettings,
+  maxVolume,
+  outputSettings,
+  saveSettings,
+} from './settings.ts';
 import type { PlayerSettings } from './settings.ts';
 
 export const PlaybackStatus = Object.freeze({
@@ -127,44 +134,48 @@ export const usePlayerStore = create<PlayerState>()((set, get) => {
   let retriedTrackId: string | null = null;
   const listens = new ListenTracker();
 
-  const engine = new AudioEngine({
-    onTime: (position, duration) => {
-      if (get().remote) {
-        return;
-      }
+  const engine = new AudioEngine(
+    {
+      onTime: (position, duration) => {
+        if (get().remote) {
+          return;
+        }
 
-      if (position >= HEALTHY_PLAYBACK_SECONDS) {
-        failuresInARow = 0;
-        retriedTrackId = null;
-      }
+        if (position >= HEALTHY_PLAYBACK_SECONDS) {
+          failuresInARow = 0;
+          retriedTrackId = null;
+        }
 
-      set({ position, duration });
-      maybeCrossfade(position, duration || (get().queue[get().index]?.durationSeconds ?? 0));
+        set({ position, duration });
+        maybeCrossfade(position, duration || (get().queue[get().index]?.durationSeconds ?? 0));
 
-      const current = get().queue[get().index];
+        const current = get().queue[get().index];
 
-      // Counted for the server's statistics, and added to YouTube history when the user has that
-      // on; failures do not matter.
-      if (current && listens.update(current.id, position, duration)) {
-        void api('POST', `/music/history/${encodeURIComponent(current.id)}`, NoContent, {
-          track: current,
-        });
-      }
+        // Counted for the server's statistics, and added to YouTube history when the user has that
+        // on; failures do not matter.
+        if (current && listens.update(current.id, position, duration)) {
+          void api('POST', `/music/history/${encodeURIComponent(current.id)}`, NoContent, {
+            track: current,
+          });
+        }
+      },
+      onEnded: () => advance(false, false),
+      onError: () => {
+        void recover();
+      },
+      onPlayingChange: (isPlaying) => {
+        if (!get().remote) {
+          set({ status: isPlaying ? PlaybackStatus.Playing : PlaybackStatus.Paused });
+        }
+      },
     },
-    onEnded: () => advance(false, false),
-    onError: () => {
-      void recover();
-    },
-    onPlayingChange: (isPlaying) => {
-      if (!get().remote) {
-        set({ status: isPlaying ? PlaybackStatus.Playing : PlaybackStatus.Paused });
-      }
-    },
-  });
+    fetchLoudness,
+  );
 
   const initial = loadSettings();
   engine.setVolume(initial.volume);
   engine.setEqualizer(initial.isEqEnabled, initial.eqGains);
+  engine.setOutput(outputSettings(initial));
 
   function remember(track: Track) {
     if (recentIds.at(-1) !== track.id) {
@@ -423,7 +434,9 @@ export const usePlayerStore = create<PlayerState>()((set, get) => {
         set(removeAt(get(), position));
       }
     },
-    setVolume: (volume: number) => {
+    setVolume: (requested: number) => {
+      // A remote device asking for a boost gets 100% unless this device allows more.
+      const volume = Math.min(requested, maxVolume(get().settings));
       const settings = { ...get().settings, volume };
       set({ settings });
       saveSettings(settings);
@@ -573,11 +586,14 @@ export const usePlayerStore = create<PlayerState>()((set, get) => {
       act({ type: 'volume', volume });
     },
     updateSettings: (patch) => {
-      const settings = { ...get().settings, ...patch };
+      const merged = { ...get().settings, ...patch };
+      // Turning the boost off brings a boosted volume back to 100%.
+      const settings = { ...merged, volume: Math.min(merged.volume, maxVolume(merged)) };
       set({ settings });
       saveSettings(settings);
       engine.setVolume(settings.volume);
       engine.setEqualizer(settings.isEqEnabled, settings.eqGains);
+      engine.setOutput(outputSettings(settings));
     },
     runCommand,
     snapshot: () => {

@@ -358,7 +358,17 @@
       "dataSaverHint": "Uses these qualities on mobile data or with the browser's data saver.",
       "onMobileData": "You are on mobile data now.",
       "videoOnData": "Video {{height}}p",
-      "lyricsSync": "Synced lyrics"
+      "lyricsSync": "Synced lyrics",
+      "volume": "Volume",
+      "normalization": "Even out volume between songs",
+      "normalizationHint": "Uses YouTube's measure so no song sounds much louder or quieter than another.",
+      "limiter": "Prevent distortion",
+      "limiterHint": "A limiter lowers only the peaks that would distort the sound.",
+      "boost": "Raise the volume above 100%",
+      "boostHint": "Allows up to 200%.",
+      "boostWarning": "Listening at high volume for a long time can damage your hearing, and small speakers can distort or get damaged. Turn it up gradually.",
+      "boostWarningNoLimiter": "With \"Prevent distortion\" off, the sound will break up.",
+      "boostConfirm": "I understand, turn on"
     },
     "presets": {
       "flat": "Flat",
@@ -377,7 +387,8 @@
       "expired": "Your Google session expired and YouTube no longer plays with it. Link your account again from your profile.",
       "link": "Link Google",
       "later": "Not now"
-    }
+    },
+    "boosted": "Volume boosted"
   },
   "library": {
     "like": "Like",
@@ -457,7 +468,8 @@
     "downloadRemaining_other": "Download {{count}} remaining"
   },
   "common": {
-    "close": "Close"
+    "close": "Close",
+    "cancel": "Cancel"
   },
   "states": {
     "notFound": "Page not found",

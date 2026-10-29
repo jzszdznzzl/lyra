@@ -11,6 +11,8 @@ export const Repeat = Object.freeze({ Off: 'off', All: 'all', One: 'one' } as co
 export type Repeat = (typeof Repeat)[keyof typeof Repeat];
 
 export const MAX_SHARED_QUEUE = 500;
+// 100% is the song as published; above it is a boost, which the web app guards with a limiter.
+export const MAX_VOLUME = 2;
 
 export const Device = z.object({
   id: z.string().min(8).max(64),
@@ -28,7 +30,7 @@ export const PlaybackState = z.object({
   // Server time when `positionMs` was true, so others can extrapolate while it plays.
   updatedAt: z.number(),
   isPlaying: z.boolean(),
-  volume: z.number().min(0).max(1),
+  volume: z.number().min(0).max(MAX_VOLUME),
   repeat: z.enum(Repeat),
   isShuffled: z.boolean(),
 });
@@ -41,7 +43,7 @@ export const Command = z.discriminatedUnion('type', [
   z.object({ type: z.literal('next') }),
   z.object({ type: z.literal('previous') }),
   z.object({ type: z.literal('seek'), positionMs: z.number().min(0) }),
-  z.object({ type: z.literal('volume'), volume: z.number().min(0).max(1) }),
+  z.object({ type: z.literal('volume'), volume: z.number().min(0).max(MAX_VOLUME) }),
   z.object({ type: z.literal('jump'), index: z.number().int().min(0) }),
   z.object({
     type: z.literal('playTracks'),

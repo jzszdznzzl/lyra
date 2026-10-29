@@ -1,8 +1,22 @@
+import { MAX_VOLUME } from '@lyra/shared';
+
 import { EQ_FREQUENCIES, clampGain } from './equalizer.ts';
+import {
+  LIMITER_ATTACK_SECONDS,
+  LIMITER_RATIO,
+  LIMITER_RELEASE_SECONDS,
+  LIMITER_THRESHOLD_DB,
+  limiterMakeupCompensation,
+  normalizationGain,
+} from './loudness.ts';
 
 interface Deck {
   audio: HTMLAudioElement;
+  // Fades: play, pause and crossfade.
   gain: GainNode;
+  // Evens out loudness between songs.
+  level: GainNode;
+  loudnessDb: number | null;
 }
 
 export interface EngineEvents {
@@ -12,11 +26,21 @@ export interface EngineEvents {
   onPlayingChange: (isPlaying: boolean) => void;
 }
 
+export interface OutputSettings {
+  isLimiterEnabled: boolean;
+  isNormalizationEnabled: boolean;
+}
+
+/** YouTube's loudness measure for a stream URL, or null when unknown. */
+export type LoudnessSource = (url: string) => Promise<number | null>;
+
 // Exponential ramps cannot reach zero; this is silent enough.
 const SILENCE = 0.0001;
 const EQ_Q = 1.1;
 // Points in a crossfade curve; enough for a smooth fade without a large buffer.
 const CURVE_STEPS = 64;
+// Smooths level changes, so a song evened out just after it starts does not jump.
+const LEVEL_TIME_CONSTANT = 0.05;
 
 /**
  * Two <audio> decks routed through Web Audio. One deck plays; the other takes the next song for
@@ -28,7 +52,10 @@ export class AudioEngine {
   #active = 0;
   #filters: BiquadFilterNode[] = [];
   #master: GainNode | null = null;
+  #limiter: DynamicsCompressorNode | null = null;
   #events: EngineEvents;
+  #loudnessOf: LoudnessSource;
+  #output: OutputSettings = { isLimiterEnabled: true, isNormalizationEnabled: true };
   #eqGains: number[] = EQ_FREQUENCIES.map(() => 0);
   #isEqEnabled = false;
   #volume = 1;
@@ -38,8 +65,9 @@ export class AudioEngine {
   #outgoingTimer: ReturnType<typeof setTimeout> | null = null;
   #preloadedUrl: string | null = null;
 
-  constructor(events: EngineEvents) {
+  constructor(events: EngineEvents, loudnessOf: LoudnessSource) {
     this.#events = events;
+    this.#loudnessOf = loudnessOf;
   }
 
   #ensureGraph() {
@@ -68,14 +96,26 @@ export class AudioEngine {
 
       return node;
     }, null);
-    master.connect(context.destination);
+
+    const limiter = context.createDynamicsCompressor();
+    limiter.threshold.value = LIMITER_THRESHOLD_DB;
+    limiter.knee.value = 0;
+    limiter.ratio.value = LIMITER_RATIO;
+    limiter.attack.value = LIMITER_ATTACK_SECONDS;
+    limiter.release.value = LIMITER_RELEASE_SECONDS;
+    const limiterTrim = context.createGain();
+    limiterTrim.gain.value = limiterMakeupCompensation(LIMITER_THRESHOLD_DB, LIMITER_RATIO);
+    limiter.connect(limiterTrim);
+    limiterTrim.connect(context.destination);
 
     const decks = [this.#createDeck(context), this.#createDeck(context)] as const;
 
     this.#context = context;
     this.#master = master;
+    this.#limiter = limiter;
     this.#decks = [decks[0], decks[1]];
     this.#applyEq();
+    this.#applyOutput();
 
     return { context, decks: this.#decks, master };
   }
@@ -87,11 +127,13 @@ export class AudioEngine {
 
     const gain = context.createGain();
     gain.gain.value = SILENCE;
+    const level = context.createGain();
     context.createMediaElementSource(audio).connect(gain);
-    gain.connect(this.#filters[0] ?? context.destination);
+    gain.connect(level);
+    level.connect(this.#filters[0] ?? context.destination);
 
     const isActive = () => this.#decks?.[this.#active] === deck;
-    const deck: Deck = { audio, gain };
+    const deck: Deck = { audio, gain, level, loudnessDb: null };
 
     audio.addEventListener('timeupdate', () => {
       if (isActive()) {
@@ -121,6 +163,52 @@ export class AudioEngine {
     this.#filters.forEach((filter, band) => {
       filter.gain.value = this.#isEqEnabled ? clampGain(this.#eqGains[band] ?? 0) : 0;
     });
+  }
+
+  /** The limiter sits between the master volume and the speakers only while it is on. */
+  #applyOutput() {
+    const master = this.#master;
+    const limiter = this.#limiter;
+    const context = this.#context;
+
+    if (!master || !limiter || !context) {
+      return;
+    }
+
+    master.disconnect();
+    master.connect(this.#output.isLimiterEnabled ? limiter : context.destination);
+
+    for (const deck of this.#decks ?? []) {
+      this.#applyLevel(deck);
+    }
+  }
+
+  #applyLevel(deck: Deck) {
+    const context = this.#context;
+    const { isLimiterEnabled, isNormalizationEnabled } = this.#output;
+    const level = isNormalizationEnabled ? normalizationGain(deck.loudnessDb, isLimiterEnabled) : 1;
+
+    if (context) {
+      deck.level.gain.setTargetAtTime(level, context.currentTime, LEVEL_TIME_CONSTANT);
+    }
+  }
+
+  /** Points a deck at a song and evens out its loudness once YouTube's measure arrives. */
+  #setSource(deck: Deck, url: string) {
+    deck.audio.src = url;
+    deck.loudnessDb = null;
+    this.#applyLevel(deck);
+    const src = deck.audio.src;
+
+    this.#loudnessOf(url)
+      .then((loudnessDb) => {
+        // The deck may have moved on to another song while this was loading.
+        if (deck.audio.src === src) {
+          deck.loudnessDb = loudnessDb;
+          this.#applyLevel(deck);
+        }
+      })
+      .catch(() => undefined);
   }
 
   #ramp(gain: GainNode, to: number, ms: number) {
@@ -227,7 +315,7 @@ export class AudioEngine {
     idle.audio.removeAttribute('src');
     deck.audio.pause();
     deck.gain.gain.value = SILENCE;
-    deck.audio.src = url;
+    this.#setSource(deck, url);
 
     // Seeking before the metadata arrives is not reliably kept, so wait for it when resuming.
     if (startAt > 0) {
@@ -289,7 +377,7 @@ export class AudioEngine {
     }
 
     idle.gain.gain.value = SILENCE;
-    idle.audio.src = url;
+    this.#setSource(idle, url);
     idle.audio.load();
     this.#preloadedUrl = url;
   }
@@ -312,7 +400,7 @@ export class AudioEngine {
 
     // A preload that failed is retried, so the error surfaces on the active deck.
     if (this.#preloadedUrl !== url || incoming.audio.error) {
-      incoming.audio.src = url;
+      this.#setSource(incoming, url);
     }
 
     this.#preloadedUrl = null;
@@ -336,7 +424,7 @@ export class AudioEngine {
   }
 
   setVolume(volume: number) {
-    this.#volume = Math.min(1, Math.max(0, volume));
+    this.#volume = Math.min(MAX_VOLUME, Math.max(0, volume));
 
     // Squared, because loudness is perceived logarithmically and a linear slider feels jumpy.
     if (this.#master && this.#context) {
@@ -348,6 +436,11 @@ export class AudioEngine {
     this.#isEqEnabled = isEnabled;
     this.#eqGains = gains;
     this.#applyEq();
+  }
+
+  setOutput(output: OutputSettings) {
+    this.#output = output;
+    this.#applyOutput();
   }
 
   stop() {

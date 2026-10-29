@@ -13,6 +13,7 @@ import { Dialog } from '../../ui/dialog.tsx';
 import { Toggle } from '../../ui/toggle.tsx';
 import { usePlayerStore } from './player-store.ts';
 import { MAX_CROSSFADE_SECONDS, MAX_FADE_MS, isOnMeteredNetwork } from './settings.ts';
+import { VolumeSettings } from './volume-settings.tsx';
 
 const FADE_STEP_MS = 100;
 
@@ -156,6 +157,8 @@ export function AudioSettingsDialog({ onClose }: { onClose: () => void }) {
           onChange={(isLyricsSyncEnabled) => updateSettings({ isLyricsSyncEnabled })}
         />
       </section>
+
+      <VolumeSettings />
 
       <section className="flex flex-col gap-3">
         <h3 className="text-xs font-bold tracking-wider text-muted uppercase">

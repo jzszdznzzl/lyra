@@ -7,6 +7,7 @@ import { DeviceKind } from '@lyra/shared';
 import { formatRelative } from '../../lib/format.ts';
 import { Dialog } from '../../ui/dialog.tsx';
 import { usePlayerStore } from '../player/player-store.ts';
+import { maxVolume } from '../player/settings.ts';
 import { activeDevice, useConnectStore } from './connect-store.ts';
 
 export function DevicePicker({ onClose }: { onClose: () => void }) {
@@ -17,6 +18,7 @@ export function DevicePicker({ onClose }: { onClose: () => void }) {
   const transfer = useConnectStore((state) => state.transfer);
   const volume = usePlayerStore((state) => state.remote?.volume ?? state.settings.volume);
   const setVolume = usePlayerStore((state) => state.setVolume);
+  const max = usePlayerStore((state) => maxVolume(state.settings));
   const others = devices.filter((device) => device.id !== active?.id);
 
   return (
@@ -40,7 +42,7 @@ export function DevicePicker({ onClose }: { onClose: () => void }) {
             <input
               type="range"
               min={0}
-              max={1}
+              max={Math.max(max, volume)}
               step={0.01}
               value={volume}
               aria-label={t('player.volume')}

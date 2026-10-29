@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { AudioQuality, DEFAULT_VIDEO_HEIGHT, VIDEO_HEIGHTS } from '@lyra/shared';
+import { AudioQuality, DEFAULT_VIDEO_HEIGHT, MAX_VOLUME, VIDEO_HEIGHTS } from '@lyra/shared';
 
 import { EQ_FREQUENCIES, EqPreset } from '../../audio/equalizer.ts';
 
@@ -26,7 +26,12 @@ export const PlayerSettings = z.object({
     .array(z.number())
     .length(EQ_FREQUENCIES.length)
     .catch(EQ_FREQUENCIES.map(() => 0)),
-  volume: z.number().min(0).max(1).catch(0.8),
+  volume: z.number().min(0).max(MAX_VOLUME).catch(0.8),
+  // Lets the volume go past 100%; off by default, as it can harm hearing and small speakers.
+  isVolumeBoostEnabled: z.boolean().catch(false),
+  // A limiter catches the peaks that would otherwise distort (boost, equalizer, leveling).
+  isLimiterEnabled: z.boolean().catch(true),
+  isNormalizationEnabled: z.boolean().catch(true),
   isAutoplayEnabled: z.boolean().catch(true),
   // Off shows synced lyrics as plain text: no highlighted line, no scrolling along.
   isLyricsSyncEnabled: z.boolean().catch(true),
@@ -56,6 +61,18 @@ export function saveSettings(settings: PlayerSettings) {
   } catch {
     // Storage can be blocked; settings still apply until the tab closes.
   }
+}
+
+/** The highest volume the slider allows: 100%, or more with the boost on. */
+export function maxVolume(settings: PlayerSettings) {
+  return settings.isVolumeBoostEnabled ? MAX_VOLUME : 1;
+}
+
+export function outputSettings(settings: PlayerSettings) {
+  return {
+    isLimiterEnabled: settings.isLimiterEnabled,
+    isNormalizationEnabled: settings.isNormalizationEnabled,
+  };
 }
 
 /** True on mobile data or when the browser's data saver is on (Network Information API). */
